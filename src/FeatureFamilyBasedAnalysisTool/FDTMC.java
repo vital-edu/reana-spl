@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class FDTMC {
@@ -14,18 +16,18 @@ public class FDTMC {
 	private HashSet<String> labels;
 	private String variableName;
 	private int index;
-	private HashMap<State, LinkedList<Transition>> transitionSystem;
-	
-	
+	private HashMap<State, List<Transition>> transitionSystem;
+
+
 	public FDTMC() {
 		states = new HashSet<State>();
-		initialState = null; 
+		initialState = null;
 		labels = new HashSet<String>();
 		variableName = null;
 		index = 0;
-		transitionSystem = new HashMap<State, LinkedList<Transition>>();
+		transitionSystem = new HashMap<State, List<Transition>>();
 	}
-	
+
 	public Collection<State> getStates() {
 		return states;
 	}
@@ -39,7 +41,7 @@ public class FDTMC {
 	}
 
 	public void setVariableName(String name) {
-		variableName = name; 
+		variableName = name;
 	}
 
 	public String getVariableName() {
@@ -51,14 +53,14 @@ public class FDTMC {
 	}
 
 	public State createState() {
-		State temp = new State(); 
-		temp.setVariableName(variableName); 
-		temp.setIndex(index); 
+		State temp = new State();
+		temp.setVariableName(variableName);
+		temp.setIndex(index);
 		states.add(temp);
 		index++;
 		return temp;
 	}
-	
+
 	public State createState(String label) {
 		State temp = createState();
 		temp.setLabel(label);
@@ -66,7 +68,7 @@ public class FDTMC {
 	}
 
 	public boolean createTransition(State source, State target, String action, String reliability) {
-		LinkedList<Transition> l = transitionSystem.get(source);
+		List<Transition> l = transitionSystem.get(source);
 //		System.out.println("L e nulo ou nao? " + l);
 		if (l == null) {
 			l = new LinkedList<Transition>();
@@ -94,13 +96,13 @@ public class FDTMC {
 
 	public Transition getTransitionByActionName(String action) {
 		//para cada Lista de adjacencias de cada nodo
-		Collection<LinkedList<Transition>> stateAdjacencies = transitionSystem.values();
-		Iterator <LinkedList<Transition>> iteratorStateAdjacencies = stateAdjacencies.iterator();
+		Collection<List<Transition>> stateAdjacencies = transitionSystem.values();
+		Iterator<List<Transition>> iteratorStateAdjacencies = stateAdjacencies.iterator();
 		while (iteratorStateAdjacencies.hasNext()) {
-			LinkedList<Transition> transitions = iteratorStateAdjacencies.next();
+			List<Transition> transitions = iteratorStateAdjacencies.next();
 //			System.out.println("Transitions Size: " + transitions.size());
-			//Percorrer a lista de transições e comparar os labels das transicoes
-			Iterator <Transition> iteratorTransitions = transitions.iterator(); 
+			//Percorrer a lista de transiÃ§Ãµes e comparar os labels das transicoes
+			Iterator <Transition> iteratorTransitions = transitions.iterator();
 			while (iteratorTransitions.hasNext()) {
 				Transition t = iteratorTransitions.next();
 //				System.out.println("\tAction Name: " + t.getActionName() );
@@ -108,17 +110,17 @@ public class FDTMC {
 					return t;
 			}
 		}
-		return null;		
+		return null;
 	}
-	
-	
+
+
 	@Override
 	public String toString() {
 		String msg = new String();
 		msg += "****************************************************************" + "\n";
 		msg += "FDTMC " + "\n";
 		msg += "****************************************************************" + "\n";
-		msg += "\n"; 
+		msg += "\n";
 		msg += "Variable name: " + this.variableName + "\n";
 		msg += "FDTMC size: " + this.states.size() + " states and " + this.transitionSystem.size() + " transitions." + "\n";
 		msg += "\n";
@@ -127,43 +129,20 @@ public class FDTMC {
 		Set<State> states = this.transitionSystem.keySet();
 		Iterator <State> itStates = states.iterator();
 		while (itStates.hasNext()) {
-			State temp = itStates.next(); 
-			LinkedList<Transition> transitionList = this.transitionSystem.get(temp);
-			Iterator <Transition> itTransitions = transitionList.iterator(); 
+			State temp = itStates.next();
+			List<Transition> transitionList = this.transitionSystem.get(temp);
+			Iterator <Transition> itTransitions = transitionList.iterator();
 			while (itTransitions.hasNext()) {
 				Transition t = itTransitions.next();
-				msg += temp.getVariableName() + "=" + temp.getIndex() + ((temp.getLabel() != null) ? "(" + temp.getLabel() + ")" : "") + 
-						" --- " + t.getActionName() + " / " + t.getProbability() + 
+				msg += temp.getVariableName() + "=" + temp.getIndex() + ((temp.getLabel() != null) ? "(" + temp.getLabel() + ")" : "") +
+						" --- " + t.getActionName() + " / " + t.getProbability() +
 						" ---> " + t.getTarget().getVariableName() + "=" + t.getTarget().getIndex() + ((t.getTarget().getLabel() != null) ? "(" + t.getTarget().getLabel() + ")" : "") + "\n";
 			}
 		}
 		return msg;
 	}
+
+	public Map<State, List<Transition>> getTransitions() {
+		return transitionSystem;
+	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
