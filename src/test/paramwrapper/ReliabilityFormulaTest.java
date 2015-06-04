@@ -71,4 +71,21 @@ public class ReliabilityFormulaTest {
 		String formula = paramWrapper.getReliability(fdtmc);
 		assertEquals("0", formula);
 	}
+
+	@Test
+	public void testReliabilityWithNoParameters() {
+		State s0 = fdtmc.createState();
+		State s1 = fdtmc.createState();
+		State s2 = fdtmc.createState("success");
+		State s3 = fdtmc.createState("error");
+		fdtmc.createTransition(s0, s3, "0.01");
+		fdtmc.createTransition(s0, s1, "0.99");
+		fdtmc.createTransition(s1, s2, "0.99");
+		fdtmc.createTransition(s1, s3, "0.01");
+		fdtmc.createTransition(s2, s2, "1");
+		fdtmc.createTransition(s3, s3, "1");
+
+		String formula = paramWrapper.getReliability(fdtmc);
+		assertEquals("0.9801", formula);
+	}
 }

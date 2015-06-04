@@ -25,6 +25,7 @@ import FeatureFamilyBasedAnalysisTool.ParametricModelChecker;
  */
 public class ParamWrapper implements ParametricModelChecker {
 	private final String PARAM_PATH = "/opt/param-2-3-64";
+	private final String PRISM_PATH = "/opt/prism-4.2.1-src/bin/prism";
 
 	public String fdtmcToParam(FDTMC fdtmc) {
 		ParamModel model = new ParamModel(fdtmc);
@@ -45,13 +46,26 @@ public class ParamWrapper implements ParametricModelChecker {
 			FileWriter modelWriter = new FileWriter(modelFile);
 			modelWriter.write(model);
 			modelWriter.flush();
+			modelWriter.close();
 
 			File propertyFile = File.createTempFile("property", "prop");
 			FileWriter propertyWriter = new FileWriter(propertyFile);
 			propertyWriter.write(property);
 			propertyWriter.flush();
+			propertyWriter.close();
 
-			String formula = invokeParam(modelFile, propertyFile);
+			File resultsFile = File.createTempFile("result", null);
+
+			String formula;
+			if (model.contains("param")) {
+				formula = invokeParametricModelChecker(modelFile.getAbsolutePath(),
+													   propertyFile.getAbsolutePath(),
+													   resultsFile.getAbsolutePath());
+			} else {
+				formula = invokeModelChecker(modelFile.getAbsolutePath(),
+											 propertyFile.getAbsolutePath(),
+											 resultsFile.getAbsolutePath());
+			}
 			return formula.trim().replaceAll("\\s+", "");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -60,25 +74,37 @@ public class ParamWrapper implements ParametricModelChecker {
 		return "";
 	}
 
-	private String invokeParam(File modelFile, File propertyFile) throws IOException {
-		String modelPath = modelFile.getAbsolutePath();
-		String propertyPath = propertyFile.getAbsolutePath();
-
-		File result = File.createTempFile("result", null);
-
+	private String invokeParametricModelChecker(String modelPath,
+												String propertyPath,
+												String resultsPath) throws IOException {
 		String commandLine = PARAM_PATH+" "
 							 +modelPath+" "
 							 +propertyPath+" "
-							 +"--result-file "+result.getAbsolutePath();
-		Process param = Runtime.getRuntime().exec(commandLine);
+							 +"--result-file "+resultsPath;
+		return invokeAndGetResult(commandLine, resultsPath+".out");
+	}
+
+	private String invokeModelChecker(String modelPath,
+									  String propertyPath,
+									  String resultsPath) throws IOException {
+		String commandLine = PRISM_PATH+" "
+				 			 +modelPath+" "
+				 			 +propertyPath+" "
+				 			 +"-exportresults "+resultsPath;
+		return invokeAndGetResult(commandLine, resultsPath);
+	}
+
+	private String invokeAndGetResult(String commandLine, String resultsPath) throws IOException {
+		Process program = Runtime.getRuntime().exec(commandLine);
 		try {
-			int exitCode = param.waitFor();
+			int exitCode = program.waitFor();
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		List<String> lines = Files.readAllLines(Paths.get(result.getAbsolutePath()+".out"), Charset.forName("UTF-8"));
+		List<String> lines = Files.readAllLines(Paths.get(resultsPath), Charset.forName("UTF-8"));
 		String formula = lines.get(lines.size()-1);
 		return formula;
 	}
+
 }
