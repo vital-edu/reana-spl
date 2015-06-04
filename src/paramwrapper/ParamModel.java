@@ -35,6 +35,7 @@ class ParamModel {
 		if (fdtmc.getVariableName() != null) {
 			stateVariable = fdtmc.getVariableName();
 		}
+		initialState = fdtmc.getInitialState().getIndex();
 		commands = getCommands(fdtmc);
 		labels = getLabels(fdtmc);
 		stateRangeStart = Collections.min(commands.keySet());

@@ -57,6 +57,9 @@ public class FDTMC {
 		temp.setVariableName(variableName);
 		temp.setIndex(index);
 		states.add(temp);
+		if (initialState == null) {
+			initialState = temp;
+		}
 		index++;
 		return temp;
 	}

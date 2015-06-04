@@ -45,6 +45,7 @@ public class FDTMCTest {
 		Assert.assertTrue(fdtmc1.getStates().contains(temp));
 		Assert.assertEquals(0, temp.getIndex());
 		Assert.assertEquals("x", temp.getVariableName());
+		Assert.assertEquals(temp, fdtmc1.getInitialState());
 	}
 
 	@Test
@@ -78,6 +79,8 @@ public class FDTMCTest {
 		Assert.assertEquals(3, s3.getIndex());
 		Assert.assertEquals(4, s4.getIndex());
 		Assert.assertEquals(5, s5.getIndex());
+
+		Assert.assertEquals(s0, fdtmc1.getInitialState());
 	}
 
 
@@ -93,6 +96,8 @@ public class FDTMCTest {
 		Assert.assertEquals("init", s0.getLabel());
 		Assert.assertEquals("sucess", s1.getLabel());
 		Assert.assertEquals("error", s2.getLabel());
+
+		Assert.assertEquals(s0, fdtmc1.getInitialState());
 	}
 
 
