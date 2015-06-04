@@ -27,12 +27,12 @@ public class ReliabilityFormulaTest {
 		State s1 = fdtmc.createState();
 		State s2 = fdtmc.createState("success");
 		State s3 = fdtmc.createState("error");
-		fdtmc.createTransition(s0, s3, null, "1-r0");
-		fdtmc.createTransition(s0, s1, null, "r0");
-		fdtmc.createTransition(s1, s2, null, "1-rFail");
-		fdtmc.createTransition(s1, s3, null, "rFail");
-		fdtmc.createTransition(s2, s2, null, "1");
-		fdtmc.createTransition(s3, s3, null, "1");
+		fdtmc.createTransition(s0, s3, "1-r0");
+		fdtmc.createTransition(s0, s1, "r0");
+		fdtmc.createTransition(s1, s2, "1-rFail");
+		fdtmc.createTransition(s1, s3, "rFail");
+		fdtmc.createTransition(s2, s2, "1");
+		fdtmc.createTransition(s3, s3, "1");
 
 		String formula = paramWrapper.getReliability(fdtmc);
 		assertEquals("-1*r0*rFail+1*r0", formula);
@@ -44,12 +44,12 @@ public class ReliabilityFormulaTest {
 		State s1 = fdtmc.createState("success");
 		State s2 = fdtmc.createState("success");
 		State s3 = fdtmc.createState("error");
-		fdtmc.createTransition(s0, s3, null, "1-r0");
-		fdtmc.createTransition(s0, s1, null, "r0");
-		fdtmc.createTransition(s1, s2, null, "1-rFail");
-		fdtmc.createTransition(s1, s3, null, "rFail");
-		fdtmc.createTransition(s2, s2, null, "1");
-		fdtmc.createTransition(s3, s3, null, "1");
+		fdtmc.createTransition(s0, s3, "1-r0");
+		fdtmc.createTransition(s0, s1, "r0");
+		fdtmc.createTransition(s1, s2, "1-rFail");
+		fdtmc.createTransition(s1, s3, "rFail");
+		fdtmc.createTransition(s2, s2, "1");
+		fdtmc.createTransition(s3, s3, "1");
 
 		String formula = paramWrapper.getReliability(fdtmc);
 		assertEquals("1*r0", formula);
@@ -61,12 +61,12 @@ public class ReliabilityFormulaTest {
 		State s1 = fdtmc.createState();
 		State s2 = fdtmc.createState();
 		State s3 = fdtmc.createState("error");
-		fdtmc.createTransition(s0, s3, null, "1-r0");
-		fdtmc.createTransition(s0, s1, null, "r0");
-		fdtmc.createTransition(s1, s2, null, "1-rFail");
-		fdtmc.createTransition(s1, s3, null, "rFail");
-		fdtmc.createTransition(s2, s2, null, "1");
-		fdtmc.createTransition(s3, s3, null, "1");
+		fdtmc.createTransition(s0, s3, "1-r0");
+		fdtmc.createTransition(s0, s1, "r0");
+		fdtmc.createTransition(s1, s2, "1-rFail");
+		fdtmc.createTransition(s1, s3, "rFail");
+		fdtmc.createTransition(s2, s2, "1");
+		fdtmc.createTransition(s3, s3, "1");
 
 		String formula = paramWrapper.getReliability(fdtmc);
 		assertEquals("0", formula);
