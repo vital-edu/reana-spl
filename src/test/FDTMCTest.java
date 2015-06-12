@@ -108,8 +108,8 @@ public class FDTMCTest {
 		s1 = fdtmc1.createState("success");
 		s2 = fdtmc1.createState("error");
 
-		Assert.assertTrue(fdtmc1.createTransition(s0, s1, Double.toString(0.95)));
-		Assert.assertTrue(fdtmc1.createTransition(s0, s2, Double.toString(0.05)));
+		Assert.assertTrue(fdtmc1.createTransition(s0, s1, "alpha", Double.toString(0.95)));
+		Assert.assertTrue(fdtmc1.createTransition(s0, s2, "alpha_error", Double.toString(0.05)));
 	}
 
 
@@ -120,8 +120,8 @@ public class FDTMCTest {
 		s1 = fdtmc1.createState("success");
 		s2 = fdtmc1.createState("error");
 
-		Assert.assertTrue(fdtmc1.createTransition(s0, s1, "rAlpha"));
-		Assert.assertTrue(fdtmc1.createTransition(s0, s2, "1-rAlpha"));
+		Assert.assertTrue(fdtmc1.createTransition(s0, s1, "alpha", "rAlpha"));
+		Assert.assertTrue(fdtmc1.createTransition(s0, s2, "alpha_error", "1-rAlpha"));
 	}
 
 
@@ -144,14 +144,42 @@ public class FDTMCTest {
 
 
 	@Test
+	public void testGetTransitionByAction() {
+		State s0, s1, s2;
+		s0 = fdtmc1.createState("init");
+		s1 = fdtmc1.createState("sucess");
+		s2 = fdtmc1.createState("error");
+
+		Assert.assertTrue(fdtmc1.createTransition(s0, s1, "alpha", "rAlpha"));
+		Assert.assertTrue(fdtmc1.createTransition(s0, s2, "alpha_error", "1-rAlpha"));
+
+		Transition t1, t2;
+		t1 = fdtmc1.getTransitionByActionName("alpha");
+		t2 = fdtmc1.getTransitionByActionName("alpha_error");
+
+		Assert.assertNotNull(t1);
+		Assert.assertEquals("alpha", t1.getActionName());
+		Assert.assertEquals("rAlpha", t1.getProbability());
+		Assert.assertEquals(s0, t1.getSource());
+		Assert.assertEquals(s1, t1.getTarget());
+
+		Assert.assertNotNull(t2);
+		Assert.assertEquals("alpha_error", t2.getActionName());
+		Assert.assertEquals("1-rAlpha", t2.getProbability());
+		Assert.assertEquals(s0, t2.getSource());
+		Assert.assertEquals(s2, t2.getTarget());
+	}
+
+
+	@Test
 	public void testGetTransitions() {
 		State s0, s1, s2;
 		s0 = fdtmc1.createState("init");
 		s1 = fdtmc1.createState("sucess");
 		s2 = fdtmc1.createState("error");
 
-		fdtmc1.createTransition(s0, s1, "rAlpha");
-		fdtmc1.createTransition(s0, s2, "1-rAlpha");
+		fdtmc1.createTransition(s0, s1, "alpha", "rAlpha");
+		fdtmc1.createTransition(s0, s2, "alpha_error", "1-rAlpha");
 
 		Map<State, List<Transition>> transitionsByState = fdtmc1.getTransitions();
 		Assert.assertEquals(1, transitionsByState.size());
@@ -160,6 +188,13 @@ public class FDTMCTest {
 		Assert.assertEquals(2, transitions.size());
 
 		List<String> temp = new ArrayList<String>();
+		for (Transition transition : transitions) {
+			temp.add(transition.getActionName());
+		}
+		Assert.assertTrue(temp.contains("alpha"));
+		Assert.assertTrue(temp.contains("alpha_error"));
+
+		temp.clear();
 		for (Transition transition : transitions) {
 			temp.add(transition.getProbability());
 		}

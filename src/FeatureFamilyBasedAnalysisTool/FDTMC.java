@@ -70,14 +70,14 @@ public class FDTMC {
 		return temp;
 	}
 
-	public boolean createTransition(State source, State target, String reliability) {
+	public boolean createTransition(State source, State target, String action, String reliability) {
 		List<Transition> l = transitionSystem.get(source);
 //		System.out.println("L e nulo ou nao? " + l);
 		if (l == null) {
 			l = new LinkedList<Transition>();
 		}
 //		System.out.println("Valor de L " + l.toString());
-		boolean answer = l.add(new Transition(source, target, reliability));
+		boolean answer = l.add(new Transition(source, target, action, reliability));
 //		System.out.println("Valor de L " + l.toString());
 //		System.out.println("FDTMC::createTransition --> vou adicionar transicao a lista de adjacencia de " + source.getLabel());
 		transitionSystem.put(source, l);
@@ -96,6 +96,26 @@ public class FDTMC {
 		}
 		return null;
 	}
+
+	public Transition getTransitionByActionName(String action) {
+		//para cada Lista de adjacencias de cada nodo
+		Collection<List<Transition>> stateAdjacencies = transitionSystem.values();
+		Iterator<List<Transition>> iteratorStateAdjacencies = stateAdjacencies.iterator();
+		while (iteratorStateAdjacencies.hasNext()) {
+			List<Transition> transitions = iteratorStateAdjacencies.next();
+//			System.out.println("Transitions Size: " + transitions.size());
+			//Percorrer a lista de transições e comparar os labels das transicoes
+			Iterator <Transition> iteratorTransitions = transitions.iterator();
+			while (iteratorTransitions.hasNext()) {
+				Transition t = iteratorTransitions.next();
+//				System.out.println("\tAction Name: " + t.getActionName() );
+				if (t.getActionName().equals(action))
+					return t;
+			}
+		}
+		return null;
+	}
+
 
 	@Override
 	public String toString() {
@@ -118,7 +138,7 @@ public class FDTMC {
 			while (itTransitions.hasNext()) {
 				Transition t = itTransitions.next();
 				msg += temp.getVariableName() + "=" + temp.getIndex() + ((temp.getLabel() != null) ? "(" + temp.getLabel() + ")" : "") +
-						" --- " + t.getProbability() +
+						" --- " + t.getActionName() + " / " + t.getProbability() +
 						" ---> " + t.getTarget().getVariableName() + "=" + t.getTarget().getIndex() + ((t.getTarget().getLabel() != null) ? "(" + t.getTarget().getLabel() + ")" : "") + "\n";
 			}
 		}
