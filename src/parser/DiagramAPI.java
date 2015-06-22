@@ -11,7 +11,7 @@ public class DiagramAPI {
 	private final File xmlFile;
 	private ArrayList<SDReader> sdParsers;
 	private ArrayList<ADReader> adParsers;
-	private ArrayList<FDTMC> fdtmcs;
+	//private ArrayList<FDTMC> fdtmcs;
 	private HashMap<String, Fragment> sdByID;
 	private HashMap<String, FDTMC> fdtmcByName;
 
@@ -43,10 +43,10 @@ public class DiagramAPI {
 		} while (hasNext);
 		linkSdToActivity(this.adParsers.get(0));
 
-		/*adParser.printAll();
+		adParser.printAll();
 		for (SDReader sdp : this.sdParsers) {
 			sdp.printAll();
-		}*/
+		}
 	}
 
 	public void linkSdToActivity(ADReader ad) {
@@ -75,13 +75,17 @@ public class DiagramAPI {
 		FDTMC fdtmc = new FDTMC();
 		State init, error, success, source, target, featStart;
 		
-		if (fragment.getOperandName() != null) fdtmc.setVariableName("s" + fragment.getOperandName());
-		else fdtmc.setVariableName("s" + fragment.getName());
-		//adiciona a lista e poe no hashmap:
-		//fdtmcByName.put(key, fdtmc);
+		/* Cria var estado / Insere no HashMap com nome SD ou nome Feature */
+		if (fragment.getOperandName() != null) {
+			fdtmc.setVariableName("s" + fragment.getOperandName());
+			fdtmcByName.put(fragment.getOperandName(), fdtmc);
+		} else { 
+			fdtmc.setVariableName("s" + fragment.getName());
+			fdtmcByName.put(fragment.getName(), fdtmc);
+		}
 		
-		error = fdtmc.createState("error");
 		init = fdtmc.createState("init");
+		error = fdtmc.createState("error");
 		source = init;
 		
 		int i = 1;
@@ -89,26 +93,25 @@ public class DiagramAPI {
 			if (i++ == fragment.getNodes().size()) {
 				success = fdtmc.createState("success");
 				if (n.getClass().equals(Message.class)) {
-					fdtmc.createTransition(source, success, "r" + ((Message) n).getReceiver().getName());
-					fdtmc.createTransition(source, error, "1-r" + ((Message) n).getReceiver().getName());
+					fdtmc.createTransition(source, success, ((Message) n).getName(), "r" + ((Message) n).getReceiver().getName());
+					fdtmc.createTransition(source, error, ((Message) n).getName(), "1-r" + ((Message) n).getReceiver().getName());
 				} else if (n.getClass().equals(Fragment.class)) {
 					featStart = fdtmc.createState("start" + ((Fragment) n).getOperandName());
-					fdtmc.createTransition(source, featStart, "f" + ((Fragment) n).getOperandName());
-					fdtmc.createTransition(source, success, "1-f" + ((Fragment) n).getOperandName());
+					fdtmc.createTransition(source, featStart, ((Fragment) n).getName(), "f" + ((Fragment) n).getOperandName());
+					fdtmc.createTransition(source, success, ((Fragment) n).getName(), "1-f" + ((Fragment) n).getOperandName());
 					transformSingleSD ((Fragment) n);
 				}
-				
 		    } else {
 		    	if (n.getClass().equals(Message.class)) {
 					target = fdtmc.createState();
-					fdtmc.createTransition(source, target, "r" + ((Message) n).getReceiver().getName());
-					fdtmc.createTransition(source, error, "1-r" + ((Message) n).getReceiver().getName());
+					fdtmc.createTransition(source, target, ((Message) n).getName(), "r" + ((Message) n).getReceiver().getName());
+					fdtmc.createTransition(source, error, ((Message) n).getName(), "1-r" + ((Message) n).getReceiver().getName());
 					source = target;
 				} else if (n.getClass().equals(Fragment.class)) {
 					featStart = fdtmc.createState("start" + ((Fragment) n).getOperandName());
 					target = fdtmc.createState();
-					fdtmc.createTransition(source, featStart, "f" + ((Fragment) n).getOperandName());
-					fdtmc.createTransition(source, target, "1-f" + ((Fragment) n).getOperandName());
+					fdtmc.createTransition(source, featStart, ((Fragment) n).getName(), "f" + ((Fragment) n).getOperandName());
+					fdtmc.createTransition(source, target, ((Fragment) n).getName(), "1-f" + ((Fragment) n).getOperandName());
 					transformSingleSD ((Fragment) n);
 					source = target;
 				}

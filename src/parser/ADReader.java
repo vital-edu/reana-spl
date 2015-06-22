@@ -20,6 +20,8 @@ public class ADReader {
 	private Document doc;
 	private ArrayList<Activity> activities;
 	private ArrayList<Edge> edges;
+	private ArrayList<Activity> mergeActivities;
+	private ArrayList<Activity> forkActivities;
 
 	public void printAll() { // jogar pra cima?? DiagramAPI
 		System.out.print("Activity Diagram " + (this.index + 1) + ": " + this.name + "\n\n");

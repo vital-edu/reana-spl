@@ -55,7 +55,8 @@ public class SDReader {
 				System.out.println("[" + ((Message) n).getName() + "]: "
 						+ ((Message) n).getSender().getName() + "->"
 						+ ((Message) n).getReceiver().getName() + " (" + ((Message) n).getType()
-						+ ")");
+						+ ") p = " + n.getProb() + "; egy: " + n.getEnergy() + "; ex: "
+						+ n.getExecTime());
 				// n.print();
 			}
 		}
