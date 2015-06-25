@@ -1,4 +1,4 @@
-package parser;
+package Modeling;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -20,8 +20,8 @@ public class ADReader {
 	private Document doc;
 	private ArrayList<Activity> activities;
 	private ArrayList<Edge> edges;
-	private ArrayList<Activity> mergeActivities;
-	private ArrayList<Activity> forkActivities;
+	//private ArrayList<Activity> mergeActivities;
+	//private ArrayList<Activity> forkActivities;
 
 	public void printAll() { // jogar pra cima?? DiagramAPI
 		System.out.print("Activity Diagram " + (this.index + 1) + ": " + this.name + "\n\n");
@@ -30,7 +30,7 @@ public class ADReader {
 	}
 
 	public void printInSequence() {
-
+		
 		System.out.println("Activities:");
 		for (Activity a : this.activities) {
 			a.print();
@@ -89,7 +89,7 @@ public class ADReader {
 		return next;
 	}
 
-	public void retrieveActivities() { /* OTIMIZAR AQUI */
+	public void retrieveActivities() {
 		org.w3c.dom.Node ad;
 		ArrayList<org.w3c.dom.Node> adList = new ArrayList<org.w3c.dom.Node>();
 		NodeList nodes = this.doc.getElementsByTagName("packagedElement");

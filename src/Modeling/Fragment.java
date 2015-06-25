@@ -1,4 +1,4 @@
-package parser;
+package Modeling;
 
 import java.util.ArrayList;
 import java.util.HashMap;

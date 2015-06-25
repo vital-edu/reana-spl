@@ -1,4 +1,4 @@
-package parser;
+package Modeling;
 
 public class Message extends Node {
 	private String name;
