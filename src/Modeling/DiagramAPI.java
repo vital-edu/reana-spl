@@ -262,22 +262,54 @@ public class DiagramAPI {
 					fdtmc.createTransition(source, error, ((Message) n).getName(), a.subtract(b).toString());
 					source = target;
 				} else if (n.getClass().equals(Fragment.class)) {
-					String featureName = ((Fragment) n).getOperandName();
-					featStart = fdtmc.createState("init" + featureName);
-					target = fdtmc.createState();
-					fdtmc.createTransition(source, featStart, featureName, "f" + featureName);
-					fdtmc.createTransition(source, target, featureName, "1-f" + featureName);
-					/* Interface Begin */
-					fdtmc.createTransition(featStart, fdtmc.createState("end" + featureName), "",
-							"");
-					fdtmc.createTransition(featStart, fdtmc.createState("error" + featureName), "",
-							"");
-					/* Interface End */
-					transformSingleSD((Fragment) n);
-					source = target;
+					Fragment frag = (Fragment)n;
+					switch (frag.getType()) {
+						case loop:
+							source = transformLoopFragment(fdtmc, source, frag);
+							break;
+						case alternative:
+							break;
+						case optional:
+							source = transformOptFragment(fdtmc, source, frag);
+							break;
+						case parallel:
+							break;
+						default:
+							break;
+					}
 				}
 			}
 		}
 		System.out.println(fdtmc.toString());
+	}
+	
+	/**
+	 * Transforms the fragment $frag into a DTMC and integrates it into the FDTMC $fdtmc.
+	 * @param fdtmc
+	 * @param source
+	 * @param frag
+	 * @return returns the new source state
+	 */
+	private State transformOptFragment(FDTMC fdtmc, State source, Fragment frag) {
+		String featureName = frag.getOperandName();
+		State featStart = fdtmc.createState("init" + featureName);
+		State target = fdtmc.createState();
+		
+		fdtmc.createTransition(source, featStart, featureName, frag.getGuard() + featureName);
+		fdtmc.createTransition(source, target, featureName, "1-"+ frag.getGuard() + featureName);
+		/* Interface Begin */
+		fdtmc.createTransition(featStart, fdtmc.createState("end" + featureName), "", "");
+		fdtmc.createTransition(featStart, fdtmc.createState("error" + featureName), "", "");
+		/* Interface End */
+		transformSingleSD(frag);
+		return target;
+	}
+	
+	private State transformLoopFragment(FDTMC fdtmc, State source, Fragment frag) {
+		String featureName = frag.getOperandName();
+		State featStart = fdtmc.createState("init" + featureName);
+		State target = fdtmc.createState();
+		
+		return target;
 	}
 }

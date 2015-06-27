@@ -7,6 +7,7 @@ public class Fragment extends Node {
 	private String name;
 	private FragmentType type;
 	private String operandName;
+	private String guard;
 	protected int coveredLifelines = 0;
 	private ArrayList<Lifeline> lifelines;
 	private ArrayList<Node> nodes;
@@ -46,6 +47,9 @@ public class Fragment extends Node {
 		this.nodeByID.put(this.getId(), node);
 	}
 
+	public String getGuard() {
+		return guard;
+	}
 	public String getName() {
 		return name;
 	}
@@ -54,6 +58,16 @@ public class Fragment extends Node {
 		return type;
 	}
 
+	public void setType(String typeName) throws UnsupportedFragmentTypeException {
+		if (typeName.equals("opt")) {
+			this.setType(FragmentType.optional);
+		} else if (typeName.equals("loop")) {
+			this.setType(FragmentType.loop);
+		} else {
+			throw new UnsupportedFragmentTypeException("Fragment of type " + typeName + " is not supported!");
+		}
+	}
+	
 	public void setType(FragmentType type) {
 		this.type = type;
 	}
@@ -64,6 +78,10 @@ public class Fragment extends Node {
 
 	public void setOperandName(String operandName) {
 		this.operandName = operandName;
+	}
+	
+	public void setGuard(String guard) {
+		this.guard = guard;
 	}
 
 	public void setName(String name) {

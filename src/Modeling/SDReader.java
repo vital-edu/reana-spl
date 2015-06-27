@@ -291,16 +291,19 @@ public class SDReader {
 						fragment = new Fragment(node.getAttributes().getNamedItem("xmi:id")
 								.getTextContent(), null);
 					}
-
-					if (node.getAttributes().getNamedItem("interactionOperator").getTextContent()
-							.equals("opt")) {
-						fragment.setType(FragmentType.optional);
-					} else {
-						throw new UnsupportedFragmentTypeException("Type "
-								+ n.getAttributes().getNamedItem("interactionOperator")
-										.getTextContent() + " of Fragment is not supported!");
+					
+					String fType = node.getAttributes().getNamedItem("interactionOperator").getTextContent();
+					String guard = "";
+					NodeList childNodes = node.getChildNodes();
+					for (int j = 0; i < childNodes.getLength(); j++) {
+						if (childNodes.item(j).getNodeName().equals("guard")) {
+							guard = childNodes.item(j).getAttributes().getNamedItem("Value").getTextContent();
+						}
 					}
+					fragment.setGuard(guard);
+					fragment.setType(fType);
 					retreiveProbEnergyTime(fragment);
+					
 					this.sd.addNode(fragment);
 					traceFragment(fragment, node);
 				}
