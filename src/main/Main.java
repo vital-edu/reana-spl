@@ -1,22 +1,24 @@
 package main;
 
 import java.io.File;
-//import java.io.BufferedReader;
-//import java.io.FileReader;
-//import java.io.IOException;
+import java.util.HashMap;
 
-
-import parser.InvalidTagException;
-import parser.DiagramAPI;
-import parser.UnsupportedFragmentTypeException;
+import FeatureFamilyBasedAnalysisTool.FDTMC;
+import Modeling.DiagramAPI;
+import Modeling.InvalidTagException;
+import Modeling.Message;
+import Modeling.UnsupportedFragmentTypeException;
 
 public class Main {
+	private static HashMap<String, FDTMC> fdtmcByName;
+	
 	public static void main(String[] args) throws InvalidTagException, UnsupportedFragmentTypeException {
 		File xmlFile = new File("model.xml");
-
+		
 		DiagramAPI diagram = new DiagramAPI(xmlFile);
 		diagram.initialize();
 		diagram.transform();
-
+		
+		fdtmcByName = diagram.getFdtmcByName();
 	}
 }
