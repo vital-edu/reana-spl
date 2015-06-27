@@ -12,7 +12,6 @@ public class DiagramAPI {
 	private final File xmlFile;
 	private ArrayList<SDReader> sdParsers;
 	private ArrayList<ADReader> adParsers;
-	// private ArrayList<FDTMC> fdtmcs;
 	private HashMap<String, Fragment> sdByID;
 	private HashMap<String, FDTMC> fdtmcByName;
 	private HashMap<String, State> stateByActID;
