@@ -295,9 +295,20 @@ public class SDReader {
 					String fType = node.getAttributes().getNamedItem("interactionOperator").getTextContent();
 					String guard = "";
 					NodeList childNodes = node.getChildNodes();
-					for (int j = 0; i < childNodes.getLength(); j++) {
-						if (childNodes.item(j).getNodeName().equals("guard")) {
-							guard = childNodes.item(j).getAttributes().getNamedItem("Value").getTextContent();
+					for (int j = 0; j < childNodes.getLength(); j++) {
+						if (childNodes.item(j).getNodeName().equals("operand")) {
+							NodeList operandChildNodes = childNodes.item(j).getChildNodes();
+							for (int k = 0; k < operandChildNodes.getLength(); k++) {
+								org.w3c.dom.Node guardNode = operandChildNodes.item(k);
+								if (guardNode.getNodeName().equals("guard")) {
+									NodeList guardNodeChilds = guardNode.getChildNodes();
+									for (int l = 0; l < guardNodeChilds.getLength(); l++) {
+										if (guardNodeChilds.item(l).getNodeName().equals("specification")) {
+											guard = guardNodeChilds.item(l).getAttributes().getNamedItem("value").getTextContent();
+										}
+									}
+								}
+							}
 						}
 					}
 					fragment.setGuard(guard);

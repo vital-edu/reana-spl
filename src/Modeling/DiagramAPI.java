@@ -284,7 +284,7 @@ public class DiagramAPI {
 	}
 	
 	/**
-	 * Transforms the fragment $frag into a DTMC and integrates it into the FDTMC $fdtmc.
+	 * Transforms the fragment $frag of type OPT into a DTMC and integrates it into the FDTMC $fdtmc.
 	 * @param fdtmc
 	 * @param source
 	 * @param frag
@@ -305,6 +305,13 @@ public class DiagramAPI {
 		return target;
 	}
 	
+	/**
+	 * Transforms the fragment $frag of type LOOP into a DTMC and integrates it into the the FDTMC $fdtmc 
+	 * @param fdtmc
+	 * @param source
+	 * @param frag
+	 * @return return the new source state
+	 */
 	private State transformLoopFragment(FDTMC fdtmc, State source, Fragment frag) {
 		String featureName = frag.getOperandName();
 		State featStart = fdtmc.createState("init" + featureName);
