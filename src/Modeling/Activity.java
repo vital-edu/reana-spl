@@ -10,7 +10,7 @@ public class Activity {
 	private ArrayList<Edge> outgoing;
 	private boolean ordered;
 	private String sdID;
-	private Fragment sd;
+	private FragmentOld sd;
 	
 	public Activity(String id, String name, String type) {
 		this.id = id;
@@ -91,11 +91,11 @@ public class Activity {
 		this.sdID = sdID;
 	}
 
-	public Fragment getSd() {
+	public FragmentOld getSd() {
 		return sd;
 	}
 
-	public void setSd(Fragment sd) {
+	public void setSd(FragmentOld sd) {
 		this.sd = sd;
 	}
 
