@@ -6,14 +6,13 @@ import java.util.HashMap;
 public class Operand extends Node {
 	// Atributos
 		private String guard;
-		private ArrayList<Node> nodes;
-		private HashMap<String, Node> nodeByID;
+		private HashMap<String, Node> nodes;
 	
-	public Operand(String id) {
-		super(id);
-		setNodes(new ArrayList<Node>());
-		setNodeByID(new HashMap<String, Node>());
-	}
+	// Construtores
+		public Operand(String id) {
+			super(id);
+			setNodes(new HashMap<String, Node>());
+		}
 
 	// Getters e Setters
 		public String getGuard() {
@@ -23,26 +22,18 @@ public class Operand extends Node {
 		public void setGuard(String guard) {
 			this.guard = guard;
 		}
+
 		
-		public ArrayList<Node> getNodes() {
+		public HashMap<String, Node> getNodes() {
 			return nodes;
 		}
-		
-		public void setNodes(ArrayList<Node> nodes) {
+
+		public void setNodes(HashMap<String, Node> nodes) {
 			this.nodes = nodes;
 		}
-		
-		public HashMap<String, Node> getNodeByID() {
-			return nodeByID;
-		}
-		
-		public void setNodeByID(HashMap<String, Node> nodeByID) {
-			this.nodeByID = nodeByID;
-		}
-		
+
 	// Demais métodos
 		public void addNode(Node node) {
-			nodes.add(node);
-			this.nodeByID.put(node.getId(), node);
+			this.nodes.put(node.getId(), node);
 		}
 }
