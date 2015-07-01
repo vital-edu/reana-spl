@@ -6,8 +6,8 @@ import java.util.HashMap;
 import FeatureFamilyBasedAnalysisTool.FDTMC;
 import Modeling.DiagramAPIOld;
 import Modeling.InvalidTagException;
-import Modeling.Message;
 import Modeling.UnsupportedFragmentTypeException;
+import Modeling.SequenceDiagrams.Message;
 
 public class Main {
 	private static HashMap<String, FDTMC> fdtmcByName;

@@ -1,6 +1,8 @@
-package Modeling;
+package Modeling.ActivityDiagrams;
 
 import java.util.ArrayList;
+
+import Modeling.FragmentOld;
 
 public class Activity {
 	private String id;

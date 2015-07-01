@@ -3,6 +3,9 @@ package Modeling;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import Modeling.SequenceDiagrams.FragmentType;
+import Modeling.SequenceDiagrams.Lifeline;
+
 public class FragmentOld extends Node {
 	private String name;
 	private FragmentType type;

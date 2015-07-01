@@ -1,4 +1,4 @@
-package Modeling;
+package Modeling.ActivityDiagrams;
 
 import java.io.File;
 import java.util.ArrayList;

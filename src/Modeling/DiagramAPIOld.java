@@ -7,6 +7,11 @@ import java.math.*;
 
 import FeatureFamilyBasedAnalysisTool.FDTMC;
 import FeatureFamilyBasedAnalysisTool.State;
+import Modeling.ActivityDiagrams.ADReader;
+import Modeling.ActivityDiagrams.Activity;
+import Modeling.ActivityDiagrams.ActivityType;
+import Modeling.ActivityDiagrams.Edge;
+import Modeling.SequenceDiagrams.Message;
 
 public class DiagramAPIOld {
 	private final File xmlFile;

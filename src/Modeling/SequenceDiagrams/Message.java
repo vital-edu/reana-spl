@@ -1,4 +1,6 @@
-package Modeling;
+package Modeling.SequenceDiagrams;
+
+import Modeling.Node;
 
 public class Message extends Node {
 	private String name;

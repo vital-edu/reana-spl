@@ -10,6 +10,11 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
+import Modeling.SequenceDiagrams.FragmentType;
+import Modeling.SequenceDiagrams.Lifeline;
+import Modeling.SequenceDiagrams.Message;
+import Modeling.SequenceDiagrams.MessageType;
+
 public class SDReaderOld {
 	private int index;
 	private boolean next;

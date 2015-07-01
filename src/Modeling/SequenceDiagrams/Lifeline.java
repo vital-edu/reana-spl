@@ -1,4 +1,4 @@
-package Modeling;
+package Modeling.SequenceDiagrams;
 
 public class Lifeline {
 	private String id;
