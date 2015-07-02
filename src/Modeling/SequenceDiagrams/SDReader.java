@@ -9,12 +9,14 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import Modeling.InvalidTagException;
+import Modeling.Node;
 import Modeling.UnsupportedFragmentTypeException;
 
 /**
@@ -50,20 +52,68 @@ public class SDReader {
 			}
 		}
 		
-	// Métodos
+	// Métodos Relevantes: Públicos
+		
+		/**
+		 * Populates the SDReader.sd attribute from data obtained by
+		 * 	retrieveLifelines() and retrieveMessages()
+		 * @throws UnsupportedFragmentTypeException
+		 * @throws InvalidTagException
+		 */
+		public void traceDiagram() throws UnsupportedFragmentTypeException, InvalidTagException {
+			NodeList nodes = this.doc.getElementsByTagName("ownedBehavior");
+			this.next = (this.index == nodes.getLength() - 1) ? false : true;
+			
+			org.w3c.dom.Node n = nodes.item(this.index);
+			NamedNodeMap nAttrs = n.getAttributes();
+			retrieveLifelines(n); retrieveMessages(n);
+			
+			this.sd = new Fragment(
+							nAttrs.getNamedItem("xmi:id").getTextContent(),
+							(nAttrs.getNamedItem("name") != null)?nAttrs.getNamedItem("name").getTextContent() : ""
+					  );
+			
+			this.sd.setLifelines(this.lifelines);
+			
+			NodeList nChilds = n.getChildNodes();
+			for (int i = 0; i < nChilds.getLength(); i++) {
+				
+				org.w3c.dom.Node child = nChilds.item(i);
+				if (child.getNodeName().equals("fragment")) {
+					
+					String xmiType = child.getAttributes().getNamedItem("xmi:type").getTextContent();
+					if (xmiType.equals("uml:MessageOccurrenceSpecification")) {
+						
+						String msgID = child.getAttributes().getNamedItem("message").getTextContent();
+						this.sd.addNode(this.messagesByID.get(msgID));
+						i += 2;
+						
+					} else if (xmiType.equals("uml:CombinedFragment")) {
+						
+						NamedNodeMap cAttrs = child.getAttributes();
+						Fragment newFragment =
+								new Fragment(
+										cAttrs.getNamedItem("xmi:id").getTextContent(),
+										cAttrs.getNamedItem("interactionOperator").getTextContent(),
+										(cAttrs.getNamedItem("name") != null) ? cAttrs.getNamedItem("name").getTextContent() : ""
+								);
+						retrieveProbEnergyTime(newFragment);
+						this.sd.addNode(newFragment);
+						traceFragment(newFragment, child);
+						
+					}
+				}
+			}
+		}
+
+		
+	// Métodos Relevantes: Privados
 		/**
 		 * Realiza o parse do xmi buscando as Lifelines do SD em questão
 		 * @throws InvalidTagException
 		 * @throws UnsupportedFragmentTypeException
 		 */
-		public void retrieveLifelines() throws InvalidTagException, UnsupportedFragmentTypeException {
-			NodeList nodes = this.doc.getElementsByTagName("ownedBehavior");
-			if (this.index == nodes.getLength() - 1)
-				this.next = false;
-			else
-				this.next = true;
-			
-			org.w3c.dom.Node node = nodes.item(this.index);
+		private void retrieveLifelines(org.w3c.dom.Node node) throws InvalidTagException, UnsupportedFragmentTypeException {
 			NodeList elements = node.getChildNodes();
 			
 			for (int s = 0; s < elements.getLength(); s++) {
@@ -100,6 +150,193 @@ public class SDReader {
 									.getNamedItem("name").getTextContent().replace('\n', ' '));
 						}
 					}
+				}
+			}
+		}
+		
+		/**
+		 * Realiza o parse do xmi em busca das mensagens que envolvem as Lifelines já obtidas
+		 * @throws InvalidTagException
+		 */
+		private void retrieveMessages(org.w3c.dom.Node node) throws InvalidTagException {
+			NodeList elements = node.getChildNodes();
+			
+			for (int s = 0; s < elements.getLength(); s++) {
+				if ((elements.item(s).getNodeValue() == null) && (elements.item(s).getNodeName() == "message")) {
+					NamedNodeMap sAttrs = elements.item(s).getAttributes();
+					Message message = new Message(sAttrs.getNamedItem("xmi:id").getTextContent());
+					
+					if (sAttrs.getNamedItem("name") != null) {
+						message.setName(sAttrs.getNamedItem("name").getTextContent().replace("\n", " "));
+					}
+					
+					for (Lifeline l: this.lifelines) {
+						if (this.coverage.get(l).contains(sAttrs.getNamedItem("sendEvent").getTextContent())) {
+							message.setSender(l);
+						}
+						if (this.coverage.get(l).contains(sAttrs.getNamedItem("receiveEvent").getTextContent())) {
+							message.setReceiver(l);
+						}
+					}
+					
+					if (sAttrs.getNamedItem("messageShort") != null) {
+						if (sAttrs.getNamedItem("messageShort").getTextContent().equals("asynchCall")) {
+							message.setType(MessageType.assynchronous);
+						} else if (sAttrs.getNamedItem("messageShort").getTextContent().equals("reply")) {
+							message.setType(MessageType.reply);
+						}
+					} else {
+						message.setType(MessageType.synchronous);
+					}
+					
+					retrieveProbEnergyTime(message);
+					this.messages.add(message);
+					this.messagesByID.put(message.getId(), message);
+				}
+			}
+		}
+
+		/**
+		 * Monta a estrutura de um operand de um Fragmento do SD em questão
+		 * @param operand
+		 * @param node
+		 * @throws UnsupportedFragmentTypeException 
+		 * @throws DOMException 
+		 * @throws InvalidTagException 
+		 */
+		private void traceOperand(Operand operand, org.w3c.dom.Node node) throws DOMException, UnsupportedFragmentTypeException, InvalidTagException {
+			NodeList oChilds = node.getChildNodes();
+			
+			for (int k = 0; k < oChilds.getLength(); k++) {
+				
+				if (oChilds.item(k).getNodeName().equals("fragment")) {
+					
+					NamedNodeMap kAttrs = oChilds.item(k).getAttributes();
+					if (kAttrs.getNamedItem("xmi:type").getTextContent().equals("uml:MessageOccurrenceSpecification")) {
+						
+						String msgID = kAttrs.getNamedItem("message").getTextContent();
+						operand.addNode(this.messagesByID.get(msgID));
+						k+=2;
+						
+					} else if (kAttrs.getNamedItem("xmi:type").getTextContent().equals("uml:CombinedFragment")) {
+
+						Fragment innerFragment = 
+									new Fragment(
+										kAttrs.getNamedItem("xmi:id").getTextContent(),
+										kAttrs.getNamedItem("interactionOperator").getTextContent(),
+										(kAttrs.getNamedItem("name") != null) ? kAttrs.getNamedItem("name").getTextContent() : ""
+									);
+						
+						retrieveProbEnergyTime(innerFragment);
+						operand.addNode(innerFragment);
+						traceFragment(innerFragment, oChilds.item(k));
+					}	
+					
+				} else if (oChilds.item(k).getNodeName().equals("guard")) {
+					NodeList kChilds = oChilds.item(k).getChildNodes();
+					for (int l = 0; l < kChilds.getLength(); l++) {
+						if (kChilds.item(l).getNodeName().equals("specification")) {
+							operand.setGuard(kChilds.item(l).getAttributes()
+									.getNamedItem("value").getTextContent());
+
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		/**
+		 * Monta a estrutura de um fragment do SD em questão
+		 * @param fragment
+		 * @param node
+		 * @throws UnsupportedFragmentTypeException
+		 * @throws InvalidTagException
+		 */
+		private void traceFragment(Fragment fragment, org.w3c.dom.Node node) throws UnsupportedFragmentTypeException, InvalidTagException{
+			NodeList fChilds = node.getChildNodes();
+			
+			for (int j = 0; j < fChilds.getLength(); j++) {
+				NamedNodeMap jAttrs = fChilds.item(j).getAttributes();
+				if (fChilds.item(j).getNodeName().equals("covered")) {
+					fragment.addLifeline(this.lifelinesByID.get(jAttrs.getNamedItem("xmi:idref").getTextContent()));
+				} else if (fChilds.item(j).getNodeName().equals("operand")) {
+					Operand newOperand = new Operand(jAttrs.getNamedItem("xmi:id").getTextContent());
+					traceOperand(newOperand, fChilds.item(j));
+					fragment.addNode(newOperand);
+				}
+				
+			}
+		}
+		
+		/**
+		 * Valida a string carregada pela Tag, e retorna seu valor float associado
+		 * @param tagValue
+		 * @param tagName
+		 * @return valor float relacionado a String da Tag
+		 * @throws InvalidTagException
+		 */
+		private Float parseTag(String tagValue, String tagName) throws InvalidTagException {
+			if (tagValue == "") {
+				throw new InvalidTagException("Tag " + tagName + " is missing!", tagName);
+			}
+			Float parsedValue;
+			try {
+				parsedValue = Float.valueOf(tagValue);
+			} catch (NumberFormatException e) {
+				throw new InvalidTagException("Tag \"" + tagValue + "\" is not a float number!", tagName);
+			}
+			
+			return parsedValue;
+		}
+		
+		/**
+		 * Trigger para retrieveProbEnergyTimeHelper
+		 * @param n
+		 * @throws InvalidTagException 
+		 */
+		private void retrieveProbEnergyTime(Node n) throws InvalidTagException {
+			retrieveProbEnergyTimeHelper(this.doc.getElementsByTagName("GQAM:GaStep"), n);
+
+			retrieveProbEnergyTimeHelper(this.doc.getElementsByTagName("PAM:PaStep"), n);
+
+			retrieveProbEnergyTimeHelper(this.doc.getElementsByTagName("GRM:ResourceUsage"), n);
+
+			retrieveProbEnergyTimeHelper(this.doc.getElementsByTagName("PAM:PaCommStep"), n);
+		}
+		
+		/**
+		 * Realiza o parse do xmi atrás das anotações pertinentes de um fSD
+		 * $nodes indica os nós do xmi a serem analisados
+		 * $n indica o objeto que irá carregar tais informações
+		 * @param nodes
+		 * @param n
+		 * @throws InvalidTagException
+		 */
+		private void retrieveProbEnergyTimeHelper(NodeList nodes, Node n)  throws InvalidTagException {
+			for (int k = 0; k < nodes.getLength(); k++) {
+				org.w3c.dom.Node tmp;
+				NamedNodeMap kAttrs = nodes.item(k).getAttributes();
+				
+				
+				if (kAttrs.getNamedItem("base_NamedElement").getTextContent().equals(n.getId())) {
+					if (kAttrs.getNamedItem("prob") != null) {
+						n.setProb(parseTag(kAttrs.getNamedItem("prob").getTextContent(), "prob").floatValue());
+					}
+					
+					if (nodes.item(k).hasChildNodes()) {
+						NodeList kChilds = nodes.item(k).getChildNodes();
+						for (int i = 0; i < kChilds.getLength(); i++) {
+							tmp = kChilds.item(i);
+							if (tmp.getNodeName() != null && tmp.getNodeName().equals("energy")) {
+								n.setEnergy(parseTag(tmp.getTextContent(), "energy").floatValue());
+							}
+							if (tmp.getNodeName() != null && tmp.getNodeName().equals("execTime")) {
+								n.setExecTime(parseTag(tmp.getTextContent(), "execTime"));
+							}
+						}
+					}
+					
 				}
 			}
 		}

@@ -1,5 +1,25 @@
 package Modeling.SequenceDiagrams;
 
+import Modeling.UnsupportedFragmentTypeException;
+
 public enum FragmentType {
 	loop, alternative, optional, parallel;
+	
+	/**
+	 * A partir de uma string retorna o tipo do fragmento
+	 * @param typeName
+	 * @return
+	 * @throws UnsupportedFragmentTypeException
+	 */
+	public static FragmentType getType(String typeName) throws UnsupportedFragmentTypeException {
+		if (typeName.equals("opt")) {
+			return optional;
+		} else if (typeName.equals("alt")) {
+			return alternative;
+		}else if (typeName.equals("loop")) {
+			return loop;
+		} else {
+			throw new UnsupportedFragmentTypeException("Fragment of type " + typeName + " is not supported!");
+		}
+	}
 }

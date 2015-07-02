@@ -14,12 +14,27 @@ public class Fragment extends Node {
 		private ArrayList<Lifeline> lifelines;
 	
 	// Construtores
-		public Fragment(String id, FragmentType type) {
+		public Fragment(String id) {
 			super(id);
 			name = "";
-			this.type = type;
+			type = null;
 			nodes = new ArrayList<Node>();
 			lifelines = new ArrayList<Lifeline>();
+		}
+		
+		public Fragment(String id, FragmentType type) {
+			this(id);
+			this.type = type;
+		}
+		
+		public Fragment(String id, String name) {
+			this(id);
+			this.name = name;
+		}
+		
+		public Fragment(String id, String typeName, String name) throws UnsupportedFragmentTypeException {
+			this(id, FragmentType.getType(typeName));
+			this.name = name;
 		}
 		
 	// Métodos relevantes
@@ -34,6 +49,14 @@ public class Fragment extends Node {
 				throw new UnsupportedFragmentTypeException("Fragment of type " + typeName + " is not supported!");
 			}
 		}
+		
+		public void addLifeline(Lifeline toAdd) {
+			lifelines.add(toAdd);
+		}
+		
+		public void addNode(Node toAdd) {
+			nodes.add(toAdd);
+		} 
 		
 		public void print() {
 			super.print();
