@@ -52,7 +52,7 @@ public class SDReader {
 			}
 		}
 		
-	// Métodos Relevantes: Públicos
+	// Public relevant methods
 		
 		/**
 		 * Populates the SDReader.sd attribute from data obtained by
@@ -105,11 +105,10 @@ public class SDReader {
 				}
 			}
 		}
-
 		
-	// Métodos Relevantes: Privados
+	// Private relevant methods 
 		/**
-		 * Realiza o parse do xmi buscando as Lifelines do SD em questão
+		 * Parses the xmi file in search for the SD respective Lifelines
 		 * @throws InvalidTagException
 		 * @throws UnsupportedFragmentTypeException
 		 */
@@ -155,7 +154,7 @@ public class SDReader {
 		}
 		
 		/**
-		 * Realiza o parse do xmi em busca das mensagens que envolvem as Lifelines já obtidas
+		 * Parses the xmi file in search for the SD respective message exchanges
 		 * @throws InvalidTagException
 		 */
 		private void retrieveMessages(org.w3c.dom.Node node) throws InvalidTagException {
@@ -197,7 +196,7 @@ public class SDReader {
 		}
 
 		/**
-		 * Monta a estrutura de um operand de um Fragmento do SD em questão
+		 * Populates an operand structure
 		 * @param operand
 		 * @param node
 		 * @throws UnsupportedFragmentTypeException 
@@ -247,7 +246,7 @@ public class SDReader {
 		}
 
 		/**
-		 * Monta a estrutura de um fragment do SD em questão
+		 * Populates an fragment structure
 		 * @param fragment
 		 * @param node
 		 * @throws UnsupportedFragmentTypeException
@@ -270,10 +269,10 @@ public class SDReader {
 		}
 		
 		/**
-		 * Valida a string carregada pela Tag, e retorna seu valor float associado
+		 * Validates the input string and returns the proper float value from it
 		 * @param tagValue
 		 * @param tagName
-		 * @return valor float relacionado a String da Tag
+		 * @return the string related float value
 		 * @throws InvalidTagException
 		 */
 		private Float parseTag(String tagValue, String tagName) throws InvalidTagException {
@@ -291,7 +290,7 @@ public class SDReader {
 		}
 		
 		/**
-		 * Trigger para retrieveProbEnergyTimeHelper
+		 * Trigger for retrieveProbEnergyTimeHelper
 		 * @param n
 		 * @throws InvalidTagException 
 		 */
@@ -306,9 +305,9 @@ public class SDReader {
 		}
 		
 		/**
-		 * Realiza o parse do xmi atrás das anotações pertinentes de um fSD
-		 * $nodes indica os nós do xmi a serem analisados
-		 * $n indica o objeto que irá carregar tais informações
+		 * Parses the xmi file in search for pertinent annotations of an fSD 
+		 * $nodes indicates the xmi nodes to be analyzed
+		 * $n indicates the object in which the resultant data will be put
 		 * @param nodes
 		 * @param n
 		 * @throws InvalidTagException
@@ -350,7 +349,7 @@ public class SDReader {
 			this.index = index;
 		}
 		
-		public boolean isNext() {
+		public boolean hasNext() {
 			return next;
 		}
 		

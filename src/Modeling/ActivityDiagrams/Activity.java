@@ -2,7 +2,7 @@ package Modeling.ActivityDiagrams;
 
 import java.util.ArrayList;
 
-import Modeling.FragmentOld;
+import Modeling.SequenceDiagrams.Fragment;
 
 public class Activity {
 	private String id;
@@ -12,7 +12,7 @@ public class Activity {
 	private ArrayList<Edge> outgoing;
 	private boolean ordered;
 	private String sdID;
-	private FragmentOld sd;
+	private Fragment sd;
 	
 	public Activity(String id, String name, String type) {
 		this.id = id;
@@ -93,11 +93,11 @@ public class Activity {
 		this.sdID = sdID;
 	}
 
-	public FragmentOld getSd() {
+	public Fragment getSd() {
 		return sd;
 	}
 
-	public void setSd(FragmentOld sd) {
+	public void setSd(Fragment sd) {
 		this.sd = sd;
 	}
 

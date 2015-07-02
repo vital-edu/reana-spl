@@ -39,15 +39,7 @@ public class Fragment extends Node {
 		
 	// Métodos relevantes
 		public void setType(String typeName) throws UnsupportedFragmentTypeException{
-			if (typeName.equals("opt")) {
-				this.setType(FragmentType.optional);
-			} else if (typeName.equals("alt")) {
-				this.setType(FragmentType.alternative);
-			}else if (typeName.equals("loop")) {
-				this.setType(FragmentType.loop);
-			} else {
-				throw new UnsupportedFragmentTypeException("Fragment of type " + typeName + " is not supported!");
-			}
+			this.setType(FragmentType.getType(typeName));
 		}
 		
 		public void addLifeline(Lifeline toAdd) {
