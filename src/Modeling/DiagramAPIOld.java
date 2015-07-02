@@ -11,6 +11,8 @@ import Modeling.ActivityDiagrams.ADReader;
 import Modeling.ActivityDiagrams.Activity;
 import Modeling.ActivityDiagrams.ActivityType;
 import Modeling.ActivityDiagrams.Edge;
+import Modeling.Exceptions.InvalidTagException;
+import Modeling.Exceptions.UnsupportedFragmentTypeException;
 import Modeling.SequenceDiagrams.Message;
 
 public class DiagramAPIOld {

@@ -8,6 +8,8 @@ import FeatureFamilyBasedAnalysisTool.FDTMC;
 import FeatureFamilyBasedAnalysisTool.State;
 import Modeling.ActivityDiagrams.ADReader;
 import Modeling.ActivityDiagrams.Activity;
+import Modeling.Exceptions.InvalidTagException;
+import Modeling.Exceptions.UnsupportedFragmentTypeException;
 import Modeling.SequenceDiagrams.Fragment;
 import Modeling.SequenceDiagrams.SDReader;
 
@@ -39,7 +41,7 @@ public class DiagramAPI {
 		 * @throws InvalidTagException 
 		 * @throws UnsupportedFragmentTypeException 
 		 */
-		public void intialize() throws UnsupportedFragmentTypeException, InvalidTagException {
+		public void initialize() throws UnsupportedFragmentTypeException, InvalidTagException {
 			ADReader adParser = new ADReader(this.xmlFile, 0);
 			adParser.retrieveActivities();
 			this.adParsers.add(adParser);

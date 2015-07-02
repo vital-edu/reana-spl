@@ -10,6 +10,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
+import Modeling.Exceptions.InvalidTagException;
+import Modeling.Exceptions.UnsupportedFragmentTypeException;
 import Modeling.SequenceDiagrams.FragmentType;
 import Modeling.SequenceDiagrams.Lifeline;
 import Modeling.SequenceDiagrams.Message;

@@ -4,10 +4,14 @@ import java.io.File;
 import java.util.HashMap;
 
 import FeatureFamilyBasedAnalysisTool.FDTMC;
+import Modeling.DiagramAPI;
 import Modeling.DiagramAPIOld;
-import Modeling.InvalidTagException;
-import Modeling.UnsupportedFragmentTypeException;
-import Modeling.SequenceDiagrams.Message;
+import Modeling.SDReaderOld;
+import Modeling.ActivityDiagrams.ADUtil;
+import Modeling.Exceptions.InvalidTagException;
+import Modeling.Exceptions.UnsupportedFragmentTypeException;
+import Modeling.SequenceDiagrams.SDReader;
+import Modeling.SequenceDiagrams.SDUtil;
 
 public class Main {
 	private static HashMap<String, FDTMC> fdtmcByName;
@@ -15,9 +19,13 @@ public class Main {
 	public static void main(String[] args) throws InvalidTagException, UnsupportedFragmentTypeException {
 		File xmlFile = new File("model.xml");
 		
-		DiagramAPIOld diagram = new DiagramAPIOld(xmlFile);
+		DiagramAPI diagram = new DiagramAPI(xmlFile);
 		diagram.initialize();
-		diagram.transform();
+		ADUtil.printAll(diagram.getAdParsers().get(0));
+		for (SDReader sdp : diagram.getSdParsers()) {
+			SDUtil.printAll(sdp);
+		}
+//		diagram.transform();
 		
 		fdtmcByName = diagram.getFdtmcByName();
 	}

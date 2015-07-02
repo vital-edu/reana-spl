@@ -3,6 +3,7 @@ package Modeling;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import Modeling.Exceptions.UnsupportedFragmentTypeException;
 import Modeling.SequenceDiagrams.FragmentType;
 import Modeling.SequenceDiagrams.Lifeline;
 

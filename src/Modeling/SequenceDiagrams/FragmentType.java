@@ -1,6 +1,6 @@
 package Modeling.SequenceDiagrams;
 
-import Modeling.UnsupportedFragmentTypeException;
+import Modeling.Exceptions.UnsupportedFragmentTypeException;
 
 public enum FragmentType {
 	loop, alternative, optional, parallel;

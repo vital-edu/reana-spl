@@ -3,7 +3,7 @@ package Modeling.SequenceDiagrams;
 import java.util.ArrayList;
 
 import Modeling.Node;
-import Modeling.UnsupportedFragmentTypeException;
+import Modeling.Exceptions.UnsupportedFragmentTypeException;
 
 public class Fragment extends Node {
 	

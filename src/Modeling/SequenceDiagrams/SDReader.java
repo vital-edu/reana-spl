@@ -15,9 +15,9 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import Modeling.InvalidTagException;
 import Modeling.Node;
-import Modeling.UnsupportedFragmentTypeException;
+import Modeling.Exceptions.InvalidTagException;
+import Modeling.Exceptions.UnsupportedFragmentTypeException;
 
 /**
  * Classe responsável por realizar o parser de um fSD 
