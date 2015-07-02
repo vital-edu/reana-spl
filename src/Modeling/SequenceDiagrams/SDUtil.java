@@ -3,16 +3,15 @@ package Modeling.SequenceDiagrams;
 import Modeling.*;
 
 /**
- * Conjunto de métodos estáticas para lidar com I/O de SDs
- * @author abiliooliveira
+ * Set of static methods to deal with I/O for SDs
  *
  */
 public class SDUtil {
 	
 	/**
-	 * Para DEBUG. 
-	 * Imprime no STDOUT as informações de uma Mensagem num formato pertinente.
-	 * @param m
+	 * For DEBUG purposes only.
+	 * Prints to STDOUT the information of a SD Message  
+	 * @param m a MagicDraw UML SD message
 	 */
 	public static void printMessage(Message m) {
 		System.out.println("[" + m.getName() + "]: "
@@ -23,10 +22,10 @@ public class SDUtil {
 	}
 	
 	/**
-	 * Para DEBUG.
-	 * Imprime no STDOUT as informações de um Fragmento num formato pertinente.
-	 * @param sd
-	 * @param index
+	 * For DEBUG purposes only.
+	 * Prints to STDOUT the information of a SD Fragment
+	 * @param sd the Magic Draw UML Sequence Diagram
+	 * @param indent the indentation being applied to the output
 	 */
 	public static void printInSequence(Fragment fragment, String indent) {
 		System.out.print(indent);
@@ -59,8 +58,9 @@ public class SDUtil {
 	}
 	
 	/**
-	 * Para DEBUG.
-	 * Imprime num formato pertinente as informações de interesse de uma classe SDReader
+	 * For DEBUG purposes only.
+	 * Prints to STDOUT the important information of a SDReader instance, 
+	 * following a format that facilitates DEBUGGING
 	 * @param sdr
 	 */
 	public static void printAll(SDReader sdr) {

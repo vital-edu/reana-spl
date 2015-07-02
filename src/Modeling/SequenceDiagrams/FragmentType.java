@@ -6,7 +6,7 @@ public enum FragmentType {
 	loop, alternative, optional, parallel;
 	
 	/**
-	 * A partir de uma string retorna o tipo do fragmento
+	 * gets the Fragment Type from the typeName
 	 * @param typeName
 	 * @return
 	 * @throws UnsupportedFragmentTypeException

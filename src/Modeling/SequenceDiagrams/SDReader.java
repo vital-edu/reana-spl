@@ -20,13 +20,13 @@ import Modeling.Exceptions.InvalidTagException;
 import Modeling.Exceptions.UnsupportedFragmentTypeException;
 
 /**
- * Classe responsável por realizar o parser de um fSD 
- * e montar os objetos para serem consumidos pela classe DiagramAPI
- * @author abiliooliveira
- *
+ * Class responsible for parsing an MagicDraw designed fSD and
+ * for populating the right information to the right objects.
+ * Later, and SDReader instance will be consumed by an DiagramAPI instance
  */
 public class SDReader {
 	// Atributos
+	
 		private int index;
 		private boolean next;
 		private HashMap<Lifeline, ArrayList<String>> coverage;
@@ -38,6 +38,7 @@ public class SDReader {
 		private Fragment sd;
 	
 	// Construtores
+		
 		public SDReader(File xmiFile, int index) {
 			this.index = index;
 			try { 
@@ -107,6 +108,7 @@ public class SDReader {
 		}
 		
 	// Private relevant methods 
+		
 		/**
 		 * Parses the xmi file in search for the SD respective Lifelines
 		 * @throws InvalidTagException
@@ -341,6 +343,7 @@ public class SDReader {
 		}
 		
 	// Getters and Setters
+		
 		public int getIndex() {
 			return index;
 		}

@@ -5,8 +5,6 @@ import java.util.HashMap;
 
 import FeatureFamilyBasedAnalysisTool.FDTMC;
 import Modeling.DiagramAPI;
-import Modeling.DiagramAPIOld;
-import Modeling.SDReaderOld;
 import Modeling.ActivityDiagrams.ADUtil;
 import Modeling.Exceptions.InvalidTagException;
 import Modeling.Exceptions.UnsupportedFragmentTypeException;

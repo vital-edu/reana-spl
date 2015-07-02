@@ -15,6 +15,7 @@ import Modeling.SequenceDiagrams.SDReader;
 
 public class DiagramAPI {
 	// Attributes
+	
 		private final File xmlFile;
 		private ArrayList<SDReader> sdParsers;
 		private ArrayList<ADReader> adParsers;
@@ -23,6 +24,7 @@ public class DiagramAPI {
 		private HashMap<String, State> stateByActID;
 	
 	// Constructors
+		
 		public DiagramAPI(File xmlFile) {
 			this.xmlFile = xmlFile;
 			adParsers = new ArrayList<ADReader>();
@@ -60,6 +62,7 @@ public class DiagramAPI {
 		}
 	
 	// Relevant private methods
+		
 		private void linkSdToActivity(ADReader ad) {
 			for (Activity a : ad.getActivities()) {
 				if (a.getSdID() != null) {
