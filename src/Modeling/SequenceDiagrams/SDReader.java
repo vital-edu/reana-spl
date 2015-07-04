@@ -61,10 +61,9 @@ public class SDReader {
 		 * 	retrieveLifelines() and retrieveMessages()
 		 * @throws UnsupportedFragmentTypeException
 		 * @throws InvalidTagException
-		 * @throws InvalidGuardException 
 		 * @throws DOMException 
 		 */
-		public void traceDiagram() throws UnsupportedFragmentTypeException, InvalidTagException, DOMException, InvalidGuardException {
+		public void traceDiagram() throws UnsupportedFragmentTypeException, InvalidTagException, DOMException {
 			NodeList nodes = this.doc.getElementsByTagName("ownedBehavior");
 			this.next = (this.index == nodes.getLength() - 1) ? false : true;
 			
@@ -207,9 +206,8 @@ public class SDReader {
 		 * @throws UnsupportedFragmentTypeException 
 		 * @throws DOMException 
 		 * @throws InvalidTagException 
-		 * @throws InvalidGuardException 
 		 */
-		private void traceOperand(Operand operand, org.w3c.dom.Node node) throws DOMException, UnsupportedFragmentTypeException, InvalidTagException, InvalidGuardException {
+		private void traceOperand(Operand operand, org.w3c.dom.Node node) throws DOMException, UnsupportedFragmentTypeException, InvalidTagException {
 			NodeList oChilds = node.getChildNodes();
 			
 			for (int k = 0; k < oChilds.getLength(); k++) {
@@ -241,8 +239,8 @@ public class SDReader {
 					NodeList kChilds = oChilds.item(k).getChildNodes();
 					for (int l = 0; l < kChilds.getLength(); l++) {
 						if (kChilds.item(l).getNodeName().equals("specification")) {
-							operand.setGuard(parseGuard(kChilds.item(l).getAttributes()
-									.getNamedItem("value").getTextContent()));
+							operand.setGuard(kChilds.item(l).getAttributes()
+									.getNamedItem("value").getTextContent());
 
 							break;
 						}
@@ -257,10 +255,9 @@ public class SDReader {
 		 * @param node
 		 * @throws UnsupportedFragmentTypeException
 		 * @throws InvalidTagException
-		 * @throws InvalidGuardException 
 		 * @throws DOMException 
 		 */
-		private void traceFragment(Fragment fragment, org.w3c.dom.Node node) throws UnsupportedFragmentTypeException, InvalidTagException, DOMException, InvalidGuardException{
+		private void traceFragment(Fragment fragment, org.w3c.dom.Node node) throws UnsupportedFragmentTypeException, InvalidTagException, DOMException{
 			NodeList fChilds = node.getChildNodes();
 			
 			for (int j = 0; j < fChilds.getLength(); j++) {
@@ -274,23 +271,6 @@ public class SDReader {
 				}
 				
 			}
-		}
-		
-		/**
-		 * Validates the input string and return the proper float value from it
-		 * @param guard
-		 * @return a float value from the $guard string
-		 * @throws InvalidGuardException 
-		 */
-		private Float parseGuard(String guard) throws InvalidGuardException {
-			Float parsedValue;
-			try {
-				parsedValue = Float.valueOf(guard);
-			} catch (NumberFormatException e) {
-				throw new InvalidGuardException("Guards must have a floating point format");
-			}
-			
-			return parsedValue;
 		}
 		
 		/**

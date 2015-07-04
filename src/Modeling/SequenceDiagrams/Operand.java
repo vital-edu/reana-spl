@@ -8,7 +8,7 @@ import Modeling.Node;
 public class Operand extends Node {
 	// Attributes
 	
-		private Float guard;
+		private String guard;
 		private ArrayList<Node> nodes;
 		private HashMap<String, Node> nodeById;
 	
@@ -29,11 +29,11 @@ public class Operand extends Node {
 
 	// Getters and Setters
 		
-		public Float getGuard() {
+		public String getGuard() {
 			return guard;
 		}
 		
-		public void setGuard(Float guard) {
+		public void setGuard(String guard) {
 			this.guard = guard;
 		}
 

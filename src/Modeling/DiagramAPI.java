@@ -55,7 +55,7 @@ public class DiagramAPI {
 		 * @throws InvalidGuardException 
 		 * @throws DOMException 
 		 */
-		public void initialize() throws UnsupportedFragmentTypeException, InvalidTagException, DOMException, InvalidGuardException {
+		public void initialize() throws UnsupportedFragmentTypeException, InvalidTagException, DOMException {
 			ADReader adParser = new ADReader(this.xmlFile, 0);
 			adParser.retrieveActivities();
 			this.adParsers.add(adParser);
@@ -202,7 +202,7 @@ public class DiagramAPI {
 			State featureStart = fdtmc.createState("init" + fragment.getName());
 			State featureEnd = fdtmc.createState("end" + fragment.getName());
 			
-			fdtmc.createTransition(source, target, "not" + fragment.getName(), Float.toString(1 - operand.getGuard())); // not entering loop
+			fdtmc.createTransition(source, target, "not" + fragment.getName(), "1 - " +  operand.getGuard()); // not entering loop
 			fdtmc.createTransition(source, featureStart, "in" + fragment.getName(), operand.getGuard().toString()); // into Feature
 			
 			// iterates through each of the Operand's nodes and augments the fdtmc
@@ -215,7 +215,7 @@ public class DiagramAPI {
 			}
 			
 			fdtmc.createTransition(featureEnd, featureStart, "in" + fragment.getName(), operand.getGuard().toString()); // going back into the loop
-			fdtmc.createTransition(featureEnd, target, "out" + fragment.getName(), Float.toString(1 - operand.getGuard())); // getting out of Feature
+			fdtmc.createTransition(featureEnd, target, "out" + fragment.getName(), "1 - " +  operand.getGuard()); // getting out of Feature
 			
 			return target;
 		}
@@ -235,7 +235,7 @@ public class DiagramAPI {
 			ArrayList<Node> operands = fragment.getNodes();
 			int i = 1;
 			
-			Float featureProb = new Float(0); // stores the probability of entering the fragment
+			String featureProb = "("; // stores the probability of entering the fragment
 			for(Node node : operands) {
 				if (!node.getClass().equals(Operand.class)) throw new InvalidNodeClassException("An Alt Fragment can only have Operand objects as Nodes!");
 				
@@ -256,11 +256,13 @@ public class DiagramAPI {
 				
 				fdtmc.createTransition(featureEnd, target, "out" + fragment.getName() + i, "1.0");
 				
-				featureProb += operand.getGuard();
+				featureProb = featureProb + operand.getGuard() + " + ";
 				i++;
 			}
+			featureProb = featureProb.substring(0, featureProb.length() - 2);
+			featureProb = featureProb + ")";
 			
-			fdtmc.createTransition(source, target, "not" + fragment.getName(), Float.toString(1 - featureProb));
+			fdtmc.createTransition(source, target, "not" + fragment.getName(), "1 - " + featureProb);
 			return target;
 		}
 		
@@ -282,7 +284,7 @@ public class DiagramAPI {
 			State featureStart = fdtmc.createState("init" + fragment.getName());
 			State featureEnd = fdtmc.createState("end" + fragment.getName());
 			
-			fdtmc.createTransition(source, target, "not" + fragment.getName(), Float.toString(1 - operand.getGuard())); // not entering opt
+			fdtmc.createTransition(source, target, "not" + fragment.getName(), "1 - " + operand.getGuard()); // not entering opt
 			fdtmc.createTransition(source, featureStart, "in" + fragment.getName(), operand.getGuard().toString()); // into Feature
 			
 			// iterates through each of the Operand's nodes and augments the fdtmc
