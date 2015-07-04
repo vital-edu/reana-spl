@@ -141,7 +141,7 @@ public class DiagramAPI {
 					
 				}
 			}
-			
+			System.out.println(fdtmc.toString());
 		}
 		
 	// Relevant private methods
