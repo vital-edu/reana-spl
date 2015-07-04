@@ -8,7 +8,6 @@ import org.w3c.dom.DOMException;
 import FeatureFamilyBasedAnalysisTool.FDTMC;
 import Modeling.DiagramAPI;
 import Modeling.ActivityDiagrams.ADUtil;
-import Modeling.Exceptions.InvalidGuardException;
 import Modeling.Exceptions.InvalidNodeClassException;
 import Modeling.Exceptions.InvalidNumberOfOperandsException;
 import Modeling.Exceptions.InvalidTagException;

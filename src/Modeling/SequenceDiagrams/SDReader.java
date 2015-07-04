@@ -16,7 +16,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import Modeling.Node;
-import Modeling.Exceptions.InvalidGuardException;
 import Modeling.Exceptions.InvalidTagException;
 import Modeling.Exceptions.UnsupportedFragmentTypeException;
 

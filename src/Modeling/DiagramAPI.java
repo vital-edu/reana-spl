@@ -13,7 +13,6 @@ import Modeling.ActivityDiagrams.ADReader;
 import Modeling.ActivityDiagrams.Activity;
 import Modeling.ActivityDiagrams.ActivityType;
 import Modeling.ActivityDiagrams.Edge;
-import Modeling.Exceptions.InvalidGuardException;
 import Modeling.Exceptions.InvalidNodeClassException;
 import Modeling.Exceptions.InvalidNumberOfOperandsException;
 import Modeling.Exceptions.InvalidTagException;
