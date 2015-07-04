@@ -130,7 +130,7 @@ public class DiagramAPI {
 					if (n.getClass().equals(Message.class)) {
 						transformMessage(fdtmc, (Message)n, source, success, error);
 					} else if (n.getClass().equals(Fragment.class)) {
-						source = transformFragment(fdtmc, (Fragment)n, source, success, error);
+						transformFragment(fdtmc, (Fragment)n, source, success, error);
 					}
 				} else {
 					if (n.getClass().equals(Message.class)) {
@@ -146,6 +146,15 @@ public class DiagramAPI {
 		
 	// Relevant private methods
 		
+		/**
+		 * Augments the fDTMC with $msg information  
+		 * @param fdtmc
+		 * @param msg: the message
+		 * @param source: the fDTMC node that triggers the message
+		 * @param target: the fDTMC node that the message should go to
+		 * @param error: the error state where message transmission failure should be transited to
+		 * @return the $target itself, the point in the fDTMC where the execution of the message will stop at
+		 */
 		private State transformMessage(FDTMC fdtmc, Message msg, State source, State target, State error) {
 			BigDecimal a = new BigDecimal("1.0");
 			BigDecimal b = new BigDecimal(Float.toString(msg.getProb()));
@@ -154,6 +163,11 @@ public class DiagramAPI {
 			return target;
 		}
 		
+		/**
+		 * Distributes the fragment transformation method calls based on the the type of the Fragment
+		 * @throws InvalidNumberOfOperandsException
+		 * @throws InvalidNodeClassException
+		 */
 		private State transformFragment(FDTMC fdtmc, Fragment fragment, State source, State target, State error) throws InvalidNumberOfOperandsException, InvalidNodeClassException {
 			switch(fragment.getType()) {
 				case loop:
@@ -170,7 +184,18 @@ public class DiagramAPI {
 			return null;
 		}
 		
-		private State transformLoopFragment(FDTMC fdtmc, Fragment fragment, State source, State target, State error) throws InvalidNumberOfOperandsException {
+		/**
+		 * Recursively augments the fDTMC with $fragments information  
+		 * @param fdtmc
+		 * @param fragment: an fragment of type loop
+		 * @param source: the fDTMC node that triggers or not the Fragment
+		 * @param target: the fDTMC node that the fragment should return to
+		 * @param error: the error state where message transmission failure should be transited to
+		 * @return the $target itself, the point in the fDTMC where the execution or not of this $fragment will transit to
+		 * @throws InvalidNumberOfOperandsException
+		 * @throws InvalidNodeClassException 
+		 */
+		private State transformLoopFragment(FDTMC fdtmc, Fragment fragment, State source, State target, State error) throws InvalidNumberOfOperandsException, InvalidNodeClassException {
 			if (fragment.getNodes().size() > 1) throw new InvalidNumberOfOperandsException("An Loop fragment can only have 1 operand!");
 			
 			Operand operand = (Operand)fragment.getNodes().get(0);
@@ -180,28 +205,54 @@ public class DiagramAPI {
 			fdtmc.createTransition(source, target, "not" + fragment.getName(), Float.toString(1 - operand.getGuard())); // not entering loop
 			fdtmc.createTransition(source, featureStart, "in" + fragment.getName(), operand.getGuard().toString()); // into Feature
 			
-			// TODO: recursively treat Loop Operand
+			// iterates through each of the Operand's nodes and augments the fdtmc
+			for (Node n : operand.getNodes()) {
+				if (n.getClass().equals(Message.class)) {
+					transformMessage(fdtmc, (Message)n, featureStart, featureEnd, error);
+				} else if (n.getClass().equals(Fragment.class)) {
+					transformFragment(fdtmc, (Fragment)n, featureStart, featureEnd, error);
+				}
+			}
 			
-			fdtmc.createTransition(source, target, "out" + fragment.getName(), "1.0"); // getting out of Feature
+			fdtmc.createTransition(featureEnd, featureStart, "in" + fragment.getName(), operand.getGuard().toString()); // going back into the loop
+			fdtmc.createTransition(featureEnd, target, "out" + fragment.getName(), Float.toString(1 - operand.getGuard())); // getting out of Feature
 			
 			return target;
 		}
 		
-		private State transformAltFragment(FDTMC fdtmc, Fragment fragment, State source, State target, State error) throws InvalidNodeClassException {
+		/**
+		 * Recursively augments the fdtmc with $fragments information  
+		 * @param fdtmc
+		 * @param fragment: a fragment of type alternative
+		 * @param source: the fDTMC node that triggers or not the Fragment
+		 * @param target: the fDTMC node that the fragment should return to
+		 * @param error: the error state where message transmission failure should be transited to
+		 * @return the $target itself, the point in the fDTMC where the execution or not of this $fragment will transit to
+		 * @throws InvalidNodeClassException
+		 * @throws InvalidNumberOfOperandsException
+		 */
+		private State transformAltFragment(FDTMC fdtmc, Fragment fragment, State source, State target, State error) throws InvalidNodeClassException, InvalidNumberOfOperandsException {
 			ArrayList<Node> operands = fragment.getNodes();
 			int i = 1;
 			
-			Float featureProb = new Float(0);
+			Float featureProb = new Float(0); // stores the probability of entering the fragment
 			for(Node node : operands) {
 				if (!node.getClass().equals(Operand.class)) throw new InvalidNodeClassException("An Alt Fragment can only have Operand objects as Nodes!");
 				
-				Operand operand = (Operand)node;
-				State featureStart = fdtmc.createState("init" + fragment.getName() + i);
+				Operand operand = (Operand)node; // to facilitate the nodes use
+				State featureStart = fdtmc.createState("init" + fragment.getName() + i); // each alternative is a new Feature (an alternative is an Operand)
 				State featureEnd = fdtmc.createState("end" + fragment.getName() + i);
 				
 				fdtmc.createTransition(source, featureStart, "in" + fragment.getName() + i, operand.getGuard().toString());
 				
-				// TODO: recursively treat Alt Operand
+				// iterates through each of the Operand's nodes and augments the fdtmc
+				for (Node n : operand.getNodes()) {
+					if (n.getClass().equals(Message.class)) {
+						transformMessage(fdtmc, (Message)n, featureStart, featureEnd, error);
+					} else if (n.getClass().equals(Fragment.class)) {
+						transformFragment(fdtmc, (Fragment)n, featureStart, featureEnd, error);
+					}
+				}
 				
 				fdtmc.createTransition(featureEnd, target, "out" + fragment.getName() + i, "1.0");
 				
@@ -213,7 +264,18 @@ public class DiagramAPI {
 			return target;
 		}
 		
-		private State transformOptFragment(FDTMC fdtmc, Fragment fragment, State source, State target, State error) throws InvalidNumberOfOperandsException {
+		/**
+		 * Recursively augments the fdtmc with $fragments information  
+		 * @param fdtmc
+		 * @param fragment: a fragment of type optional
+		 * @param source: the fDTMC node that triggers or not the Fragment
+		 * @param target: the fDTMC node that the fragment should return to
+		 * @param error: the error state where message transmission failure should be transited to
+		 * @return the $target itself, the point in the fDTMC where the execution or not of this $fragment will transit to
+		 * @throws InvalidNumberOfOperandsException
+		 * @throws InvalidNodeClassException 
+		 */
+		private State transformOptFragment(FDTMC fdtmc, Fragment fragment, State source, State target, State error) throws InvalidNumberOfOperandsException, InvalidNodeClassException {
 			if (fragment.getNodes().size() > 1) throw new InvalidNumberOfOperandsException("An Opt fragment can only have 1 operand!");
 			
 			Operand operand = (Operand)fragment.getNodes().get(0);
@@ -223,13 +285,29 @@ public class DiagramAPI {
 			fdtmc.createTransition(source, target, "not" + fragment.getName(), Float.toString(1 - operand.getGuard())); // not entering opt
 			fdtmc.createTransition(source, featureStart, "in" + fragment.getName(), operand.getGuard().toString()); // into Feature
 			
-			// TODO: recursively treat Opt Operand
+			// iterates through each of the Operand's nodes and augments the fdtmc
+			for (Node n : operand.getNodes()) {
+				if (n.getClass().equals(Message.class)) {
+					transformMessage(fdtmc, (Message)n, featureStart, featureEnd, error);
+				} else if (n.getClass().equals(Fragment.class)) {
+					transformFragment(fdtmc, (Fragment)n, featureStart, featureEnd, error);
+				}
+			}
 			
 			fdtmc.createTransition(featureEnd, target, "out" + fragment.getName(), "1.0"); // getting out of Feature
 			
 			return target;
 		}
 		
+		/**
+		 * Recursively augments the fdtmc with $fragments information  
+		 * @param fdtmc
+		 * @param fragment: a fragment of type parallel
+		 * @param source: the fDTMC node that triggers or not the Fragment
+		 * @param target: the fDTMC node that the fragment should return to
+		 * @param error: the error state where message transmission failure should be transited to
+		 * @return the $target itself, the point in the fDTMC where the execution or not of this $fragment will transit to
+		 */
 		private State transformParallelFragment(FDTMC fdtmc, Fragment fragment, State source, State target, State error) {
 			// TODO
 			return null;
