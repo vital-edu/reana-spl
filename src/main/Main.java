@@ -19,7 +19,7 @@ public class Main {
 	private static HashMap<String, FDTMC> fdtmcByName;
 	
 	public static void main(String[] args) throws InvalidTagException, UnsupportedFragmentTypeException, DOMException, InvalidNumberOfOperandsException, InvalidNodeClassException {
-		File xmlFile = new File("model2.xml");
+		File xmlFile = new File("modeling.xml");
 		
 		DiagramAPI diagram = new DiagramAPI(xmlFile);
 		diagram.initialize();

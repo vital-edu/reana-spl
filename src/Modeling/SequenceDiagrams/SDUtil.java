@@ -48,7 +48,10 @@ public class SDUtil {
 				System.out.println("Guard:" + o.getGuard());
 				for (Node n1: o.getNodes()) {
 					if (n1.getClass().equals(Message.class)) {
+						System.out.print(indent);
 						printMessage((Message)n1);
+					}else {
+						printInSequence((Fragment)n1, indent+'\t');
 					}
 				}
 			}else if (n.getClass().equals(Message.class)) {

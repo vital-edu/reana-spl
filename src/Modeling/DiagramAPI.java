@@ -83,7 +83,7 @@ public class DiagramAPI {
 			}
 			
 			for (SDReader sdParser : this.sdParsers) {
-				transformSingleSD(sdParser);
+				transformSingleSD(sdParser.getSD());
 			}
 		}
 		
@@ -111,21 +111,31 @@ public class DiagramAPI {
 		 * @throws InvalidNumberOfOperandsException 
 		 * @throws InvalidNodeClassException 
 		 */
-		public void transformSingleSD(SDReader sdParser) throws InvalidNumberOfOperandsException, InvalidNodeClassException {
+		public void transformSingleSD(Fragment fragment) throws InvalidNumberOfOperandsException, InvalidNodeClassException {
 			FDTMC fdtmc = new FDTMC();
 			State init, error, success, source;
 			
-			fdtmc.setVariableName("s" + sdParser.getSD().getName());
-			fdtmcByName.put(sdParser.getSD().getName(), fdtmc);
-			
+			if (fragment.getName() != null && !fragment.getName().isEmpty()) {
+				fdtmc.setVariableName("s" + fragment.getName());
+				fdtmcByName.put(fragment.getName(), fdtmc);
+			} else {
+				fdtmc.setVariableName("s" + ((Operand)fragment.getNodes().get(0)).getGuard());
+				fdtmcByName.put(((Operand)fragment.getNodes().get(0)).getGuard(), fdtmc);
+			}
 			init = fdtmc.createState("init");
 			error = fdtmc.createState("error");
 			source = init;
 			
+			transformFDTMCNodes(fdtmc, fragment.getNodes(), source, error);
+			
+			System.out.println(fdtmc.toString());
+		}
+		
+		public void transformFDTMCNodes(FDTMC fdtmc, ArrayList<Node> nodes, State source, State error) throws InvalidNumberOfOperandsException, InvalidNodeClassException{ 
 			int i = 1;
-			for (Node n : sdParser.getSD().getNodes()) {
-				if (i++ >= sdParser.getSD().getNodes().size()) {
-					success = fdtmc.createState("success");
+			for (Node n : nodes) {
+				if (i++ >= nodes.size()) {
+					State success = fdtmc.createState("success");
 					if (n.getClass().equals(Message.class)) {
 						transformMessage(fdtmc, (Message)n, source, success, error);
 					} else if (n.getClass().equals(Fragment.class)) {
@@ -140,9 +150,8 @@ public class DiagramAPI {
 					
 				}
 			}
-			System.out.println(fdtmc.toString());
 		}
-		
+			
 	// Relevant private methods
 		
 		/**
@@ -280,22 +289,29 @@ public class DiagramAPI {
 			if (fragment.getNodes().size() > 1) throw new InvalidNumberOfOperandsException("An Opt fragment can only have 1 operand!");
 			
 			Operand operand = (Operand)fragment.getNodes().get(0);
-			State featureStart = fdtmc.createState("init" + fragment.getName());
-			State featureEnd = fdtmc.createState("end" + fragment.getName());
+			State featureStart = fdtmc.createState("init" + operand.getGuard());
+			State featureEnd = fdtmc.createState("end" + operand.getGuard());
+			State featureError = fdtmc.createState("error" + operand.getGuard());
 			
-			fdtmc.createTransition(source, target, "not" + fragment.getName(), "1 - " + operand.getGuard()); // not entering opt
-			fdtmc.createTransition(source, featureStart, "in" + fragment.getName(), operand.getGuard().toString()); // into Feature
+			fdtmc.createTransition(source, target, operand.getGuard(), "1 - f" + operand.getGuard()); // not entering opt
+			fdtmc.createTransition(source, featureStart, operand.getGuard(), "f" + operand.getGuard().toString()); // into Feature
+			fdtmc.createTransition(featureStart, featureEnd, "", "");
+			fdtmc.createTransition(featureStart, featureError, "", "");
 			
-			// iterates through each of the Operand's nodes and augments the fdtmc
-			for (Node n : operand.getNodes()) {
-				if (n.getClass().equals(Message.class)) {
-					transformMessage(fdtmc, (Message)n, featureStart, featureEnd, error);
-				} else if (n.getClass().equals(Fragment.class)) {
-					transformFragment(fdtmc, (Fragment)n, featureStart, featureEnd, error);
-				}
-			}
+//			 iterates through each of the Operand's nodes and augments the fdtmc
+			FDTMC fFDTMC = new FDTMC();
 			
-			fdtmc.createTransition(featureEnd, target, "out" + fragment.getName(), "1.0"); // getting out of Feature
+			fFDTMC.setVariableName("s" + ((Operand)fragment.getNodes().get(0)).getGuard());
+			fdtmcByName.put(operand.getGuard(), fFDTMC);
+			
+			State finit = fFDTMC.createState("init");
+			State ferror = fFDTMC.createState("error");
+			State fsource = finit;
+			
+			transformFDTMCNodes(fFDTMC, operand.getNodes(), fsource, ferror);
+			System.out.println(fFDTMC.toString());
+			
+//			fdtmc.createTransition(featureEnd, target, "out" + fragment.getName(), "1.0"); // getting out of Feature
 			
 			return target;
 		}
