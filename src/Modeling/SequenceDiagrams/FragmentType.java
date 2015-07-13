@@ -16,8 +16,10 @@ public enum FragmentType {
 			return optional;
 		} else if (typeName.equals("alt")) {
 			return alternative;
-		}else if (typeName.equals("loop")) {
+		} else if (typeName.equals("loop")) {
 			return loop;
+		} else if (typeName.equals("par")) {
+			return parallel;
 		} else {
 			throw new UnsupportedFragmentTypeException("Fragment of type " + typeName + " is not supported!");
 		}

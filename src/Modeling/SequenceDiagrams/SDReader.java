@@ -181,10 +181,10 @@ public class SDReader {
 						}
 					}
 					
-					if (sAttrs.getNamedItem("messageShort") != null) {
-						if (sAttrs.getNamedItem("messageShort").getTextContent().equals("asynchCall")) {
-							message.setType(MessageType.assynchronous);
-						} else if (sAttrs.getNamedItem("messageShort").getTextContent().equals("reply")) {
+					if (sAttrs.getNamedItem("messageSort") != null) {
+						if (sAttrs.getNamedItem("messageSort").getTextContent().equals("asynchCall") || sAttrs.getNamedItem("messageSort").getTextContent().equals("asynchSignal")) {
+							message.setType(MessageType.asynchronous);
+						} else if (sAttrs.getNamedItem("messageSort").getTextContent().equals("reply")) {
 							message.setType(MessageType.reply);
 						}
 					} else {

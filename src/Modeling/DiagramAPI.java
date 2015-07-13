@@ -21,6 +21,7 @@ import Modeling.SequenceDiagrams.Fragment;
 import Modeling.SequenceDiagrams.Message;
 import Modeling.SequenceDiagrams.Operand;
 import Modeling.SequenceDiagrams.SDReader;
+import Modeling.SequenceDiagrams.MessageType;
 
 public class DiagramAPI {
 	// Attributes
@@ -113,7 +114,7 @@ public class DiagramAPI {
 		 */
 		public void transformSingleSD(Fragment fragment) throws InvalidNumberOfOperandsException, InvalidNodeClassException {
 			FDTMC fdtmc = new FDTMC();
-			State init, error, success, source;
+			State init, error, source;
 			
 			if (fragment.getName() != null && !fragment.getName().isEmpty()) {
 				fdtmc.setVariableName("s" + fragment.getName());
@@ -147,7 +148,6 @@ public class DiagramAPI {
 					} else if (n.getClass().equals(Fragment.class)) {
 						source = transformFragment(fdtmc, (Fragment)n, source, fdtmc.createState(), error);
 					}
-					
 				}
 			}
 		}
@@ -166,8 +166,14 @@ public class DiagramAPI {
 		private State transformMessage(FDTMC fdtmc, Message msg, State source, State target, State error) {
 			BigDecimal a = new BigDecimal("1.0");
 			BigDecimal b = new BigDecimal(Float.toString(msg.getProb()));
-			fdtmc.createTransition(source, target, msg.getName(), b.toString());
-			fdtmc.createTransition(source, error, msg.getName(), a.subtract(b).toString());
+			
+			if (msg.getType().equals(MessageType.asynchronous)) {
+				fdtmc.createTransition(source, target, "", b.toString());
+				fdtmc.createTransition(source, error, "", a.subtract(b).toString());
+			} else { /* Mensagem sincrona */
+				fdtmc.createTransition(source, target, msg.getName(), b.toString());
+				fdtmc.createTransition(source, error, msg.getName(), a.subtract(b).toString());
+			}
 			return target;
 		}
 		
@@ -204,26 +210,23 @@ public class DiagramAPI {
 		 * @throws InvalidNodeClassException 
 		 */
 		private State transformLoopFragment(FDTMC fdtmc, Fragment fragment, State source, State target, State error) throws InvalidNumberOfOperandsException, InvalidNodeClassException {
-			if (fragment.getNodes().size() > 1) throw new InvalidNumberOfOperandsException("An Loop fragment can only have 1 operand!");
+			if (fragment.getNodes().size() > 1) throw new InvalidNumberOfOperandsException("A Loop fragment can only have 1 operand!");
 			
 			Operand operand = (Operand)fragment.getNodes().get(0);
-			State featureStart = fdtmc.createState("init" + fragment.getName());
-			State featureEnd = fdtmc.createState("end" + fragment.getName());
+			String name = (fragment.getName() != null & !fragment.getName().isEmpty()) ? fragment.getName() : operand.getGuard();
+			State featureStart = fdtmc.createState("init" + name);
+			State featureEnd = fdtmc.createState("end" + name);
+			State featureError = fdtmc.createState("error" + name);
 			
-			fdtmc.createTransition(source, target, "not" + fragment.getName(), "1 - " +  operand.getGuard()); // not entering loop
-			fdtmc.createTransition(source, featureStart, "in" + fragment.getName(), operand.getGuard().toString()); // into Feature
-			
-			// iterates through each of the Operand's nodes and augments the fdtmc
-			for (Node n : operand.getNodes()) {
-				if (n.getClass().equals(Message.class)) {
-					transformMessage(fdtmc, (Message)n, featureStart, featureEnd, error);
-				} else if (n.getClass().equals(Fragment.class)) {
-					transformFragment(fdtmc, (Fragment)n, featureStart, featureEnd, error);
-				}
-			}
-			
-			fdtmc.createTransition(featureEnd, featureStart, "in" + fragment.getName(), operand.getGuard().toString()); // going back into the loop
-			fdtmc.createTransition(featureEnd, target, "out" + fragment.getName(), "1 - " +  operand.getGuard()); // getting out of Feature
+			fdtmc.createTransition(source, target, name, "1 - " + operand.getGuard()); // not entering loop
+			fdtmc.createTransition(source, featureStart, name, operand.getGuard().toString()); // entering loop
+			fdtmc.createTransition(featureStart, featureEnd, "", ""); // creating interface transitions
+			fdtmc.createTransition(featureStart, featureError, "", ""); // creating interface transitions
+			fdtmc.createTransition(featureEnd, featureStart, "", operand.getGuard().toString()); // restarting loop
+			fdtmc.createTransition(featureEnd, target, "", "1 - " + operand.getGuard()); // leaving loop
+
+//			creates FDTMC for loop content
+			transformOperand (name, operand);
 			
 			return target;
 		}
@@ -241,36 +244,32 @@ public class DiagramAPI {
 		 */
 		private State transformAltFragment(FDTMC fdtmc, Fragment fragment, State source, State target, State error) throws InvalidNodeClassException, InvalidNumberOfOperandsException {
 			ArrayList<Node> operands = fragment.getNodes();
-			int i = 1;
+			String name;
 			
-			String featureProb = "("; // stores the probability of entering the fragment
+			String opElse = ""; // stores else probability
 			for(Node node : operands) {
 				if (!node.getClass().equals(Operand.class)) throw new InvalidNodeClassException("An Alt Fragment can only have Operand objects as Nodes!");
-				
 				Operand operand = (Operand)node; // to facilitate the nodes use
-				State featureStart = fdtmc.createState("init" + fragment.getName() + i); // each alternative is a new Feature (an alternative is an Operand)
-				State featureEnd = fdtmc.createState("end" + fragment.getName() + i);
+				State opStart = fdtmc.createState("init" + operand.getGuard());
+				State opEnd = fdtmc.createState("end" + operand.getGuard());
+				State opError = fdtmc.createState("error" + operand.getGuard());
 				
-				fdtmc.createTransition(source, featureStart, "in" + fragment.getName() + i, operand.getGuard().toString());
-				
-				// iterates through each of the Operand's nodes and augments the fdtmc
-				for (Node n : operand.getNodes()) {
-					if (n.getClass().equals(Message.class)) {
-						transformMessage(fdtmc, (Message)n, featureStart, featureEnd, error);
-					} else if (n.getClass().equals(Fragment.class)) {
-						transformFragment(fdtmc, (Fragment)n, featureStart, featureEnd, error);
-					}
+				if (!operand.getGuard().equals("else")) {
+					opElse = opElse + "f" + operand.getGuard() + " - ";
+					fdtmc.createTransition(source, opStart, operand.getGuard(), "f" + operand.getGuard()); // entering operand
+					name = operand.getGuard();
+				} else {
+					opElse = opElse.substring(0, opElse.length() - 3);
+					fdtmc.createTransition(source, opStart, operand.getGuard(), "1 - " + opElse);
+					name = fragment.getName() + operand.getGuard();
 				}
+				fdtmc.createTransition(opStart, opEnd, "", ""); // interface transitions
+				fdtmc.createTransition(opStart, opError, "", ""); // interface transitions
+				fdtmc.createTransition(opEnd, target, "", "1.0"); // leaving operand
 				
-				fdtmc.createTransition(featureEnd, target, "out" + fragment.getName() + i, "1.0");
-				
-				featureProb = featureProb + operand.getGuard() + " + ";
-				i++;
+//				creates FDTMC for loop content
+				transformOperand (name, operand);
 			}
-			featureProb = featureProb.substring(0, featureProb.length() - 2);
-			featureProb = featureProb + ")";
-			
-			fdtmc.createTransition(source, target, "not" + fragment.getName(), "1 - " + featureProb);
 			return target;
 		}
 		
@@ -295,23 +294,12 @@ public class DiagramAPI {
 			
 			fdtmc.createTransition(source, target, operand.getGuard(), "1 - f" + operand.getGuard()); // not entering opt
 			fdtmc.createTransition(source, featureStart, operand.getGuard(), "f" + operand.getGuard().toString()); // into Feature
-			fdtmc.createTransition(featureStart, featureEnd, "", "");
-			fdtmc.createTransition(featureStart, featureError, "", "");
+			fdtmc.createTransition(featureStart, featureEnd, "", ""); // interface transitions
+			fdtmc.createTransition(featureStart, featureError, "", ""); // interface transitions
+			fdtmc.createTransition(featureEnd, target, "", "1.0"); // leaving Feature
 			
-//			 iterates through each of the Operand's nodes and augments the fdtmc
-			FDTMC fFDTMC = new FDTMC();
-			
-			fFDTMC.setVariableName("s" + ((Operand)fragment.getNodes().get(0)).getGuard());
-			fdtmcByName.put(operand.getGuard(), fFDTMC);
-			
-			State finit = fFDTMC.createState("init");
-			State ferror = fFDTMC.createState("error");
-			State fsource = finit;
-			
-			transformFDTMCNodes(fFDTMC, operand.getNodes(), fsource, ferror);
-			System.out.println(fFDTMC.toString());
-			
-//			fdtmc.createTransition(featureEnd, target, "out" + fragment.getName(), "1.0"); // getting out of Feature
+//			creates FDTMC for opt content
+			transformOperand(operand.getGuard(), operand);
 			
 			return target;
 		}
@@ -325,9 +313,41 @@ public class DiagramAPI {
 		 * @param error: the error state where message transmission failure should be transited to
 		 * @return the $target itself, the point in the fDTMC where the execution or not of this $fragment will transit to
 		 */
-		private State transformParallelFragment(FDTMC fdtmc, Fragment fragment, State source, State target, State error) {
-			// TODO
-			return null;
+		private State transformParallelFragment(FDTMC fdtmc, Fragment fragment, State source, State target, State error) throws InvalidNodeClassException, InvalidNumberOfOperandsException {
+			ArrayList<Node> operands = fragment.getNodes();
+			int n = operands.size();
+			float val = 1/(float)n;
+			
+			for(Node node : operands) {
+				if (!node.getClass().equals(Operand.class)) throw new InvalidNodeClassException("A Par Fragment can only have Operand objects as Nodes!");
+				Operand operand = (Operand)node; // to facilitate the nodes use
+				State opStart = fdtmc.createState("init" + operand.getGuard());
+				State opEnd = fdtmc.createState("end" + operand.getGuard());
+				State opError = fdtmc.createState("error" + operand.getGuard());
+
+				fdtmc.createTransition(source, opStart, operand.getGuard(), Float.toString(val)); // entering operand
+				fdtmc.createTransition(opStart, opEnd, "", ""); // interface transitions
+				fdtmc.createTransition(opStart, opError, "", ""); // interface transitions
+				fdtmc.createTransition(opEnd, target, "", "1.0"); // leaving operand
+				
+//				creates FDTMC for loop content
+				transformOperand (operand.getGuard(), operand);
+			}
+			return target;
+		}
+		
+		private void transformOperand (String name, Operand operand) throws InvalidNumberOfOperandsException, InvalidNodeClassException {
+			FDTMC fdtmc = new FDTMC();
+			
+			fdtmc.setVariableName("s" + name);
+			fdtmcByName.put(name, fdtmc);
+			
+			State init = fdtmc.createState("init");
+			State error = fdtmc.createState("error");
+			State source = init;
+			
+			transformFDTMCNodes(fdtmc, operand.getNodes(), source, error);
+			System.out.println(fdtmc.toString());
 		}
 		
 		/**
