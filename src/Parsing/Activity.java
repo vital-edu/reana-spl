@@ -1,8 +1,6 @@
-package Modeling.ActivityDiagrams;
+package Parsing;
 
 import java.util.ArrayList;
-
-import Modeling.SequenceDiagrams.Fragment;
 
 public class Activity {
 	private String id;

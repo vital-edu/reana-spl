@@ -1,4 +1,4 @@
-package Modeling.ActivityDiagrams;
+package Parsing;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -23,7 +23,34 @@ public class ADReader {
 	//private ArrayList<Activity> mergeActivities;
 	//private ArrayList<Activity> forkActivities;
 
-	
+	public void printAll() { // jogar pra cima?? DiagramAPI
+		System.out.print("Activity Diagram " + (this.index + 1) + ": " + this.name + "\n\n");
+		printInSequence();
+		System.out.print("\n\n");
+	}
+
+	public void printInSequence() {
+		
+		System.out.println("Activities:");
+		for (Activity a : this.activities) {
+			a.print();
+			if (a.getIncoming().size() != 0) {
+				System.out.println("\tIncoming Edges:");
+				for (Edge e : a.getIncoming()) {
+					System.out.print("\t\t");
+					e.print();
+				}
+			}
+			if (a.getOutgoing().size() != 0) {
+				System.out.println("\tOutgoing Edges:");
+				for (Edge e : a.getOutgoing()) {
+					System.out.print("\t\t");
+					e.print();
+				}
+			}
+		}
+		System.out.println();
+	}
 
 	public ADReader(File xmlFile, int index) {
 		this.index = index;
@@ -36,10 +63,6 @@ public class ADReader {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
-
-	public int getIndex() {
-		return index;
 	}
 
 	public String getName() {

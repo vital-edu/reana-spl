@@ -1,95 +1,39 @@
-package Modeling;
+package Transformation;
 
-import java.io.File;
-import java.util.ArrayList;
+import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
 
 import FeatureFamilyBasedAnalysisTool.FDTMC;
+import FeatureFamilyBasedAnalysisTool.State;
 import Parsing.ADReader;
 import Parsing.Activity;
+import Parsing.ActivityType;
+import Parsing.Edge;
 import Parsing.Fragment;
-import Parsing.InvalidTagException;
-import Parsing.SDReader;
-import Parsing.UnsupportedFragmentTypeException;
-import Transformation.Transformer;
+import Parsing.Message;
+import Parsing.MessageType;
+import Parsing.Node;
 
-public class DiagramAPI {
-	private final File xmlFile;
-	private ArrayList<SDReader> sdParsers;
-	private ArrayList<ADReader> adParsers;
-	private HashMap<String, Fragment> sdByID;
-	private Transformer transformer;
+public class Transformer {
+	private HashMap<String, FDTMC> fdtmcByName;
+	private HashMap<String, Integer> nCallsByName;
+	private HashMap<String, State> stateByActID;
 	
-	//private HashMap<String, FDTMC> fdtmcByName;
-	//private HashMap<String, Integer> nCallsByName;
-	//private HashMap<String, State> stateByActID;
-
-	public DiagramAPI(File xmlFile) {
-		this.xmlFile = xmlFile;
-		adParsers = new ArrayList<ADReader>();
-		sdParsers = new ArrayList<SDReader>();
-		sdByID = new HashMap<String, Fragment>();
-		transformer = new Transformer();
-		
-		//fdtmcByName = new HashMap<String, FDTMC>();
-		//nCallsByName = new HashMap<String, Integer>();
+	public Transformer () {
+		fdtmcByName = new HashMap<String, FDTMC>();
+		nCallsByName = new HashMap<String, Integer>();
 	}
-
+	
 	public HashMap<String, FDTMC> getFdtmcByName() {
-		return transformer.getFdtmcByName();
+		return fdtmcByName;
 	}
-	
-	/*
+
 	public HashMap<String, Integer> getnCallsByName() {
 		return nCallsByName;
-	}*/
-
-	public void initialize() throws InvalidTagException, UnsupportedFragmentTypeException {
-
-		ADReader adParser = new ADReader(this.xmlFile, 0);
-		adParser.retrieveActivities();
-		this.adParsers.add(adParser);
-
-		boolean hasNext = false;
-		int index = 0;
-		do {
-			SDReader sdParser = new SDReader(this.xmlFile, index);
-			sdParser.retrieveLifelines();
-			sdParser.retrieveMessages();
-			sdParser.traceDiagram();
-			sdByID.put(sdParser.getSd().getId(), sdParser.getSd());
-			this.sdParsers.add(sdParser);
-			hasNext = sdParser.hasNext();
-			index++;
-		} while (hasNext);
-		linkSdToActivity(this.adParsers.get(0));
-
-		adParser.printAll();
-		for (SDReader sdp : this.sdParsers) {
-			sdp.printAll();
-		}
-	}
-
-	public void linkSdToActivity(ADReader ad) {
-		for (Activity a : ad.getActivities()) {
-			if (a.getSdID() != null) {
-				a.setSd(sdByID.get(a.getSdID()));
-			}
-		}
 	}
 	
-	public void transform() {
-		for (ADReader adParser : this.adParsers) {
-			transformer.transformSingleAD(adParser);
-		}
-
-		for (SDReader sdParser : this.sdParsers) {
-			transformer.transformSingleSD(sdParser.getSd());
-		}
-	}
-	
-	/*
-
 	public void transformSingleAD(ADReader adParser) {
 		FDTMC fdtmc = new FDTMC();
 		State init;
@@ -129,14 +73,14 @@ public class DiagramAPI {
 				fdtmc.createTransition(fdtmcState, targetState, sourceAct.getName(), "r"
 						+ sourceAct.getName());
 				
-				// continue path /
+				/* continue path */
 				for (Edge e : targetAct.getOutgoing()) {
 					transformPath(fdtmc, targetState, e);
 				}
 			} else { // atividade target ja foi criada
 				fdtmc.createTransition(fdtmcState, targetState, sourceAct.getName(), "r"
 						+ sourceAct.getName());
-				// end path /
+				/* end path */
 			}
 		} else if (sourceAct.getType().equals(ActivityType.decision)) {
 			stateByActID.put(sourceAct.getId(), fdtmcState); // insere source no hashmap
@@ -152,13 +96,13 @@ public class DiagramAPI {
 				
 				fdtmc.createTransition(fdtmcState, targetState, "", adEdge.getGuard());
 				
-				// continue path /
+				/* continue path */
 				for (Edge e : targetAct.getOutgoing()) {
 					transformPath(fdtmc, targetState, e);
 				}
 			} else { // atividade target ja foi criada
 				fdtmc.createTransition(fdtmcState, targetState, "", adEdge.getGuard());
-				// end path /
+				/* end path */
 			}
 		} else if (sourceAct.getType().equals(ActivityType.merge)) {
 			stateByActID.put(sourceAct.getId(), fdtmcState); // insere source no hashmap
@@ -174,13 +118,13 @@ public class DiagramAPI {
 				
 				fdtmc.createTransition(fdtmcState, targetState, sourceAct.getName(), "1.0");
 				
-				// continue path /
+				/* continue path */
 				for (Edge e : targetAct.getOutgoing()) {
 					transformPath(fdtmc, targetState, e);
 				}
 			} else { // atividade target ja foi criada
 				fdtmc.createTransition(fdtmcState, targetState, sourceAct.getName(), "1.0");
-				// end path /
+				/* end path */
 			}
 		} else if (sourceAct.getType().equals(ActivityType.fork)) {
 			stateByActID.put(sourceAct.getId(), fdtmcState); // insere source no hashmap
@@ -197,14 +141,14 @@ public class DiagramAPI {
 				int n = sourceAct.getOutgoing().size();
 				fdtmc.createTransition(fdtmcState, targetState, "", Float.toString(1.0f/n));
 				
-				// continue path /
+				/* continue path */
 				for (Edge e : targetAct.getOutgoing()) {
 					transformPath(fdtmc, targetState, e);
 				}
 			} else { // atividade target ja foi criada
 				int n = sourceAct.getOutgoing().size();
 				fdtmc.createTransition(fdtmcState, targetState, "", Float.toString(1.0f/n));
-				// end path /
+				/* end path */
 			}
 		} else if (sourceAct.getType().equals(ActivityType.join)) {
 			stateByActID.put(sourceAct.getId(), fdtmcState); // insere source no hashmap
@@ -220,13 +164,13 @@ public class DiagramAPI {
 				
 				fdtmc.createTransition(fdtmcState, targetState, sourceAct.getName(), "1.0");
 				
-				// continue path /
+				/* continue path */
 				for (Edge e : targetAct.getOutgoing()) {
 					transformPath(fdtmc, targetState, e);
 				}
 			} else { // atividade target ja foi criada
 				fdtmc.createTransition(fdtmcState, targetState, sourceAct.getName(), "1.0");
-				// end path /
+				/* end path */
 			}
 		}
 	}
@@ -234,7 +178,7 @@ public class DiagramAPI {
 	public void transformSingleSD(Fragment fragment) {
 		boolean isNew = checkNew (fragment);
 		
-		if (!isNew) { // Fragmento ja foi modelado /
+		if (!isNew) { /* Fragmento ja foi modelado */
 			countCallsModel (fragment);
 			return;
 		}
@@ -244,7 +188,7 @@ public class DiagramAPI {
 		FDTMC fdtmc = new FDTMC();
 		State init, error, success, source, target, featStart;
 
-		// Cria var estado / Insere no HashMap com nome SD ou nome Feature /
+		/* Cria var estado / Insere no HashMap com nome SD ou nome Feature */
 		if (fragment.getOperandName() != null) {
 			fdtmc.setVariableName("s" + fragment.getOperandName());
 			fdtmcByName.put(fragment.getOperandName(), fdtmc);
@@ -267,7 +211,7 @@ public class DiagramAPI {
 					if (((Message) n).getType().equals(MessageType.asynchronous)) {
 						fdtmc.createTransition(source, success, "", b.toString());
 						fdtmc.createTransition(source, error, "", a.subtract(b).toString());
-					} else { // Mensagem sincrona /
+					} else { /* Mensagem sincrona */
 						fdtmc.createTransition(source, success, ((Message) n).getName(), b.toString());
 						fdtmc.createTransition(source, error, ((Message) n).getName(), a.subtract(b).toString());
 					}
@@ -276,12 +220,12 @@ public class DiagramAPI {
 					featStart = fdtmc.createState("init" + featureName);
 					fdtmc.createTransition(source, featStart, featureName, "f" + featureName);
 					fdtmc.createTransition(source, success, featureName, "1-f" + featureName);
-					// Interface Begin /
+					/* Interface Begin */
 					fdtmc.createTransition(featStart, fdtmc.createState("end" + featureName), "",
 							"");
 					fdtmc.createTransition(featStart, fdtmc.createState("error" + featureName), "",
 							"");
-					// Interface End /
+					/* Interface End */
 					transformSingleSD((Fragment) n);
 				}
 			} else {
@@ -292,7 +236,7 @@ public class DiagramAPI {
 					if (((Message) n).getType().equals(MessageType.asynchronous)) {
 						fdtmc.createTransition(source, target, "", b.toString());
 						fdtmc.createTransition(source, error, "", a.subtract(b).toString());
-					} else { // Mensagem sincrona /
+					} else { /* Mensagem sincrona */
 						fdtmc.createTransition(source, target, ((Message) n).getName(), b.toString());
 						fdtmc.createTransition(source, error, ((Message) n).getName(), a.subtract(b).toString());
 					}
@@ -303,12 +247,12 @@ public class DiagramAPI {
 					target = fdtmc.createState();
 					fdtmc.createTransition(source, featStart, featureName, "f" + featureName);
 					fdtmc.createTransition(source, target, featureName, "1-f" + featureName);
-					// Interface Begin /
+					/* Interface Begin */
 					fdtmc.createTransition(featStart, fdtmc.createState("end" + featureName), "",
 							"");
 					fdtmc.createTransition(featStart, fdtmc.createState("error" + featureName), "",
 							"");
-					// Interface End /
+					/* Interface End */
 					transformSingleSD((Fragment) n);
 					source = target;
 				}
@@ -365,15 +309,5 @@ public class DiagramAPI {
 	public void printNumberOfCalls (String name) {
 		int num = nCallsByName.get(name);
 		System.out.println(num);
-	}
-	
-	*/
-	
-	public void measureSizeModel (FDTMC fdtmc) {
-		transformer.measureSizeModel(fdtmc);
-	}
-	
-	public void printNumberOfCalls (String name) {
-		transformer.printNumberOfCalls(name);
 	}
 }

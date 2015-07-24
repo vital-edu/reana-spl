@@ -1,4 +1,4 @@
-package Modeling.Exceptions;
+package Parsing;
 
 public class UnsupportedFragmentTypeException extends Exception {
 	/**
