@@ -1,4 +1,4 @@
-package Parsing;
+package Parsing.ActivityDiagrams;
 
 public class Edge {
 	private String id;

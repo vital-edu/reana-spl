@@ -1,6 +1,8 @@
-package Parsing;
+package Parsing.ActivityDiagrams;
 
 import java.util.ArrayList;
+
+import Parsing.SequenceDiagrams.Fragment;
 
 public class Activity {
 	private String id;
@@ -28,10 +30,6 @@ public class Activity {
 			this.type = ActivityType.decision;
 		} else if (type.equals("uml:MergeNode")) {
 			this.type = ActivityType.merge;
-		} else if (type.equals("uml:ForkNode")) {
-			this.type = ActivityType.fork;
-		} else if (type.equals("uml:JoinNode")) {
-			this.type = ActivityType.fork;
 		}
 	}
 	

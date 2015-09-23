@@ -1,4 +1,4 @@
-package Parsing;
+package Parsing.Exceptions;
 
 public class InvalidTagException extends Exception {
 	/**

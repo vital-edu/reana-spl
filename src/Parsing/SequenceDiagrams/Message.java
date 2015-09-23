@@ -1,4 +1,6 @@
-package Parsing;
+package Parsing.SequenceDiagrams;
+
+import Parsing.Node;
 
 public class Message extends Node {
 	private String name;

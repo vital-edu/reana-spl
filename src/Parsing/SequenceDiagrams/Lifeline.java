@@ -1,4 +1,4 @@
-package Parsing;
+package Parsing.SequenceDiagrams;
 
 public class Lifeline {
 	private String id;

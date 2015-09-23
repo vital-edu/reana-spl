@@ -1,379 +1,141 @@
 package Modeling;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.w3c.dom.DOMException;
+
 import FeatureFamilyBasedAnalysisTool.FDTMC;
-import Parsing.ADReader;
-import Parsing.Activity;
-import Parsing.Fragment;
-import Parsing.InvalidTagException;
-import Parsing.SDReader;
-import Parsing.UnsupportedFragmentTypeException;
+import FeatureFamilyBasedAnalysisTool.State;
+import Parsing.Node;
+import Parsing.ActivityDiagrams.ADReader;
+import Parsing.ActivityDiagrams.Activity;
+import Parsing.ActivityDiagrams.ActivityType;
+import Parsing.ActivityDiagrams.Edge;
+import Parsing.Exceptions.InvalidNodeClassException;
+import Parsing.Exceptions.InvalidNodeType;
+import Parsing.Exceptions.InvalidNumberOfOperandsException;
+import Parsing.Exceptions.InvalidTagException;
+import Parsing.Exceptions.UnsupportedFragmentTypeException;
+import Parsing.SequenceDiagrams.Fragment;
+import Parsing.SequenceDiagrams.Message;
+import Parsing.SequenceDiagrams.MessageType;
+import Parsing.SequenceDiagrams.Operand;
+import Parsing.SequenceDiagrams.SDReader;
 import Transformation.Transformer;
 
 public class DiagramAPI {
-	private final File xmlFile;
-	private ArrayList<SDReader> sdParsers;
-	private ArrayList<ADReader> adParsers;
-	private HashMap<String, Fragment> sdByID;
-	private Transformer transformer;
+	// Attributes
 	
-	//private HashMap<String, FDTMC> fdtmcByName;
-	//private HashMap<String, Integer> nCallsByName;
-	//private HashMap<String, State> stateByActID;
-
-	public DiagramAPI(File xmlFile) {
-		this.xmlFile = xmlFile;
-		adParsers = new ArrayList<ADReader>();
-		sdParsers = new ArrayList<SDReader>();
-		sdByID = new HashMap<String, Fragment>();
-		transformer = new Transformer();
+		private final File xmlFile;
+		private ArrayList<SDReader> sdParsers;
+		private ArrayList<ADReader> adParsers;
+		private HashMap<String, Fragment> sdByID;
+		private Transformer transformer;
 		
-		//fdtmcByName = new HashMap<String, FDTMC>();
-		//nCallsByName = new HashMap<String, Integer>();
-	}
-
-	public HashMap<String, FDTMC> getFdtmcByName() {
-		return transformer.getFdtmcByName();
-	}
+		//private HashMap<String, FDTMC> fdtmcByName;
+		//private HashMap<String, State> stateByActID;
 	
-	/*
-	public HashMap<String, Integer> getnCallsByName() {
-		return nCallsByName;
-	}*/
-
-	public void initialize() throws InvalidTagException, UnsupportedFragmentTypeException {
-
-		ADReader adParser = new ADReader(this.xmlFile, 0);
-		adParser.retrieveActivities();
-		this.adParsers.add(adParser);
-
-		boolean hasNext = false;
-		int index = 0;
-		do {
-			SDReader sdParser = new SDReader(this.xmlFile, index);
-			sdParser.retrieveLifelines();
-			sdParser.retrieveMessages();
-			sdParser.traceDiagram();
-			sdByID.put(sdParser.getSd().getId(), sdParser.getSd());
-			this.sdParsers.add(sdParser);
-			hasNext = sdParser.hasNext();
-			index++;
-		} while (hasNext);
-		linkSdToActivity(this.adParsers.get(0));
-
-		adParser.printAll();
-		for (SDReader sdp : this.sdParsers) {
-			sdp.printAll();
-		}
-	}
-
-	public void linkSdToActivity(ADReader ad) {
-		for (Activity a : ad.getActivities()) {
-			if (a.getSdID() != null) {
-				a.setSd(sdByID.get(a.getSdID()));
-			}
-		}
-	}
-	
-	public void transform() {
-		for (ADReader adParser : this.adParsers) {
-			transformer.transformSingleAD(adParser);
-		}
-
-		for (SDReader sdParser : this.sdParsers) {
-			transformer.transformSingleSD(sdParser.getSd());
-		}
-	}
-	
-	/*
-
-	public void transformSingleAD(ADReader adParser) {
-		FDTMC fdtmc = new FDTMC();
-		State init;
+	// Constructors
 		
-		fdtmc.setVariableName("s" + adParser.getName());
-		fdtmcByName.put(adParser.getName(), fdtmc);
-		nCallsByName.put(adParser.getName(), 1);
-
-		stateByActID = new HashMap<String, State>();
-		init = fdtmc.createState("initial");
-
-		transformPath(fdtmc, init, adParser.getActivities().get(0).getOutgoing().get(0));
-		System.out.println(fdtmc.toString());
-	}
-
-	public void transformPath(FDTMC fdtmc, State fdtmcState, Edge adEdge) {
-		Activity targetAct = adEdge.getTarget();
-		Activity sourceAct = adEdge.getSource();
-		State targetState;
-
-		if (sourceAct.getType().equals(ActivityType.initialNode)) {
-			for (Edge e : targetAct.getOutgoing()) {
-				transformPath(fdtmc, fdtmcState, e);
-			}
-		} else if (sourceAct.getType().equals(ActivityType.call)) {
-			stateByActID.put(sourceAct.getId(), fdtmcState); // insere source no hashmap
-			targetState = stateByActID.get(targetAct.getId()); // verifica se target esta no hashmap
+		public DiagramAPI(File xmlFile) {
+			this.xmlFile = xmlFile;
+			adParsers = new ArrayList<ADReader>();
+			sdParsers = new ArrayList<SDReader>();
+			sdByID = new HashMap<String, Fragment>();
+			transformer = new Transformer();
 			
-			if (targetState == null) { // atividade target nao foi criada
-				if (targetAct.getType().equals(ActivityType.finalNode)) {
-					targetState = fdtmc.createState("final");
-					stateByActID.put(targetAct.getId(), targetState);
-					fdtmc.createTransition(targetState, targetState, "", "1.0");
-				}
-				else targetState = fdtmc.createState();
-				
-				fdtmc.createTransition(fdtmcState, targetState, sourceAct.getName(), "r"
-						+ sourceAct.getName());
-				
-				// continue path /
-				for (Edge e : targetAct.getOutgoing()) {
-					transformPath(fdtmc, targetState, e);
-				}
-			} else { // atividade target ja foi criada
-				fdtmc.createTransition(fdtmcState, targetState, sourceAct.getName(), "r"
-						+ sourceAct.getName());
-				// end path /
-			}
-		} else if (sourceAct.getType().equals(ActivityType.decision)) {
-			stateByActID.put(sourceAct.getId(), fdtmcState); // insere source no hashmap
-			targetState = stateByActID.get(targetAct.getId()); // verifica se target esta no hashmap
-			
-			if (targetState == null) { // atividade target nao foi criada
-				if (targetAct.getType().equals(ActivityType.finalNode)) {
-					targetState = fdtmc.createState("final");
-					stateByActID.put(targetAct.getId(), targetState);
-					fdtmc.createTransition(targetState, targetState, "", "1.0");
-				}
-				else targetState = fdtmc.createState();
-				
-				fdtmc.createTransition(fdtmcState, targetState, "", adEdge.getGuard());
-				
-				// continue path /
-				for (Edge e : targetAct.getOutgoing()) {
-					transformPath(fdtmc, targetState, e);
-				}
-			} else { // atividade target ja foi criada
-				fdtmc.createTransition(fdtmcState, targetState, "", adEdge.getGuard());
-				// end path /
-			}
-		} else if (sourceAct.getType().equals(ActivityType.merge)) {
-			stateByActID.put(sourceAct.getId(), fdtmcState); // insere source no hashmap
-			targetState = stateByActID.get(targetAct.getId()); // verifica se target esta no hashmap
-			
-			if (targetState == null) { // atividade target nao foi criada
-				if (targetAct.getType().equals(ActivityType.finalNode)) {
-					targetState = fdtmc.createState("final");
-					stateByActID.put(targetAct.getId(), targetState);
-					fdtmc.createTransition(targetState, targetState, "", "1.0");
-				}
-				else targetState = fdtmc.createState();
-				
-				fdtmc.createTransition(fdtmcState, targetState, sourceAct.getName(), "1.0");
-				
-				// continue path /
-				for (Edge e : targetAct.getOutgoing()) {
-					transformPath(fdtmc, targetState, e);
-				}
-			} else { // atividade target ja foi criada
-				fdtmc.createTransition(fdtmcState, targetState, sourceAct.getName(), "1.0");
-				// end path /
-			}
-		} else if (sourceAct.getType().equals(ActivityType.fork)) {
-			stateByActID.put(sourceAct.getId(), fdtmcState); // insere source no hashmap
-			targetState = stateByActID.get(targetAct.getId()); // verifica se target esta no hashmap
-			
-			if (targetState == null) { // atividade target nao foi criada
-				if (targetAct.getType().equals(ActivityType.finalNode)) {
-					targetState = fdtmc.createState("final");
-					stateByActID.put(targetAct.getId(), targetState);
-					fdtmc.createTransition(targetState, targetState, "", "1.0");
-				}
-				else targetState = fdtmc.createState();
-				
-				int n = sourceAct.getOutgoing().size();
-				fdtmc.createTransition(fdtmcState, targetState, "", Float.toString(1.0f/n));
-				
-				// continue path /
-				for (Edge e : targetAct.getOutgoing()) {
-					transformPath(fdtmc, targetState, e);
-				}
-			} else { // atividade target ja foi criada
-				int n = sourceAct.getOutgoing().size();
-				fdtmc.createTransition(fdtmcState, targetState, "", Float.toString(1.0f/n));
-				// end path /
-			}
-		} else if (sourceAct.getType().equals(ActivityType.join)) {
-			stateByActID.put(sourceAct.getId(), fdtmcState); // insere source no hashmap
-			targetState = stateByActID.get(targetAct.getId()); // verifica se target esta no hashmap
-			
-			if (targetState == null) { // atividade target nao foi criada
-				if (targetAct.getType().equals(ActivityType.finalNode)) {
-					targetState = fdtmc.createState("final");
-					stateByActID.put(targetAct.getId(), targetState);
-					fdtmc.createTransition(targetState, targetState, "", "1.0");
-				}
-				else targetState = fdtmc.createState();
-				
-				fdtmc.createTransition(fdtmcState, targetState, sourceAct.getName(), "1.0");
-				
-				// continue path /
-				for (Edge e : targetAct.getOutgoing()) {
-					transformPath(fdtmc, targetState, e);
-				}
-			} else { // atividade target ja foi criada
-				fdtmc.createTransition(fdtmcState, targetState, sourceAct.getName(), "1.0");
-				// end path /
-			}
-		}
-	}
-
-	public void transformSingleSD(Fragment fragment) {
-		boolean isNew = checkNew (fragment);
-		
-		if (!isNew) { // Fragmento ja foi modelado /
-			countCallsModel (fragment);
-			return;
+			//fdtmcByName = new HashMap<String, FDTMC>();
+			//stateByActID = new HashMap<String, State>();
 		}
 		
-		countCallsModel (fragment);
+	// Relevant public methods
 		
-		FDTMC fdtmc = new FDTMC();
-		State init, error, success, source, target, featStart;
+		/**
+		 * Initializes the model transformation activities,
+		 * starting from parsing the XMI file and 
+		 * then applying the transformation functions
+		 * @throws InvalidTagException 
+		 * @throws UnsupportedFragmentTypeException 
+		 * @throws InvalidGuardException 
+		 * @throws DOMException 
+		 */
+		public void initialize() throws UnsupportedFragmentTypeException, InvalidTagException, DOMException {
+			ADReader adParser = new ADReader(this.xmlFile, 0);
+			adParser.retrieveActivities();
+			this.adParsers.add(adParser);
+			
+			boolean hasNext = false;
+			int index = 0;
+			do {
+				SDReader sdParser = new SDReader(this.xmlFile, index);
+				sdParser.traceDiagram();
+				sdByID.put(sdParser.getSD().getId(), sdParser.getSD());
+				this.sdParsers.add(sdParser);
+				hasNext = sdParser.hasNext();
+				index++;
+			} while (hasNext);
+			linkSdToActivity(this.adParsers.get(0));
+		}
+		
+		/**
+		 * Triggers the applicable transformations, either AD or SD based
+		 * @throws InvalidNumberOfOperandsException 
+		 * @throws InvalidNodeClassException 
+		 */
+		public void transform() throws InvalidNumberOfOperandsException, InvalidNodeClassException, InvalidNodeType {
+			for (ADReader adParser : this.adParsers) {
+				transformer.transformSingleAD(adParser);
+			}
 
-		// Cria var estado / Insere no HashMap com nome SD ou nome Feature /
-		if (fragment.getOperandName() != null) {
-			fdtmc.setVariableName("s" + fragment.getOperandName());
-			fdtmcByName.put(fragment.getOperandName(), fdtmc);
-		} else {
-			fdtmc.setVariableName("s" + fragment.getName());
-			fdtmcByName.put(fragment.getName(), fdtmc);
+			for (SDReader sdParser : this.sdParsers) {
+				transformer.transformSingleSD(sdParser.getSD());
+			}
+		}
+		
+		public void measureSizeModel (FDTMC fdtmc) {
+			transformer.measureSizeModel(fdtmc);
+		}
+		
+		public void printNumberOfCalls (String name) {
+			transformer.printNumberOfCalls(name);
 		}
 
-		init = fdtmc.createState("init");
-		error = fdtmc.createState("error");
-		source = init;
+	// Relevant private methods
 
-		int i = 1;
-		for (Node n : fragment.getNodes()) {
-			if (i++ == fragment.getNodes().size()) {
-				success = fdtmc.createState("success");
-				if (n.getClass().equals(Message.class)) {
-					BigDecimal a = new BigDecimal("1.0");
-					BigDecimal b = new BigDecimal(Float.toString(n.getProb()));
-					if (((Message) n).getType().equals(MessageType.asynchronous)) {
-						fdtmc.createTransition(source, success, "", b.toString());
-						fdtmc.createTransition(source, error, "", a.subtract(b).toString());
-					} else { // Mensagem sincrona /
-						fdtmc.createTransition(source, success, ((Message) n).getName(), b.toString());
-						fdtmc.createTransition(source, error, ((Message) n).getName(), a.subtract(b).toString());
-					}
-				} else if (n.getClass().equals(Fragment.class)) {
-					String featureName = ((Fragment) n).getOperandName();
-					featStart = fdtmc.createState("init" + featureName);
-					fdtmc.createTransition(source, featStart, featureName, "f" + featureName);
-					fdtmc.createTransition(source, success, featureName, "1-f" + featureName);
-					// Interface Begin /
-					fdtmc.createTransition(featStart, fdtmc.createState("end" + featureName), "",
-							"");
-					fdtmc.createTransition(featStart, fdtmc.createState("error" + featureName), "",
-							"");
-					// Interface End /
-					transformSingleSD((Fragment) n);
-				}
-			} else {
-				if (n.getClass().equals(Message.class)) {
-					target = fdtmc.createState();
-					BigDecimal a = new BigDecimal("1.0");
-					BigDecimal b = new BigDecimal(Float.toString(n.getProb()));
-					if (((Message) n).getType().equals(MessageType.asynchronous)) {
-						fdtmc.createTransition(source, target, "", b.toString());
-						fdtmc.createTransition(source, error, "", a.subtract(b).toString());
-					} else { // Mensagem sincrona /
-						fdtmc.createTransition(source, target, ((Message) n).getName(), b.toString());
-						fdtmc.createTransition(source, error, ((Message) n).getName(), a.subtract(b).toString());
-					}
-					source = target;
-				} else if (n.getClass().equals(Fragment.class)) {
-					String featureName = ((Fragment) n).getOperandName();
-					featStart = fdtmc.createState("init" + featureName);
-					target = fdtmc.createState();
-					fdtmc.createTransition(source, featStart, featureName, "f" + featureName);
-					fdtmc.createTransition(source, target, featureName, "1-f" + featureName);
-					// Interface Begin /
-					fdtmc.createTransition(featStart, fdtmc.createState("end" + featureName), "",
-							"");
-					fdtmc.createTransition(featStart, fdtmc.createState("error" + featureName), "",
-							"");
-					// Interface End /
-					transformSingleSD((Fragment) n);
-					source = target;
+		/**
+		 * Links activities of an AD to their respective SD
+		 * @param ad
+		 */
+		private void linkSdToActivity(ADReader ad) {
+			for (Activity a : ad.getActivities()) {
+				if (a.getSdID() != null) {
+					a.setSd(sdByID.get(a.getSdID()));
 				}
 			}
 		}
-		System.out.println(fdtmc.toString());
-		//measureSizeModel (fdtmc);
-	}
-	
-	public boolean checkNew (Fragment fragment) {
-		if (fragment.getOperandName() != null) {
-			if (fdtmcByName.get(fragment.getOperandName()) != null) {
-				return false;
-			}
-			return true;
-		} else {
-			if (fdtmcByName.get(fragment.getName()) != null) {
-				return false;
-			}
-			return true;
-		}
-	}
-	
-	public void countCallsModel (Fragment fragment) {
 		
-		if (fragment.getOperandName() != null) {
-			if (fdtmcByName.get(fragment.getOperandName()) != null) {
-				nCallsByName.put(fragment.getOperandName(), nCallsByName.get(fragment.getOperandName()) + 1);
-				return;
-			}
-			nCallsByName.put(fragment.getOperandName(), 1);
-		} else {
-			if (fdtmcByName.get(fragment.getName()) != null) {
-				nCallsByName.put(fragment.getName(), nCallsByName.get(fragment.getName()) + 1);
-				return;
-			}
-			nCallsByName.put(fragment.getName(), 1);
+	// Getters and Setters
+
+		public HashMap<String, FDTMC> getFdtmcByName() {
+			return transformer.getFdtmcByName();
 		}
-	}
-	
-	public void measureSizeModel (FDTMC fdtmc) {
-		Integer nStates, nTrans = 0;
-		
-		nStates = fdtmc.getStates().size();
-		Set<State> states = fdtmc.getTransitions().keySet();
-		Iterator <State> itStates = states.iterator();
-		while (itStates.hasNext()) {
-			State temp = itStates.next();
-			nTrans += fdtmc.getTransitions().get(temp).size();
+
+		public ArrayList<SDReader> getSdParsers() {
+			return sdParsers;
 		}
-		System.out.println("Model Size: " + nStates + " states; " + nTrans + " transitions.");
-	}
-	
-	public void printNumberOfCalls (String name) {
-		int num = nCallsByName.get(name);
-		System.out.println(num);
-	}
-	
-	*/
-	
-	public void measureSizeModel (FDTMC fdtmc) {
-		transformer.measureSizeModel(fdtmc);
-	}
-	
-	public void printNumberOfCalls (String name) {
-		transformer.printNumberOfCalls(name);
-	}
+
+		public void setSdParsers(ArrayList<SDReader> sdParsers) {
+			this.sdParsers = sdParsers;
+		}
+
+		public ArrayList<ADReader> getAdParsers() {
+			return adParsers;
+		}
+
+		public void setAdParsers(ArrayList<ADReader> adParsers) {
+			this.adParsers = adParsers;
+		}
 }

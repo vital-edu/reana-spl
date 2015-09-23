@@ -3,18 +3,30 @@ package Modeling;
 import java.io.File;
 import java.util.HashMap;
 
+import org.w3c.dom.DOMException;
+
 import FeatureFamilyBasedAnalysisTool.FDTMC;
-import Parsing.InvalidTagException;
-import Parsing.UnsupportedFragmentTypeException;
+import Parsing.ActivityDiagrams.ADUtil;
+import Parsing.Exceptions.InvalidNodeClassException;
+import Parsing.Exceptions.InvalidNodeType;
+import Parsing.Exceptions.InvalidNumberOfOperandsException;
+import Parsing.Exceptions.InvalidTagException;
+import Parsing.Exceptions.UnsupportedFragmentTypeException;
+import Parsing.SequenceDiagrams.SDReader;
+import Parsing.SequenceDiagrams.SDUtil;
 
 public class Main {
 	private static HashMap<String, FDTMC> fdtmcByName;
 	
-	public static void main(String[] args) throws InvalidTagException, UnsupportedFragmentTypeException {
+	public static void main(String[] args) throws InvalidTagException, UnsupportedFragmentTypeException, DOMException, InvalidNumberOfOperandsException, InvalidNodeClassException, InvalidNodeType {
 		File xmlFile = new File("modeling.xml");
 		
 		DiagramAPI diagram = new DiagramAPI(xmlFile);
 		diagram.initialize();
+		ADUtil.printAll(diagram.getAdParsers().get(0));
+		for (SDReader sdp : diagram.getSdParsers()) {
+			SDUtil.printAll(sdp);
+		}
 		diagram.transform();
 		
 		fdtmcByName = diagram.getFdtmcByName();
