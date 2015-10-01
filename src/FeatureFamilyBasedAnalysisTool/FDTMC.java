@@ -138,12 +138,14 @@ public class FDTMC {
 		while (itStates.hasNext()) {
 			State temp = itStates.next(); 
 			LinkedList<Transition> transitionList = this.transitionSystem.get(temp);
-			Iterator <Transition> itTransitions = transitionList.iterator(); 
-			while (itTransitions.hasNext()) {
-				Transition t = itTransitions.next();
-				msg += temp.getVariableName() + "=" + temp.getIndex() + ((temp.getLabel() != null) ? "(" + temp.getLabel() + ")" : "") + 
-						" --- " + t.getActionName() + " / " + t.getProbability() + 
-						" ---> " + t.getTarget().getVariableName() + "=" + t.getTarget().getIndex() + ((t.getTarget().getLabel() != null) ? "(" + t.getTarget().getLabel() + ")" : "") + "\n";
+			if (transitionList != null) {
+				Iterator <Transition> itTransitions = transitionList.iterator();
+				while (itTransitions.hasNext()) {
+					Transition t = itTransitions.next();
+					msg += temp.getVariableName() + "=" + temp.getIndex() + ((temp.getLabel() != null) ? "(" + temp.getLabel() + ")" : "") + 
+							" --- " + t.getActionName() + " / " + t.getProbability() + 
+							" ---> " + t.getTarget().getVariableName() + "=" + t.getTarget().getIndex() + ((t.getTarget().getLabel() != null) ? "(" + t.getTarget().getLabel() + ")" : "") + "\n";
+				}
 			}
 		}
 		return msg;
