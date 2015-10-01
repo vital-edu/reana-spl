@@ -19,8 +19,8 @@ public class DependantFeatureEvaluationTest {
 	Feature sqlite, mem, file, oxygenation;
 	DependantFeatureEvaluation eSqlite, eMem, eFile, eOxygenation, eEmpty; 
 	
-	PartialConfiguration pc1, pc2, pc3;
-//	Evaluation ev1, ev2, ev3; 
+	PartialConfiguration pcSqlite, pcMem, pcFile;
+ 
 	
 	@Before
 	public void setUp() throws Exception {
@@ -28,14 +28,14 @@ public class DependantFeatureEvaluationTest {
 		mem = Feature.getFeatureByName("Memory"); 
 		file = Feature.getFeatureByName("File");
 		
-		pc1 = new PartialConfiguration(); 
-		pc1.addFeature(sqlite); 
+		pcSqlite = new PartialConfiguration(); 
+		pcSqlite.addFeature(sqlite); 
 		
-		pc2 = new PartialConfiguration(); 
-		pc2.addFeature(mem);
+		pcMem = new PartialConfiguration(); 
+		pcMem.addFeature(mem);
 		
-		pc3 = new PartialConfiguration(); 
-		pc3.addFeature(file);
+		pcFile = new PartialConfiguration(); 
+		pcFile.addFeature(file);
 	}
 
 	
@@ -43,7 +43,7 @@ public class DependantFeatureEvaluationTest {
 	 * Test for creating empty dependant feature evaluation
 	 */
 	@Test
-	public void testEmptyFeatureEvaluation() {
+	public void testEmptyDependantFeatureEvaluation() {
 		eEmpty = new DependantFeatureEvaluation();
 		
 		Assert.assertNotNull(eEmpty.getPartialConfiguration());
@@ -54,19 +54,21 @@ public class DependantFeatureEvaluationTest {
 	
 	
 	/**
-	 * Test for creating dependant feature Evaluation with empty partial configuration and only one reliability value (for using with basic RDG nodes)
+	 * Test for creating dependant feature Evaluation with empty partial configuration and only one reliability value (for use with basic RDG nodes)
 	 */
 	@Test
 	public void  testEmptyPartialConfiguration() {
 		HashMap<Feature, Double> featureReliability = new HashMap<Feature, Double>();
 		featureReliability.put(sqlite, 0.998001);
 		
+		//Dependant feature evaluation for Sqlite: no dependant features and reliability = 0.998001
 		eSqlite = new DependantFeatureEvaluation(null, featureReliability);
 		Assert.assertNull(eSqlite.getPartialConfiguration());
 		Assert.assertNotNull(eSqlite.getFeatureReliability());
 		Assert.assertEquals(1, eSqlite.getFeatureReliability().size());
 		Assert.assertEquals(0.998001, eSqlite.getFeatureReliability().get(sqlite).doubleValue(), 0);
 		
+		//Dependant feature evaluation for Memory: no dependent features and reliability = 0.998001
 		featureReliability = new HashMap<Feature, Double>();
 		featureReliability.put(mem, 0.998001); 
 		eMem = new DependantFeatureEvaluation(null, featureReliability);
@@ -75,6 +77,7 @@ public class DependantFeatureEvaluationTest {
 		Assert.assertEquals(1, eMem.getFeatureReliability().size()); 
 		Assert.assertEquals(0.998001, eMem.getFeatureReliability().get(mem).doubleValue(), 0);
 		
+		//Dependent feature evaluation for File: no dependent features and reliability = 0.997002999
 		featureReliability = new HashMap<Feature, Double>(); 
 		featureReliability.put(file, 0.997002999);
 		eFile = new DependantFeatureEvaluation(null, featureReliability);
@@ -86,7 +89,10 @@ public class DependantFeatureEvaluationTest {
 
 	
 	/**
-	 * Test for creating dependant feature Evaluation with initial partial configuration and features reliabilities set
+	 * Test for creating dependant feature Evaluation with initial partial configuration and features reliabilities set. 
+	 * This is the case where a RDG node has a singleton partialConfiguration comprised of only one feature. Therefore
+	 * the reliability's set cardinality is equal to one. It is a special case for the case of having partial configura-
+	 * tions and different reliability values. 
 	 */
 	@Test
 	public void testFeatureEvaluationInitiallyDefined() {
@@ -156,7 +162,8 @@ public class DependantFeatureEvaluationTest {
 	
 	
 	/**
-	 * Test for adding one feature to partial configuration
+	 * Test for adding one feature to partial configuration. 
+	 * It does not allow a partial configuration having duplicated features.
 	 */
 	@Test
 	public void testAddingOneFeatureToPartialConfiguration() {
@@ -176,11 +183,11 @@ public class DependantFeatureEvaluationTest {
 	 */
 	@Test
 	public void testAddingMultipleFeaturesToPartialConfiguration() {
-		Collection<Feature> pc = new HashSet<Feature>(); 
-		pc.add(sqlite); 
-		pc.add(mem); 
-		pc.add(file); 
-		
+		PartialConfiguration pc = new PartialConfiguration();
+		pc.addFeature(sqlite);
+		pc.addFeature(mem);
+		pc.addFeature(file);
+
 		eOxygenation = new DependantFeatureEvaluation(); 
 		Assert.assertTrue(eOxygenation.addFeature(pc));
 		Assert.assertTrue(eOxygenation.getPartialConfiguration().contains(sqlite));

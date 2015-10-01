@@ -44,19 +44,19 @@ public class BDD {
 	 * 
 	 * @param features
 	 * @return 
+	 * 
+	 * TODO ensure this function will create a new Feature Model for the projection, 
+	 * with the set of features and rules comprising the set of dependant features.
 	 */
 	public FeatureModel createProjection(HashSet<Feature> features) {
+		this.dependantFeatures = features; 
 		HashSet<Feature> temp = featureModel.getFeatures(); 
-		//System.out.println(featureModel);
-		//System.out.println(temp.size());
 		temp.retainAll(features);
-		//System.out.println(temp.size());
 		
 		projection = new FeatureModel(); 
 		projection.addFeatures(temp);
 		
-		return projection;
-		
+		return projection;		
 	}
 
 
@@ -76,9 +76,11 @@ public class BDD {
 	 */
 	public HashSet<PartialConfiguration> getValidPartialConfigurations() {
 		partialConfigurations = new HashSet<PartialConfiguration>();
+//		System.out.println("dependantFeatures empty?" + (dependantFeatures.isEmpty() ? "yes":"no"));
 		if (dependantFeatures.isEmpty())
 			return partialConfigurations; 
 		else {
+//			System.out.println("entrei no else");
 			partialConfigurations = StubValidPartialConfigurations.getValidPartialConfigurations(dependantFeatures);
 			//System.out.println(partialConfigurations);
 		}

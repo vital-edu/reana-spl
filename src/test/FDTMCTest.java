@@ -1,10 +1,11 @@
 package test;
 
 
+import static org.junit.Assert.*;
+
+import java.awt.List;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -30,13 +31,13 @@ public class FDTMCTest {
 		Assert.assertTrue(fdtmc1.getLabels().isEmpty());
 		Assert.assertEquals(0, fdtmc1.getVariableIndex());
 	}
-
-	@Test
-	public void testSetVariableName() {
-		fdtmc1.setVariableName("x");
-		Assert.assertEquals("x", fdtmc1.getVariableName());
-	}
-
+	
+	/**
+	 * This test ensures if a state is created accordingly. The returned state must be 
+	 * different than null, it must be inside the FDTMC's states set, it must have the
+	 * index equals to 0 (it is the first state) and it variable name must be equals to 
+	 *  name defined. 
+	 */
 	@Test
 	public void testCreateState() {
 		fdtmc1.setVariableName("x");
@@ -47,7 +48,11 @@ public class FDTMCTest {
 		Assert.assertEquals("x", temp.getVariableName());
 		Assert.assertEquals(temp, fdtmc1.getInitialState());
 	}
-
+	
+	/**
+	 * This test is similar to the test of creation a single state. However it ensures
+	 * states created in sequence will have index value in sequence.
+	 */
 	@Test
 	public void testCreateLotsOfStates() {
 		fdtmc1.setVariableName("x");
@@ -82,8 +87,12 @@ public class FDTMCTest {
 
 		Assert.assertEquals(s0, fdtmc1.getInitialState());
 	}
-
-
+	
+	
+	/**
+	 * This test ensures we can set a label to a state. It doesn't do too much, 
+	 * but it was useful to create the labeling function for states. 
+	 */
 	@Test
 	public void testCreateLabeledState() {
 		fdtmc1.setVariableName("x");
@@ -99,8 +108,12 @@ public class FDTMCTest {
 
 		Assert.assertEquals(s0, fdtmc1.getInitialState());
 	}
-
-
+	
+	
+	/**
+	 * This test ensures we can create transitions between FDTMC's states, passing the states,  
+	 * transition name and probability value as parameters. 
+	 */
 	@Test
 	public void testCreateTransition() {
 		State s0, s1, s2;
@@ -109,10 +122,14 @@ public class FDTMCTest {
 		s2 = fdtmc1.createState("error");
 
 		Assert.assertTrue(fdtmc1.createTransition(s0, s1, "alpha", Double.toString(0.95)));
-		Assert.assertTrue(fdtmc1.createTransition(s0, s2, "alpha_error", Double.toString(0.05)));
+		Assert.assertTrue(fdtmc1.createTransition(s0, s2, "alpha", Double.toString(0.05)));
 	}
-
-
+	
+	
+	/**
+	 * This test is similar to the test above (testCreateTransition), however it test if the
+	 * creation of transitions with parameters instead of real values works accordingly. 
+	 */
 	@Test
 	public void testCreateTransitionWithParameter() {
 		State s0, s1, s2;
@@ -121,10 +138,13 @@ public class FDTMCTest {
 		s2 = fdtmc1.createState("error");
 
 		Assert.assertTrue(fdtmc1.createTransition(s0, s1, "alpha", "rAlpha"));
-		Assert.assertTrue(fdtmc1.createTransition(s0, s2, "alpha_error", "1-rAlpha"));
+		Assert.assertTrue(fdtmc1.createTransition(s0, s2, "alpha", "1-rAlpha"));
 	}
-
-
+	
+	
+	/**
+	 * This test ensures a created state can be recovered by its label. 
+	 */
 	@Test
 	public void testGetStateByLabel() {
 		State s0, s1, s2;
@@ -136,16 +156,20 @@ public class FDTMCTest {
 		t0 = fdtmc1.getStateByLabel("init");
 		t1 = fdtmc1.getStateByLabel("success");
 		t2 = fdtmc1.getStateByLabel("error");
-
-		Assert.assertEquals(t0, s0);
-		Assert.assertEquals(t1, s1);
-		Assert.assertEquals(t2, s2);
+		
+		Assert.assertSame(t0, s0);
+		Assert.assertSame(t1, s1);
+		Assert.assertSame(t2, s2);
 	}
-
-
+	
+	
+	/**
+	 * This test ensures it is possible to recover a transition (and all of its information like 
+	 * probability and source and target states) by using its name.
+	 */
 	@Test
-	public void testGetTransitionByAction() {
-		State s0, s1, s2;
+	public void testGetTransitionByActionName() {
+		State s0, s1, s2; 
 		s0 = fdtmc1.createState("init");
 		s1 = fdtmc1.createState("sucess");
 		s2 = fdtmc1.createState("error");
@@ -160,46 +184,102 @@ public class FDTMCTest {
 		Assert.assertNotNull(t1);
 		Assert.assertEquals("alpha", t1.getActionName());
 		Assert.assertEquals("rAlpha", t1.getProbability());
-		Assert.assertEquals(s0, t1.getSource());
-		Assert.assertEquals(s1, t1.getTarget());
-
+		Assert.assertSame(s0, t1.getSource());
+		Assert.assertSame(s1, t1.getTarget());
+		
 		Assert.assertNotNull(t2);
 		Assert.assertEquals("alpha_error", t2.getActionName());
 		Assert.assertEquals("1-rAlpha", t2.getProbability());
-		Assert.assertEquals(s0, t2.getSource());
-		Assert.assertEquals(s2, t2.getTarget());
+		Assert.assertSame(s0, t2.getSource());
+		Assert.assertSame(s2, t2.getTarget());
 	}
-
-
+	
+	
+	
+	/**
+	 * This test must ensure that the FDTMC will be printed (or builded) considering the order 
+	 * the states and transitions were build. 
+	 */
 	@Test
-	public void testGetTransitions() {
-		State s0, s1, s2;
-		s0 = fdtmc1.createState("init");
-		s1 = fdtmc1.createState("sucess");
-		s2 = fdtmc1.createState("error");
-
-		fdtmc1.createTransition(s0, s1, "alpha", "rAlpha");
-		fdtmc1.createTransition(s0, s2, "alpha_error", "1-rAlpha");
-
-		Map<State, List<Transition>> transitionsByState = fdtmc1.getTransitions();
-		Assert.assertEquals(1, transitionsByState.size());
-
-		List<Transition> transitions = transitionsByState.get(s0);
-		Assert.assertEquals(2, transitions.size());
-
-		List<String> temp = new ArrayList<String>();
-		for (Transition transition : transitions) {
-			temp.add(transition.getActionName());
-		}
-		Assert.assertTrue(temp.contains("alpha"));
-		Assert.assertTrue(temp.contains("alpha_error"));
-
-		temp.clear();
-		for (Transition transition : transitions) {
-			temp.add(transition.getProbability());
-		}
-		Assert.assertTrue(temp.contains("rAlpha"));
-		Assert.assertTrue(temp.contains("1-rAlpha"));
+	public void testPrintOrderedFDTMC (){
+		FDTMC fdtmc = new FDTMC(); 
+		fdtmc.setVariableName("sSqlite");
+		State init = fdtmc.createState("init"),
+			  success = fdtmc.createState("success"),
+			  error = fdtmc.createState("fail"), 
+			  source, 
+			  target; 
+		
+		source = init;
+		target = fdtmc.createState(); 
+		Assert.assertTrue(fdtmc.createTransition(source, target, "persist", "0.999"));
+		Assert.assertTrue(fdtmc.createTransition(source, error, "persist", "0.001"));
+		
+		source = target; 
+		target = success;
+		Assert.assertTrue(fdtmc.createTransition(source, target, "persist_return", "0.999"));
+		Assert.assertTrue(fdtmc.createTransition(source, target, "persist_return", "0.001"));
+		
+		Assert.assertTrue(fdtmc.createTransition(success, success, "", "1.0"));
+		Assert.assertTrue(fdtmc.createTransition(error, error, "", "1.0"));
+		
+		
+		String expectedAnswer = "sSqlite=0(init) --- persist / 0.999 ---> sSqlite=3" + '\n' 
+				+ "sSqlite=0(init) --- persist / 0.001 ---> sSqlite=2(fail)" + '\n' 
+				+ "sSqlite=1(success) ---  / 1.0 ---> sSqlite=1(success)" + '\n' 
+				+ "sSqlite=2(fail) ---  / 1.0 ---> sSqlite=2(fail)" + '\n' 
+				+ "sSqlite=3 --- persist_return / 0.999 ---> sSqlite=1(success)" + '\n' 
+				+ "sSqlite=3 --- persist_return / 0.001 ---> sSqlite=1(success)" + '\n';
+		
+		Assert.assertEquals(expectedAnswer, fdtmc.toString());
 	}
+
+	
+	
+	
+	
+	/**
+	 * This test aims to ensure if the DOT file for a specific RDG node is being created accordingly.
+	 */
+	@Test
+	public void testCreateDotFile() {
+		fail("Not yet implemented");
+		
+		
+	}
+	
+//	/**
+//	 * This test aims to ensure if the DOT file for a specific RDG node is being created accordingly.
+//	 */
+//	@Test
+//	public void testGetTransitions() {
+//		State s0, s1, s2;
+//		s0 = fdtmc1.createState("init");
+//		s1 = fdtmc1.createState("sucess");
+//		s2 = fdtmc1.createState("error");
+//
+//		fdtmc1.createTransition(s0, s1, "alpha", "rAlpha");
+//		fdtmc1.createTransition(s0, s2, "alpha_error", "1-rAlpha");
+//
+//		Map<State, List<Transition>> transitionsByState = fdtmc1.getTransitions();
+//		Assert.assertEquals(1, transitionsByState.size());
+//
+//		List<Transition> transitions = transitionsByState.get(s0);
+//		Assert.assertEquals(2, transitions.size());
+//
+//		List<String> temp = new ArrayList<String>();
+//		for (Transition transition : transitions) {
+//			temp.add(transition.getActionName());
+//		}
+//		Assert.assertTrue(temp.contains("alpha"));
+//		Assert.assertTrue(temp.contains("alpha_error"));
+//
+//		temp.clear();
+//		for (Transition transition : transitions) {
+//			temp.add(transition.getProbability());
+//		}
+//		Assert.assertTrue(temp.contains("rAlpha"));
+//		Assert.assertTrue(temp.contains("1-rAlpha"));
+//	}
 
 }

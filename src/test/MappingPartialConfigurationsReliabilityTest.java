@@ -14,6 +14,7 @@ import FeatureFamilyBasedAnalysisTool.Evaluation;
 import FeatureFamilyBasedAnalysisTool.FDTMC;
 import FeatureFamilyBasedAnalysisTool.Feature;
 import FeatureFamilyBasedAnalysisTool.FeatureModel;
+import FeatureFamilyBasedAnalysisTool.PartialConfiguration;
 import FeatureFamilyBasedAnalysisTool.RDGNode;
 
 public class MappingPartialConfigurationsReliabilityTest {
@@ -162,6 +163,21 @@ public class MappingPartialConfigurationsReliabilityTest {
 	
 	@Test
 	public void testOxygenation() {
+		//The evaluation set for Oxygenation is given by the elements: 
+		//{ Sqlite } : 0.9890587955100504
+		//{ File } : 0.9890548353295385
+		//{ Memory } : 0.9890587955100504
+		Evaluation evSqlite = new Evaluation(), 
+				   evFile   = new Evaluation(),
+				   evMemory = new Evaluation(); 
+		evSqlite.addFeature(Feature.getFeatureByName("Sqlite"));
+		evSqlite.setRealiability(0.9890587955100504);
+		evFile.addFeature(Feature.getFeatureByName("File")); 
+		evFile.setRealiability(0.9890548353295385);
+		evMemory.addFeature(Feature.getFeatureByName("Memory"));
+		evMemory.setRealiability(0.9890587955100504);
+
+		
 		//Sqlite, mem and file setup
 		rdgSqlite.firstStep(); rdgSqlite.secondStep(fmBSN); rdgSqlite.thirdStep(); rdgSqlite.fourthStep();
 		rdgMemory.firstStep(); rdgMemory.secondStep(fmBSN); rdgMemory.thirdStep(); rdgMemory.fourthStep();
@@ -184,11 +200,12 @@ public class MappingPartialConfigurationsReliabilityTest {
 		
 		rdgOxygenation.fourthStep();
 		
-		//Aqui vem a definicao do conjunto de avaliacoes esperadas como resposta... definir posteriormente
-		//fail("continuar desse ponto!!!!");
+		//Ensure the number of elements at the set of evaluations is equal to the number of partial configurations and
+		//ensure each evaluation (i.e. each mapping PartialConfiguration -> double) is present.
 		Assert.assertEquals(3, rdgOxygenation.getEvaluations().size());
-		
-		
+		Assert.assertTrue(rdgOxygenation.contains(evSqlite));
+		Assert.assertTrue(rdgOxygenation.contains(evMemory));
+		Assert.assertTrue(rdgOxygenation.contains(evFile));				
 	}
 	
 

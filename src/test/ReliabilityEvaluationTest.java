@@ -77,7 +77,34 @@ public class ReliabilityEvaluationTest {
 			"sOxygenation=14 ---  / 1.0 ---> sOxygenation=2(fail)" + '\n' + 
 			"sOxygenation=15 --- sendSituation_Oxygenation / 0.999 ---> sOxygenation=1(success)" + '\n' + 
 			"sOxygenation=15 --- sendSituation_Oxygenation / 0.001 ---> sOxygenation=2(fail)" + '\n'; 
-;
+
+	private String fdtmcPosition = "sPosition=0(init) --- register / 0.999 ---> sPosition=3" + '\n' + 
+			"sPosition=0(init) --- register / 0.001 ---> sPosition=2(fail)" + '\n' + 
+			"sPosition=1(success) ---  / 1.0 ---> sPosition=1(success)" + '\n' + 
+			"sPosition=2(fail) ---  / 1.0 ---> sPosition=2(fail)" + '\n' + 
+			"sPosition=3 --- register_return / 0.999 ---> sPosition=4" + '\n' + 
+			"sPosition=3 --- register_return / 0.001 ---> sPosition=2(fail)" + '\n' + 
+			"sPosition=4 --- sendSituation_POS / 0.999 ---> sPosition=5" + '\n' + 
+			"sPosition=4 --- sendSituation_POS / 0.001 ---> sPosition=2(fail)" + '\n' + 
+			"sPosition=5 --- persist / 0.999 ---> sPosition=6" + '\n' + 
+			"sPosition=5 --- persist / 0.001 ---> sPosition=2(fail)" + '\n' + 
+			"sPosition=6 --- sqliteSelection / fSqlite ---> sPosition=7" + '\n' + 
+			"sPosition=6 --- sqliteSelection / 1-fSqlite ---> sPosition=8" + '\n' + 
+			"sPosition=7 ---  / rSqlite ---> sPosition=9" + '\n' + 
+			"sPosition=7 ---  / 1-rSqlite ---> sPosition=10" + '\n' + 
+			"sPosition=8 --- memorySelection / fMemory ---> sPosition=11" + '\n' + 
+			"sPosition=8 --- memorySelection / 1-fMemory ---> sPosition=12" + '\n' + 
+			"sPosition=9 ---  / 1.0 ---> sPosition=8" + '\n' + 
+			"sPosition=10 ---  / 1.0 ---> sPosition=2(fail)" + '\n' + 
+			"sPosition=11 ---  / rMemory ---> sPosition=13" + '\n' + 
+			"sPosition=11 ---  / 1-rMemory ---> sPosition=14" + '\n' + 
+			"sPosition=12 --- persistReturn / 0.999 ---> sPosition=15" + '\n' + 
+			"sPosition=12 --- persistReturn / 0.001 ---> sPosition=2(fail)" + '\n' + 
+			"sPosition=13 ---  / 1.0 ---> sPosition=12" + '\n' + 
+			"sPosition=14 ---  / 1.0 ---> sPosition=2(fail)" + '\n' + 
+			"sPosition=15 --- sendSituation_Position / 0.999 ---> sPosition=1(success)" + '\n' + 
+			"sPosition=15 --- sendSituation_Position / 0.001 ---> sPosition=2(fail)" + '\n';
+	
 
 	@Before
 	public void setUp() {
@@ -201,7 +228,24 @@ public class ReliabilityEvaluationTest {
 	
 	
 	@Test
-	public void testCreateRDGNodeWithDependenciesOxygenation() {
+	public void testCreateRDGNodeWithDependenciesPosition() {
+		/**
+		 * Evaluation set for fabe function
+		 * { Memory } : 0.9890587955100504
+		 * { File } : 0.9890548353295385
+		 * { Sqlite } : 0.9890587955100504
+		 */
+		Evaluation evSqlite = new Evaluation(), 
+				   evMemory = new Evaluation(), 
+				   evFile   = new Evaluation(); 
+		evSqlite.addFeature(Feature.getFeatureByName("Sqlite"));
+		evSqlite.setRealiability(0.9890587955100504);
+		evMemory.addFeature(Feature.getFeatureByName("Memory"));
+		evMemory.setRealiability(0.9890587955100504);
+		evFile.addFeature(Feature.getFeatureByName("File"));
+		evFile.setRealiability(0.9890548353295385);
+		
+		
 		/*
 		 * Setup for this RDG node. It depends on features Sqlite, Mem and File. 
 		 */
@@ -212,9 +256,9 @@ public class ReliabilityEvaluationTest {
 		memNode.setFeature(mem);
 		fileNode.setFeature(file);
 		
-		sqliteNode.firstStep(); sqliteNode.secondStep(fmBSN); sqliteNode.thirdStep();
-		memNode.firstStep(); memNode.secondStep(fmBSN); memNode.thirdStep();
-		fileNode.firstStep(); fileNode.secondStep(fmBSN); fileNode.thirdStep();
+		sqliteNode.firstStep(); sqliteNode.secondStep(fmBSN); sqliteNode.thirdStep(); sqliteNode.fourthStep();
+		memNode.firstStep(); memNode.secondStep(fmBSN); memNode.thirdStep(); memNode.fourthStep();
+		fileNode.firstStep(); fileNode.secondStep(fmBSN); fileNode.thirdStep(); fileNode.fourthStep();
 		
 		/*
 		 * This test must ensure that a variable node (with dependencies to other RDG nodes): 
@@ -223,7 +267,87 @@ public class ReliabilityEvaluationTest {
 		 * 	  (REMARK: it should be good if there's a way to track feature interfaces of the FDTMC.
 		 * - feature associated with the RDGnode is the feature under evaluation; 
 		 * - featureDependencies is equal to the set of features the feature under evaluation depends on
-		 * - evaluatio set has the number of evaluations items equals to the number of valid partial configurations
+		 * - evaluation set has the number of evaluations items equals to the number of valid partial configurations
+		 * - RDG dependencies set has dependencies to RDGnodes related to the features the nodes depends on. So the cardinality of 
+		 * RDG Dependency set is equal to the cardinality of featureDependencies set.    
+		 */
+		node = new RDGNode(); 
+		node.setFeature(position);
+		node.addFeatureDependency(sqlite);
+		node.addFeatureDependency(mem);
+		node.addFeatureDependency(file);
+		
+		//1st step: build the FDTMC for the RDG node
+		node.firstStep();
+		Assert.assertNotNull(node.getFDTMC());
+		System.out.println(node.getFDTMC());
+		Assert.assertEquals(fdtmcPosition, node.getFDTMC().toString());
+
+		//2nd step - Discover the features dependencies and compute the BDD for the RDG node
+		node.secondStep(fmBSN);
+		Assert.assertFalse(node.getFeatureDependencies().isEmpty());
+		Assert.assertFalse(node.getBDD().getProjection().getFeatures().isEmpty());
+		Assert.assertFalse(node.getBDD().getValidPartialConfigurations().isEmpty());
+		Assert.assertEquals(3, node.getBDD().getValidPartialConfigurations().size());
+		
+		//3rd step - analyse sharing possibilities for the FDTMC
+		node.thirdStep();
+		
+		//4th step - call the PARAM to obtain the formula and evaluates it according to the partial configurations in
+		//order to get evaluations
+				
+		node.fourthStep();
+		System.out.println(node.getEvaluations().size());
+		Assert.assertEquals(3, node.getEvaluations().size());
+				
+		Collection<Evaluation> evaluationsPosition = node.getEvaluations();
+		assertTrue(nodeContainsEvaluation(evaluationsPosition, evSqlite));
+		assertTrue(nodeContainsEvaluation(evaluationsPosition, evMemory));
+		assertTrue(nodeContainsEvaluation(evaluationsPosition, evFile));
+	}
+	
+	
+	@Test
+	public void testCreateRDGNodeWithDependenciesOxygenation() {
+		/**
+		 * Evaluation set for fabe function
+		 * { Memory } : 0.9890587955100504
+		 * { File } : 0.9890548353295385
+		 * { Sqlite } : 0.9890587955100504
+		 */
+		Evaluation evSqlite = new Evaluation(), 
+				   evMemory = new Evaluation(), 
+				   evFile   = new Evaluation(); 
+		evSqlite.addFeature(Feature.getFeatureByName("Sqlite"));
+		evSqlite.setRealiability(0.9890587955100504);
+		evMemory.addFeature(Feature.getFeatureByName("Memory"));
+		evMemory.setRealiability(0.9890587955100504);
+		evFile.addFeature(Feature.getFeatureByName("File"));
+		evFile.setRealiability(0.9890548353295385);
+		
+		
+		/*
+		 * Setup for this RDG node. It depends on features Sqlite, Mem and File. 
+		 */
+		RDGNode sqliteNode = new RDGNode(), 
+				memNode = new RDGNode(), 
+				fileNode = new RDGNode();
+		sqliteNode.setFeature(sqlite);
+		memNode.setFeature(mem);
+		fileNode.setFeature(file);
+		
+		sqliteNode.firstStep(); sqliteNode.secondStep(fmBSN); sqliteNode.thirdStep(); sqliteNode.fourthStep();
+		memNode.firstStep(); memNode.secondStep(fmBSN); memNode.thirdStep(); memNode.fourthStep();
+		fileNode.firstStep(); fileNode.secondStep(fmBSN); fileNode.thirdStep(); fileNode.fourthStep();
+		
+		/*
+		 * This test must ensure that a variable node (with dependencies to other RDG nodes): 
+		 * - bdd express the FM rules comprising the dependant features
+		 * - fdtmc is equal to the FDTMC of the feature under evaluation, with variability. 
+		 * 	  (REMARK: it should be good if there's a way to track feature interfaces of the FDTMC.
+		 * - feature associated with the RDGnode is the feature under evaluation; 
+		 * - featureDependencies is equal to the set of features the feature under evaluation depends on
+		 * - evaluation set has the number of evaluations items equals to the number of valid partial configurations
 		 * - RDG dependencies set has dependencies to RDGnodes related to the features the nodes depends on. So the cardinality of 
 		 * RDG Dependency set is equal to the cardinality of featureDependencies set.    
 		 */
@@ -255,12 +379,26 @@ public class ReliabilityEvaluationTest {
 		System.out.println(node.getEvaluations().size());
 		Assert.assertEquals(3, node.getEvaluations().size());
 		
-		Iterator<Evaluation> itEvaluation = node.getEvaluations().iterator(); 
-		
-		fail ("The fourth step has to be finished! Not yet implemented... ");
+		Collection<Evaluation> evaluationsOxygenation = node.getEvaluations();
+		assertTrue(nodeContainsEvaluation(evaluationsOxygenation, evSqlite));
+		assertTrue(nodeContainsEvaluation(evaluationsOxygenation, evMemory));
+		assertTrue(nodeContainsEvaluation(evaluationsOxygenation, evFile));
 	}
 	
 	
+	private boolean nodeContainsEvaluation(
+			Collection<Evaluation> evaluationsOxygenation, Evaluation evSqlite) {
+		boolean found = false; 
+		Iterator<Evaluation> it = evaluationsOxygenation.iterator(); 
+		while (it.hasNext() && !found) {
+			Evaluation e = it.next(); 
+			if (evSqlite.getFeatures().equals(e.getFeatures()) && (e.getReliability() == evSqlite.getReliability()))
+				found = true; 
+		}
+		return found;
+	}
+
+
 	/**
 	 * This test should be able to assert if a feature-based evaluation is being executed accordingly at a RDG node
 	 * A feature-based evaluation must be able to create an FDTMC for a specific node. 

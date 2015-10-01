@@ -51,7 +51,10 @@ public class BDDTest {
 		storage = Feature.getFeatureByName("Storage");
 		root = Feature.getFeatureByName("Root");
 		
-		
+		/**
+		 * Feature Model creation: the constructor method receives a set of features
+		 * as input for the FM.  
+		 */
 		fm = new FeatureModel(); 
 		HashSet<Feature> tempPartialCfg = new HashSet<Feature>();
 		
@@ -73,16 +76,20 @@ public class BDDTest {
 		tempPartialCfg.add(storage);
 		tempPartialCfg.add(root);
 		fm.addFeatures(tempPartialCfg);		
-		bdd1.setFeatureModel(fm);
+		bdd1.setFeatureModel(fm);        //Each BDD has a Feature Model associated with for projection purposes!
 		
-		
+		/** 
+		 * Set of partial configurations created for validation of BDD Class. 
+		 * The BDD class must return a set of partial configuration equals to 
+		 * (i.e. with the same elements and cardinality) of partial configura-
+		 * tions described below.  
+		 */
 		PartialConfiguration p0, p1, p2, p3, p4, p5,
 		                     p6, p7, p8, p9, p10, p11, 
 		                     p12, p13, p14, p15, p16, 
 		                     p17, p18, p19, p20, p21, 
 		                     p22, p23, p24, p25, p26, 
-		                     p27, p28, p29, p30, p31, 
-		                     p32;
+		                     p27, p28, p29, p30, p31;
 		
 		partialConfigurationsSensorInformation = new HashSet<PartialConfiguration>();
 		//{}
@@ -300,7 +307,14 @@ public class BDDTest {
 	/**
 	 * This test case is to ensure whenever a BDD object is created, there will be 
 	 * an FeatureModel associated with it. If two or more objects are created from this 
-	 * class they must share the same FeatureModel, because the FM is unique for the SPL
+	 * class they must share the same FeatureModel, because the FM is unique for the SPL.
+	 * 
+	 *  TODO Review this test, because it seems to be useless. It creates the Feature model
+	 *  for two BDD objects and test if they are the same. It should test what happens when
+	 *  no feature model is associated with the BDD class. Probably an exception should be 
+	 *  launched, because it does not make sense to create a BDD object without rules to be
+	 *  expressed. 
+	 *  
 	 */
 	@Test 
 	public void testEmptyBDDCreation() {
@@ -332,7 +346,7 @@ public class BDDTest {
 	
 	
 	/**
-	 * This test case is to ensure a BDD object can receive a set of dependant features, 
+	 * The test cases below are to ensure a BDD object can receive a set of dependant features, 
 	 * from which the valid partial configurations will be computed. 
 	 */
 	@Test
@@ -351,132 +365,188 @@ public class BDDTest {
 	
 	@Test
 	public void testeReceiveNonEmptySetOfDependantFeatures() {
-		HashSet<Feature> sqlite = new HashSet<Feature>(), 
-				         mem = new HashSet<Feature>(),
-				         file = new HashSet<Feature>();
-		sqlite.add(Feature.getFeatureByName("Sqlite"));
-		mem.add(Feature.getFeatureByName("Mem"));
-		file.add(Feature.getFeatureByName("File"));
 		
-		bdd1.addSetOfDependantFeatures(sqlite);
-		Assert.assertNotNull(bdd1.getDependantFeatures());
-		Assert.assertEquals(bdd1.getDependantFeatures(), sqlite);
-		Assert.assertSame(bdd1.getDependantFeatures(), sqlite);
+		HashSet<Feature> inputSqlite = new HashSet<Feature>(), outputSqlite,  
+				         inputMem = new HashSet<Feature>(), outputMem, 
+				         inputFile = new HashSet<Feature>(), outputFile;
+		Iterator<Feature> it; 
+		Feature f = null; 
 		
-		bdd1.addSetOfDependantFeatures(mem);
-		Assert.assertNotNull(bdd1.getDependantFeatures());
-		Assert.assertEquals(bdd1.getDependantFeatures(), mem);
-		Assert.assertSame(bdd1.getDependantFeatures(), mem);
+		inputSqlite.add(sqlite);
+		inputMem.add(memory);
+		inputFile.add(Feature.getFeatureByName("File"));
 		
-		bdd1.addSetOfDependantFeatures(file);
-		Assert.assertNotNull(bdd1.getDependantFeatures());
-		Assert.assertEquals(bdd1.getDependantFeatures(), file);
-		Assert.assertSame(bdd1.getDependantFeatures(), file);
+		
+		//Sqlite input for test
+		bdd1.addSetOfDependantFeatures(inputSqlite);
+		outputSqlite = bdd1.getDependantFeatures(); 
+		Assert.assertNotNull(outputSqlite);
+		Assert.assertTrue(bdd1.getDependantFeatures().contains(sqlite));
+		it = bdd1.getDependantFeatures().iterator(); 
+		while (it.hasNext()) {
+			f = it.next(); 
+			if (f.equals(sqlite))
+				break;
+		}
+		Assert.assertSame(sqlite, f);
+		
+		
+		//Memory input for test
+		bdd1.addSetOfDependantFeatures(inputMem);
+		outputMem = bdd1.getDependantFeatures();
+		Assert.assertNotNull(outputMem);
+		Assert.assertTrue(bdd1.getDependantFeatures().contains(memory));
+		it = bdd1.getDependantFeatures().iterator();
+		while(it.hasNext()) {
+			f = it.next(); 
+			if (f.equals(memory))
+				break; 
+		}
+		Assert.assertSame(memory, f);
+		
+		
+		//File input for test
+		bdd1.addSetOfDependantFeatures(inputFile);
+		outputFile = bdd1.getDependantFeatures(); 
+		Assert.assertNotNull(outputFile);
+		Assert.assertTrue(bdd1.getDependantFeatures().contains(file));
+		it = bdd1.getDependantFeatures().iterator(); 
+		while (it.hasNext()) {
+			f = it.next(); 
+			if (f.equals(file)) 
+				break; 
+		}
+		Assert.assertSame(file, f);
 	}
 	
 	
 	
 	/**
-	 * This test case is to ensure that a set of dependant features can be projected over
+	 * The test cases below ensure a set of dependant features can be projected over
 	 * the feature model to get the relations between them.
-	 * Project a set of features over a FM will return a FM with only features and cross-
-	 * tree constraints which contains the features projected. So, if a cross-tree cons-
-	 * traint does not have a single feature in the feature set, it must not be part of
+	 * Projecting a set of features over a FM will return a FM comprised only with features 
+	 * and cross-tree constraints which contains the features projected. So, if a cross-tree 
+	 * constraint does not have a single feature in the feature set it must not be part of
 	 * the resulting feature model (i.e. all features of a cross-tree constraint must be 
 	 * inside the set of features).   
+	 * 
+	 * TODO change this test to ensure the FM rules are represented after the projection. 
+	 * Currently the projection is comprised only of features projected, but the rules are
+	 * missing.
 	 */
 	@Test
 	
 	public void testCreateProjectionEmptySet() {
+		//TODO ensure the "set of rules" is also empty! 
 		//The resulting projection for an empty set of dependant features must be null
-		HashSet<Feature> dependantFeatures = new HashSet<>();
+		HashSet<Feature> dependantFeatures = new HashSet<Feature>();
 		
 		FeatureModel projection = bdd1.createProjection(dependantFeatures);
 		HashSet<Feature> temp = projection.getFeatures();
 		
 		Assert.assertNotNull(temp);
-		Assert.assertEquals(0, temp.size());		
+		Assert.assertEquals(0, temp.size());
+		
+		fail("Finish this implementation: it is necessary to assert if the FM rules "
+				+ "returned by the projection are valid. It will be possible to test "
+				+ "when the implementation of FeatureModel class is finished! In this"
+				+ "case it is necessary to ensure no FM rule will be returned (cardinality"
+				+ "=0)");
 	}
 	
 	
 	@Test
 	public void testCreateProjectionOneFeature() {
-		HashSet<Feature> dependantFeatures = new HashSet<Feature>();
-
+		//TODO ensure the cardinality of the "set of rules" is equal to zero! 
+		
 		//Sqlite feature
-		dependantFeatures.add(sqlite);
-		FeatureModel projection = bdd1.createProjection(dependantFeatures);
-		HashSet<Feature> temp = projection.getFeatures();		
-		Assert.assertTrue(temp.contains(sqlite));
-		Assert.assertTrue(temp.size() == 1);
+		HashSet<Feature> sqliteDependantFeatures = new HashSet<Feature>();
+		sqliteDependantFeatures.add(sqlite);
+		FeatureModel sqliteProjection = bdd1.createProjection(sqliteDependantFeatures);
+		Assert.assertTrue(sqliteProjection.getFeatures().contains(sqlite));
+		Assert.assertEquals(1, sqliteProjection.getFeatures().size());
 		
 		//Mem feature
-		dependantFeatures = new HashSet<Feature>();
-		dependantFeatures.add(memory); 
-		projection = bdd1.createProjection(dependantFeatures);
-		temp = projection.getFeatures(); 
-		Assert.assertTrue(temp.contains(memory));
-		Assert.assertTrue(temp.size() == 1);
+		HashSet<Feature> memDependantFeatures = new HashSet<Feature>();
+		memDependantFeatures.add(memory); 
+		FeatureModel memProjection = bdd1.createProjection(memDependantFeatures);
+		Assert.assertTrue(memProjection.getFeatures().contains(memory));
+		Assert.assertEquals(1,memProjection.getFeatures().size());
 		
 		//File feature
-		dependantFeatures = new HashSet<Feature>();
-		dependantFeatures.add(file);
-		projection = bdd1.createProjection(dependantFeatures); 
-		temp = projection.getFeatures(); 
-		Assert.assertTrue(temp.contains(file));
-		Assert.assertTrue(temp.size() == 1);		
+		HashSet<Feature> fileDependantFeatures = new HashSet<Feature>();
+		fileDependantFeatures.add(file);
+		FeatureModel fileProjection = bdd1.createProjection(fileDependantFeatures); 
+		Assert.assertTrue(fileProjection.getFeatures().contains(file));
+		Assert.assertEquals(1, fileProjection.getFeatures().size());
+		
+		
+		fail("Finish this implementation: it is necessary to assert if the FM rules "
+				+ "returned by the projection are valid. It will be possible to test "
+				+ "when the implementation of FeatureModel class is finished. In this"
+				+ "case it is necessary to ensure no FM rule will be returned (cardinality"
+				+ "=0)");
 	}
 	
 	
 	@Test
 	public void testCreateProjectionWithMoreThanOneFeature() {
-		HashSet<Feature> dependantFeatures = new HashSet<Feature>();
+		//TODO ensure the set of rules for this projection comprises the FM rules described
+		//in terms of the features. So the cardinality of the set of rules must be equals 
+		//to the number of rules comprising only the features in the dependant features set.
+		
 		
 		//Storage features
-		dependantFeatures.add(storage); 
-		dependantFeatures.add(sqlite);
-		dependantFeatures.add(memory); 
-		dependantFeatures.add(file); 	
-		FeatureModel projection = bdd1.createProjection(dependantFeatures); 
-		HashSet<Feature> temp = projection.getFeatures(); 
-		Assert.assertTrue(temp.contains(storage));
-		Assert.assertTrue(temp.contains(sqlite));
-		Assert.assertTrue(temp.contains(memory));
-		Assert.assertTrue(temp.contains(file));
-		Assert.assertEquals(4, temp.size());
-		Assert.assertEquals(temp, dependantFeatures);
+		HashSet<Feature> storageDependantFeatures = new HashSet<Feature>();
+		storageDependantFeatures.add(storage); 
+		storageDependantFeatures.add(sqlite);
+		storageDependantFeatures.add(memory); 
+		storageDependantFeatures.add(file); 	
+		FeatureModel storageProjection = bdd1.createProjection(storageDependantFeatures);  
+		Assert.assertTrue(storageProjection.getFeatures().contains(storage));
+		Assert.assertTrue(storageProjection.getFeatures().contains(sqlite));
+		Assert.assertTrue(storageProjection.getFeatures().contains(memory));
+		Assert.assertTrue(storageProjection.getFeatures().contains(file));
+		Assert.assertEquals(4, storageProjection.getFeatures().size());
+		
+		fail("Finish this implementation: it is necessary ensure the FM rules of the projection "
+				+ "are valid. #FM rules = 4");
 		
 		//SensorFeatures
-		dependantFeatures = new HashSet<Feature>();
-		dependantFeatures.add(sSpo2);
-		dependantFeatures.add(sEcg);
-		dependantFeatures.add(sTemp);
-		dependantFeatures.add(sAcc);
-		projection = bdd1.createProjection(dependantFeatures);
-		temp = projection.getFeatures();
-		Assert.assertTrue(temp.contains(sSpo2));
-		Assert.assertTrue(temp.contains(sEcg));
-		Assert.assertTrue(temp.contains(sTemp));
-		Assert.assertTrue(temp.contains(sAcc));
-		Assert.assertEquals(4, temp.size());
-		Assert.assertEquals(temp, dependantFeatures);	
+		HashSet<Feature> sensorDependantFeatures = new HashSet<Feature>();
+		sensorDependantFeatures = new HashSet<Feature>();
+		sensorDependantFeatures.add(sSpo2);
+		sensorDependantFeatures.add(sEcg);
+		sensorDependantFeatures.add(sTemp);
+		sensorDependantFeatures.add(sAcc);
+		FeatureModel sensorProjection = bdd1.createProjection(sensorDependantFeatures);
+		Assert.assertTrue(sensorProjection.getFeatures().contains(sSpo2));
+		Assert.assertTrue(sensorProjection.getFeatures().contains(sEcg));
+		Assert.assertTrue(sensorProjection.getFeatures().contains(sTemp));
+		Assert.assertTrue(sensorProjection.getFeatures().contains(sAcc));
+		Assert.assertEquals(4, sensorProjection.getFeatures().size());
 		
+		fail("Finish this implementation: it is necessary ensure the FM rules of the projection "
+				+ "are valid. #FM rules = 4");
+
 		//SensorInformation
-		dependantFeatures = new HashSet<Feature>();
-		dependantFeatures.add(oxygenation);
-		dependantFeatures.add(pulseRate);
-		dependantFeatures.add(temperature);
-		dependantFeatures.add(position);
-		dependantFeatures.add(fall);
-		projection = bdd1.createProjection(dependantFeatures); 
-		temp = projection.getFeatures(); 
-		Assert.assertTrue(temp.contains(oxygenation));
-		Assert.assertTrue(temp.contains(pulseRate));
-		Assert.assertTrue(temp.contains(temperature));
-		Assert.assertTrue(temp.contains(position));
-		Assert.assertTrue(temp.contains(fall));
-		Assert.assertEquals(5, temp.size());
-		Assert.assertEquals(temp, dependantFeatures);	
+		HashSet<Feature> sensorInformationDependantFeatures = new HashSet<Feature>();
+		sensorInformationDependantFeatures = new HashSet<Feature>();
+		sensorInformationDependantFeatures.add(oxygenation);
+		sensorInformationDependantFeatures.add(pulseRate);
+		sensorInformationDependantFeatures.add(temperature);
+		sensorInformationDependantFeatures.add(position);
+		sensorInformationDependantFeatures.add(fall);
+		FeatureModel sensorInformationProjection = bdd1.createProjection(sensorInformationDependantFeatures); 
+		Assert.assertTrue(sensorInformationProjection.getFeatures().contains(oxygenation));
+		Assert.assertTrue(sensorInformationProjection.getFeatures().contains(pulseRate));
+		Assert.assertTrue(sensorInformationProjection.getFeatures().contains(temperature));
+		Assert.assertTrue(sensorInformationProjection.getFeatures().contains(position));
+		Assert.assertTrue(sensorInformationProjection.getFeatures().contains(fall));
+		Assert.assertEquals(5, sensorInformationProjection.getFeatures().size());
+		
+		fail("Finish this implementation: it is necessary ensure the FM rules of the projection "
+				+ "are valid. #FM rules = 5");
 	}
 	
 	
@@ -506,13 +576,31 @@ public class BDDTest {
 		dependantFeatures.add(fall); 
 		bdd1.addSetOfDependantFeatures(dependantFeatures);
 		FeatureModel temp = bdd1.createProjection(dependantFeatures); 
-		HashSet<PartialConfiguration> configurations = bdd1.getValidPartialConfigurations(); 
-		System.out.println(configurations.size());
-		System.out.println("*********************************************************");
-		System.out.println(partialConfigurationsSensorInformation.size());
-		Assert.assertNotNull(configurations);
-		Assert.assertEquals(32, configurations.size());
-		Assert.assertTrue(configurations.contains(partialConfigurationsSensorInformation));
+		HashSet<PartialConfiguration> partialConfigurations = bdd1.getValidPartialConfigurations(); 
+
+		Assert.assertNotNull(partialConfigurations);
+		Assert.assertEquals(32, partialConfigurations.size());
+		
+		//Verificar se cada Configuracao Parcial Valida esta contida no resultado de getValidPartialConfigurations
+		Iterator<PartialConfiguration> itProbe = partialConfigurationsSensorInformation.iterator(); 
+		while (itProbe.hasNext()) {
+			PartialConfiguration partialProbe = itProbe.next(); 
+			HashSet<Feature> featuresProbe = partialProbe.getFeatures();
+			//verificar se essas features aparecem no conjunto de configuracoes validas retornada pela
+			//funcao getValidPartialConfiguration()
+			
+			boolean found = false;
+			Iterator<PartialConfiguration> itPartialConfiguration = partialConfigurations.iterator();
+			while (itPartialConfiguration.hasNext() && !found) {
+				PartialConfiguration validPartialConfiguration = itPartialConfiguration.next();
+				HashSet<Feature> featuresValidPartialConfiguration = validPartialConfiguration.getFeatures();
+				
+				if (featuresValidPartialConfiguration.containsAll(featuresProbe)) { //encontrou config
+					found = true; 
+					Assert.assertTrue(partialConfigurations.remove(validPartialConfiguration));
+				}
+			}
+		}
 	}
 
 }

@@ -23,6 +23,7 @@ public class StubValidPartialConfigurations {
 	private static HashSet<Feature> featuresSensorInformation; 
 	private static HashSet<Feature> featuresSensor;
 	private static HashSet<Feature> featuresStorage; 
+	private static HashSet<Feature> featuresOxygenation; 
 	
 	private HashSet<PartialConfiguration> partialConfiguration; 
 	
@@ -47,6 +48,12 @@ public class StubValidPartialConfigurations {
 		featuresStorage.add(sqlite);
 		featuresStorage.add(memory);
 		featuresStorage.add(file);
+		
+		//featuresOxygenation
+		featuresOxygenation = new HashSet<Feature>();
+		featuresOxygenation.add(sqlite); 
+		featuresOxygenation.add(memory);
+		featuresOxygenation.add(file); 
 	}
 	
 	
@@ -55,8 +62,12 @@ public class StubValidPartialConfigurations {
 		setUp();
 		
 		if (dependantFeatures.containsAll(featuresSensorInformation)) {
-			System.out.println("dependantFeatures.equals(featuresSensorInformation) = TRUE");
+//			System.out.println("dependantFeatures.equals(featuresSensorInformation) = TRUE");
 			return getSensorInformationValidPartialConfigurations();
+		}
+		else if (dependantFeatures.containsAll(featuresOxygenation)){
+//			System.out.println("dependantFeatures.equals(featuresOxygenation)");
+			return getOxygenationValidConfigurations();
 		}
 		else if (dependantFeatures.equals(featuresSensor)){
 			System.out.println("dependantFeatures.equals(featuresSensor) = TRUE");
@@ -70,6 +81,55 @@ public class StubValidPartialConfigurations {
 			System.out.println("Nenhum grupo de features dependentes foi igual");
 			return null;
 		}
+	}
+
+
+	private static HashSet<PartialConfiguration> getOxygenationValidConfigurations() {
+		HashSet<PartialConfiguration> partialOxygenation = new HashSet<PartialConfiguration>(); 
+		
+		//{sqlite}
+		PartialConfiguration partial = new PartialConfiguration(); 
+		partial.addFeature(sqlite);
+		partialOxygenation.add(partial); 
+		
+		//{mem}
+		partial = new PartialConfiguration(); 
+		partial.addFeature(memory);
+		partialOxygenation.add(partial);
+		
+		//{file}
+		partial = new PartialConfiguration(); 
+		partial.addFeature(file);
+		partialOxygenation.add(partial);
+		
+//		//{sqlite, file}
+//		partial = new PartialConfiguration(); 
+//		partial.addFeature(sqlite);
+//		partial.addFeature(file);
+//		partialOxygenation.add(partial);
+//
+//		//{sqlite, mem}
+//		partial = new PartialConfiguration(); 
+//		partial.addFeature(sqlite);
+//		partial.addFeature(memory);
+//		partialOxygenation.add(partial);
+//						
+//		//{mem, file}
+//		partial = new PartialConfiguration(); 
+//		partial.addFeature(memory);
+//		partial.addFeature(file);
+//		partialOxygenation.add(partial);
+//						
+//		//{sqlite, mem, file}
+//		partial = new PartialConfiguration(); 
+//		partial.addFeature(sqlite);
+//		partial.addFeature(memory);
+//		partial.addFeature(file);
+//		partialOxygenation.add(partial);
+						
+				
+//		System.out.println("Partial Configuration for oxygenation: " + partialOxygenation);
+		return partialOxygenation;
 	}
 
 

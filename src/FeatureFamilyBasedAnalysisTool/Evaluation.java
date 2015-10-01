@@ -45,4 +45,13 @@ public class Evaluation {
 	public double getReliability () {
 		return this.reliability; 
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		// TODO Auto-generated method stub
+		Evaluation ev = (Evaluation) obj;
+		if (this.getFeatures().equals(ev.getFeatures()) && (this.getReliability() == ev.getReliability()))
+			return true;
+		return super.equals(obj);
+	}
 }

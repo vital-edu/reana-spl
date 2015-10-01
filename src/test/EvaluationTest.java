@@ -94,7 +94,7 @@ public class EvaluationTest {
 		assertTrue(ev.getFeatures().contains(file));
 		
 		assertTrue(ev.remove(sqlite));
-		assertTrue(! ev.getFeatures().contains(sqlite));		
+		assertFalse(ev.getFeatures().contains(sqlite));		
 	}
 
 }

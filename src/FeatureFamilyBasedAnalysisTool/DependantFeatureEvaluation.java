@@ -37,12 +37,20 @@ public class DependantFeatureEvaluation {
 		
 	}
 
+	
+	public boolean addFeature(PartialConfiguration pc) {
+		return partialConfiguration.addAll(pc.getFeatures());
+	}
+	
+	
 	public Double addFeatureReliabilityValue(Feature feature, double value) {
 		return featureReliability.put(feature, value);
 	}
 
+	
 	public void addFeatureReliabilityValue(
 			HashMap<Feature, Double> featureEvaluation) {
 		featureReliability.putAll(featureEvaluation);
 	}
+
 }

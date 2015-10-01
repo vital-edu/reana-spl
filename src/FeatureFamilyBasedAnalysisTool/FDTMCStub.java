@@ -2,30 +2,192 @@ package FeatureFamilyBasedAnalysisTool;
 
 public class FDTMCStub {
 
-	public FDTMC createFDTMC(String feature) {
-		switch (feature) {
+	public static FDTMC createFDTMC(Feature feature) {
+		switch (feature.getName()) {
 		case "Sqlite":
-			return createSqliteFDTMC();
+			FDTMC sqlite = createSqliteFDTMC();
+			return sqlite;
 		
-		case "Mem": 
-			return createMemFDTMC();
+		case "Memory":
+			return createMemoryFDTMC();
 			
 		case "File":
-			return createFileFDTMC();
+			FDTMC file = createFileFDTMC();
+			return file;
+			
+		case "Oxygenation":
+			FDTMC oxygenation = createOxygenationFDTMC(); 
+			return oxygenation;
 			
 		case "PulseRate":
 			return createPulseRateFDTMC();
+			
+		case "Position":
+			return createPositionFDTMC();
 			
 		case "Situation":
 			return createSituationFDTMC();
 			
 		default:
+			System.out.println("Entrei no default");
 			return null;
 		} 
 	}
 	
 	
-	private FDTMC createSituationFDTMC() {
+	private static FDTMC createOxygenationFDTMC() {
+		FDTMC fdtmcOxygenation = new FDTMC(); 
+		fdtmcOxygenation.setVariableName("sOxygenation");
+		
+		//States Creation
+		State	init = fdtmcOxygenation.createState("init"), 
+				success = fdtmcOxygenation.createState("success"),
+				fail = fdtmcOxygenation.createState("fail"),
+				source, target, target2;
+		
+		source = init; 
+		target = fdtmcOxygenation.createState(); 
+		fdtmcOxygenation.createTransition(source, target, "register", "0.999");
+		fdtmcOxygenation.createTransition(source, fail, "register", "0.001");
+		
+		source = target; 
+		target = fdtmcOxygenation.createState(); 
+		fdtmcOxygenation.createTransition(source, target, "register_return", "0.999");
+		fdtmcOxygenation.createTransition(source, fail, "register_return", "0.001");
+		
+		source = target; 
+		target = fdtmcOxygenation.createState(); 
+		fdtmcOxygenation.createTransition(source, target, "sendSituation_SPO2", "0.999");
+		fdtmcOxygenation.createTransition(source, fail, "sendSituation_SPO2", "0.001");
+		
+		source = target; 
+		target = fdtmcOxygenation.createState(); 
+		fdtmcOxygenation.createTransition(source, target, "persist", "0.999"); 
+		fdtmcOxygenation.createTransition(source, fail, "persist", "0.001");
+		
+		//SQlite selection / interface
+		source = target; 
+		target = fdtmcOxygenation.createState();
+		target2 = fdtmcOxygenation.createState(); 
+		fdtmcOxygenation.createTransition(source, target, "sqliteSelection", "fSqlite");
+		fdtmcOxygenation.createTransition(source, target2, "sqliteSelection", "1-fSqlite");
+		State sucessSqlite = fdtmcOxygenation.createState(); 
+		State failSqlite = fdtmcOxygenation.createState();
+		source = target; 
+		fdtmcOxygenation.createTransition(source, sucessSqlite, "", "rSqlite");
+		fdtmcOxygenation.createTransition(sucessSqlite, target2, "", "1.0");
+		fdtmcOxygenation.createTransition(source, failSqlite, "", "1-rSqlite");
+		fdtmcOxygenation.createTransition(failSqlite, fail, "", "1.0");
+		
+		//Memory selection / interface
+		source = target2; 
+		target = fdtmcOxygenation.createState(); 
+		target2 = fdtmcOxygenation.createState(); 
+		fdtmcOxygenation.createTransition(source, target, "memorySelection", "fMemory");
+		fdtmcOxygenation.createTransition(source, target2, "memorySelection", "1-fMemory");
+		State sucessMemory = fdtmcOxygenation.createState(); 
+		State failMemory = fdtmcOxygenation.createState(); 
+		source = target; 
+		fdtmcOxygenation.createTransition(source, sucessMemory, "", "rMemory");
+		fdtmcOxygenation.createTransition(sucessMemory, target2, "", "1.0");
+		fdtmcOxygenation.createTransition(source, failMemory, "", "1-rMemory");
+		fdtmcOxygenation.createTransition(failMemory, fail, "", "1.0");
+		
+		source = target2; 
+		target = fdtmcOxygenation.createState(); 
+		fdtmcOxygenation.createTransition(source, target, "persistReturn", "0.999");
+		fdtmcOxygenation.createTransition(source, fail, "persistReturn", "0.001");
+		
+		source = target; 
+		target = success; 
+		fdtmcOxygenation.createTransition(source, target, "sendSituation_Oxygenation", "0.999");
+		fdtmcOxygenation.createTransition(source, fail, "sendSituation_Oxygenation", "0.001");
+		
+		fdtmcOxygenation.createTransition(success, success, "", "1.0");
+		fdtmcOxygenation.createTransition(fail, fail, "", "1.0");
+
+		return fdtmcOxygenation;
+	}
+
+
+	
+	private static FDTMC createPositionFDTMC() {
+		FDTMC fdtmcPosition = new FDTMC(); 
+		fdtmcPosition.setVariableName("sPosition");
+		
+		//States Creation
+		State	init = fdtmcPosition.createState("init"), 
+				success = fdtmcPosition.createState("success"),
+				fail = fdtmcPosition.createState("fail"),
+				source, target, target2;
+		
+		source = init; 
+		target = fdtmcPosition.createState(); 
+		fdtmcPosition.createTransition(source, target, "register", "0.999");
+		fdtmcPosition.createTransition(source, fail, "register", "0.001");
+		
+		source = target; 
+		target = fdtmcPosition.createState(); 
+		fdtmcPosition.createTransition(source, target, "register_return", "0.999");
+		fdtmcPosition.createTransition(source, fail, "register_return", "0.001");
+		
+		source = target; 
+		target = fdtmcPosition.createState(); 
+		fdtmcPosition.createTransition(source, target, "sendSituation_POS", "0.999");
+		fdtmcPosition.createTransition(source, fail, "sendSituation_POS", "0.001");
+		
+		source = target; 
+		target = fdtmcPosition.createState(); 
+		fdtmcPosition.createTransition(source, target, "persist", "0.999"); 
+		fdtmcPosition.createTransition(source, fail, "persist", "0.001");
+		
+		//SQlite selection / interface
+		source = target; 
+		target = fdtmcPosition.createState();
+		target2 = fdtmcPosition.createState(); 
+		fdtmcPosition.createTransition(source, target, "sqliteSelection", "fSqlite");
+		fdtmcPosition.createTransition(source, target2, "sqliteSelection", "1-fSqlite");
+		State sucessSqlite = fdtmcPosition.createState(); 
+		State failSqlite = fdtmcPosition.createState();
+		source = target; 
+		fdtmcPosition.createTransition(source, sucessSqlite, "", "rSqlite");
+		fdtmcPosition.createTransition(sucessSqlite, target2, "", "1.0");
+		fdtmcPosition.createTransition(source, failSqlite, "", "1-rSqlite");
+		fdtmcPosition.createTransition(failSqlite, fail, "", "1.0");
+		
+		//Memory selection / interface
+		source = target2; 
+		target = fdtmcPosition.createState(); 
+		target2 = fdtmcPosition.createState(); 
+		fdtmcPosition.createTransition(source, target, "memorySelection", "fMemory");
+		fdtmcPosition.createTransition(source, target2, "memorySelection", "1-fMemory");
+		State sucessMemory = fdtmcPosition.createState(); 
+		State failMemory = fdtmcPosition.createState(); 
+		source = target; 
+		fdtmcPosition.createTransition(source, sucessMemory, "", "rMemory");
+		fdtmcPosition.createTransition(sucessMemory, target2, "", "1.0");
+		fdtmcPosition.createTransition(source, failMemory, "", "1-rMemory");
+		fdtmcPosition.createTransition(failMemory, fail, "", "1.0");
+		
+		source = target2; 
+		target = fdtmcPosition.createState(); 
+		fdtmcPosition.createTransition(source, target, "persistReturn", "0.999");
+		fdtmcPosition.createTransition(source, fail, "persistReturn", "0.001");
+		
+		source = target; 
+		target = success; 
+		fdtmcPosition.createTransition(source, target, "sendSituation_Position", "0.999");
+		fdtmcPosition.createTransition(source, fail, "sendSituation_Position", "0.001");
+		
+		fdtmcPosition.createTransition(success, success, "", "1.0");
+		fdtmcPosition.createTransition(fail, fail, "", "1.0");
+
+		return fdtmcPosition;
+	}
+	
+	
+	
+	private static FDTMC createSituationFDTMC() {
 		FDTMC fdtmcSituation = new FDTMC(); 
 		fdtmcSituation.setVariableName("sSituation");
 		
@@ -83,72 +245,91 @@ public class FDTMCStub {
 	
 
 
-	private FDTMC createSqliteFDTMC() {
+	private static FDTMC createSqliteFDTMC() {
 		FDTMC fdtmcSqlite = new FDTMC(); 
 		fdtmcSqlite.setVariableName("sSqlite");
 		
-		//States Creation
-		State s0, s1, s2, s3;
-		s0 = fdtmcSqlite.createState("error_sqlite");
-		s1 = fdtmcSqlite.createState("init"); 
-		s2 = fdtmcSqlite.createState(); 
-		s3 = fdtmcSqlite.createState("success");
+		State   init =fdtmcSqlite.createState("init"), 
+				success = fdtmcSqlite.createState("success"),
+				fail = fdtmcSqlite.createState("fail"), 
+				source, target;
+		source = init; 
+		target = fdtmcSqlite.createState(); 
+		fdtmcSqlite.createTransition(source, target, "persist", "0.999"); 
+		fdtmcSqlite.createTransition(source, fail, "persist", "0.001");
 		
-		//Transitions Creation
-		//Transition t0, t1, t2, t3; 
-		fdtmcSqlite.createTransition(s1, s2, "persistSqlite", "0.999"); 
-		fdtmcSqlite.createTransition(s1, s0, "persistSqlite", "0.001");
-		fdtmcSqlite.createTransition(s2, s3, "persistSqliteReturn", "0.999");
-		fdtmcSqlite.createTransition(s2, s0, "persistSqliteReturn", "0.001");
+		source = target; 
+		target = success; 
+		fdtmcSqlite.createTransition(source, target, "persist_return", "0.999"); 
+		fdtmcSqlite.createTransition(source, fail, "persist_return", "0.001");
+		
+		fdtmcSqlite.createTransition(success, success, "", "1.0");
+		fdtmcSqlite.createTransition(fail, fail, "", "1.0");
 		
 		return fdtmcSqlite; 
 	}
 	
-	private FDTMC createMemFDTMC() {
-		FDTMC fdtmcMem = new FDTMC(); 
-		fdtmcMem.setVariableName("sMem");
+	private static FDTMC createMemoryFDTMC() {
+		FDTMC fdtmcMemory = new FDTMC(); 
+		fdtmcMemory.setVariableName("sMemory");
 		
 		//States Creation
-		State s0, s1, s2, s3; 
-		s0 = fdtmcMem.createState("error_mem"); 
-		s1 = fdtmcMem.createState("init");
-		s2 = fdtmcMem.createState(); 
-		s3 = fdtmcMem.createState("success");
+		State init = fdtmcMemory.createState("init"), 
+				fail = fdtmcMemory.createState("error_mem"),
+				success = fdtmcMemory.createState("success"), 
+				source, target; 
 		
-		//Transitions creation
-		fdtmcMem.createTransition(s1, s2, "persist", "0.999");
-		fdtmcMem.createTransition(s1, s0, "persist", "0.001"); 
-		fdtmcMem.createTransition(s2, s3, "persistReturn", "0.999"); 
-		fdtmcMem.createTransition(s2, s0, "persistReturn", "0.001");
+		source = init; 
+		target = fdtmcMemory.createState(); 
+		fdtmcMemory.createTransition(source, target, "persist", "0.999");
+		fdtmcMemory.createTransition(source, fail, "persist", "0.001");
 		
-		return fdtmcMem; 	
+		source = target; 
+		fdtmcMemory.createTransition(source, success, "persistReturn", "0.999");
+		fdtmcMemory.createTransition(source, fail, "persistReturn", "0.001");
+		
+		fdtmcMemory.createTransition(success, success, "", "1.0");
+		fdtmcMemory.createTransition(fail, fail, "", "1.0");
+		//Transitions creation 
+//		fdtmcMem.createTransition(s2, success, "persistReturn", "0.999"); 
+//		fdtmcMem.createTransition(s2, fail, "persistReturn", "0.001");
+		
+		return fdtmcMemory; 	
 	}
 	
-	private FDTMC createFileFDTMC() {
+	private static FDTMC createFileFDTMC() {
 		FDTMC fdtmcFile = new FDTMC(); 
 		fdtmcFile.setVariableName("sFile");
-		
+
 		//States Creation
-		State s0, s1, s2, s3, s4; 
-		s0 = fdtmcFile.createState("error_file");
-		s1 = fdtmcFile.createState("init");
-		s2 = fdtmcFile.createState(); 
-		s3 = fdtmcFile.createState(); 
-		s4 = fdtmcFile.createState("success");
+		State 	init = fdtmcFile.createState("init"), 
+				success = fdtmcFile.createState("success"),
+				fail = fdtmcFile.createState("fail"), 
+				source, target; 
 		
-		//Transitions creation
-		fdtmcFile.createTransition(s1, s2, "persist", "0.999");
-		fdtmcFile.createTransition(s1, s0, "persist", "0.001");
-		fdtmcFile.createTransition(s2, s3, "write", "0.999");
-		fdtmcFile.createTransition(s2, s0, "write", "0.001");
-		fdtmcFile.createTransition(s3, s4, "persistReturn", "0.999");
-		fdtmcFile.createTransition(s3, s0, "persistReturn", "0.001");
+		source = init; 
+		target = fdtmcFile.createState(); 
+		fdtmcFile.createTransition(source, target, "persist", "0.999"); 
+		fdtmcFile.createTransition(source, fail, "persist", "0.001"); 
+		
+		source = target; 
+		target = fdtmcFile.createState(); 
+		fdtmcFile.createTransition(source, target, "write", "0.999"); 
+		fdtmcFile.createTransition(source, fail, "write", "0.001"); 
+
+		source = target; 
+		target = success;
+		fdtmcFile.createTransition(source, target, "persistReturn", "0.999"); 
+		fdtmcFile.createTransition(source, fail, "persistReturn", "0.001");
+		fdtmcFile.createTransition(success, success, "", "1.0");
+		fdtmcFile.createTransition(fail, fail, "", "1.0");
+
 		
 		return fdtmcFile;		
 	}
 	
 	
-	private FDTMC createPulseRateFDTMC() {
+	private static FDTMC createPulseRateFDTMC() {
 		FDTMC fdtmcPulseRate = new FDTMC(); 
 		fdtmcPulseRate.setVariableName("sPulseRate");
 		
@@ -188,10 +369,10 @@ public class FDTMCStub {
 		fdtmcPulseRate.createTransition(s6, s8, "", "1-rSqlite");
 		fdtmcPulseRate.createTransition(s7, s9, "", "1.0");
 		fdtmcPulseRate.createTransition(s8, s0, "", "1.0");
-		fdtmcPulseRate.createTransition(s9, s10, "fMemSelection", "fMem");
-		fdtmcPulseRate.createTransition(s9, s13, "fMemSelection", "1-fMem");
-		fdtmcPulseRate.createTransition(s10, s11, "", "rMem");
-		fdtmcPulseRate.createTransition(s10, s12, "", "1-rMem");
+		fdtmcPulseRate.createTransition(s9, s10, "fMemorySelection", "fMemory");
+		fdtmcPulseRate.createTransition(s9, s13, "fMemorySelection", "1-fMemory");
+		fdtmcPulseRate.createTransition(s10, s11, "", "rMemory");
+		fdtmcPulseRate.createTransition(s10, s12, "", "1-rMemory");
 		fdtmcPulseRate.createTransition(s11, s13, "", "1.0");
 		fdtmcPulseRate.createTransition(s12, s0, "", "1.0");
 		fdtmcPulseRate.createTransition(s13, s14, "persistReturn", "0.999");
@@ -207,15 +388,16 @@ public class FDTMCStub {
 	
 	
 	public static void main (String[] args) {
-		FDTMCStub f = new FDTMCStub();
-		System.out.println(f.createFDTMC("Sqlite"));
-		
-		System.out.println(f.createFDTMC("Mem")); 
-		
-		System.out.println(f.createFDTMC("File"));
-		
-		System.out.println(f.createFDTMC("PulseRate"));
-		
-		System.out.println(f.createFDTMC("Situation"));
+//		FDTMCStub f = new FDTMCStub();
+//		System.out.println(f.createFDTMC(Feature.getFeatureByName("File")));
+//		System.out.println(f.createFDTMC("Sqlite"));
+//		
+//		System.out.println(f.createFDTMC("Mem")); 
+//		
+//		System.out.println(f.createFDTMC("File"));
+//		
+//		System.out.println(f.createFDTMC("PulseRate"));
+//		
+//		System.out.println(f.createFDTMC("Situation"));
 	}
 }

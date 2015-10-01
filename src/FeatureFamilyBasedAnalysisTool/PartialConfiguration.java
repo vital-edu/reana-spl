@@ -20,6 +20,11 @@ public class PartialConfiguration {
 		features.add(f);
 	}
 	
+	
+	public HashSet<Feature> getFeatures() {
+		return features;
+	}
+	
 	@Override
 	public String toString() {
 		// TODO Auto-generated method stub
@@ -30,5 +35,10 @@ public class PartialConfiguration {
 		while (it.hasNext()) 
 			resposta += ((Feature)it.next()).getName() + '\n';
 		return resposta;
+	}
+
+
+	public boolean remove(PartialConfiguration pc) {
+		return features.removeAll(pc.getFeatures());
 	}
 }
