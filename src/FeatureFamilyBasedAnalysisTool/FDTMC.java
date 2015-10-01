@@ -61,9 +61,9 @@ public class FDTMC {
 		temp.setVariableName(variableName); 
 		temp.setIndex(index); 
 		states.add(temp);
-		if (initialState == null) {
+		transitionSystem.put(temp, null);
+		if (index == 0)
 			initialState = temp;
-		}
 		index++;
 		return temp;
 	}
@@ -124,14 +124,14 @@ public class FDTMC {
 	@Override
 	public String toString() {
 		String msg = new String();
-		msg += "****************************************************************" + "\n";
-		msg += "FDTMC " + "\n";
-		msg += "****************************************************************" + "\n";
-		msg += "\n";
-		msg += "Variable name: " + this.variableName + "\n";
-		msg += "FDTMC size: " + this.states.size() + " states and " + this.transitionSystem.size() + " transitions." + "\n";
-		msg += "\n";
-		msg += "Transitions:" + "\n";
+//		msg += "****************************************************************" + "\n";
+//		msg += "FDTMC " + "\n";
+//		msg += "****************************************************************" + "\n";
+//		msg += "\n";
+//		msg += "Variable name: " + this.variableName + "\n";
+//		msg += "FDTMC size: " + this.states.size() + " states and " + this.transitionSystem.size() + " transitions." + "\n";
+//		msg += "\n";
+//		msg += "Transitions:" + "\n";
 
 		Set<State> states = this.transitionSystem.keySet();
 		Iterator <State> itStates = states.iterator();
