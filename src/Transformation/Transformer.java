@@ -457,7 +457,8 @@ public class Transformer {
 		Iterator <State> itStates = states.iterator();
 		while (itStates.hasNext()) {
 			State temp = itStates.next();
-			nTrans += fdtmc.getTransitions().get(temp).size();
+			if (fdtmc.getTransitions().get(temp) != null)
+				nTrans += fdtmc.getTransitions().get(temp).size();
 		}
 		System.out.println("Model Size: " + nStates + " states; " + nTrans + " transitions.");
 	}
