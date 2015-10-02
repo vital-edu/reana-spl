@@ -1,4 +1,4 @@
-package FeatureFamilyBasedAnalysisTool;
+package fdtmc;
 
 public interface FDTMCStubInterface {
 

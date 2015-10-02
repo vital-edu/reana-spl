@@ -1,4 +1,4 @@
-package FeatureFamilyBasedAnalysisTool;
+package fdtmc;
 
 import java.awt.List;
 import java.util.HashSet;

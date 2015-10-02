@@ -1,4 +1,4 @@
-package FeatureFamilyBasedAnalysisTool;
+package fdtmc;
 
 import java.util.HashMap;
 import java.util.Iterator;

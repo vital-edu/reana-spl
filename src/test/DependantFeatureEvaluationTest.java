@@ -10,9 +10,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import FeatureFamilyBasedAnalysisTool.DependantFeatureEvaluation;
-import FeatureFamilyBasedAnalysisTool.Feature;
-import FeatureFamilyBasedAnalysisTool.PartialConfiguration;
+import fdtmc.DependantFeatureEvaluation;
+import fdtmc.Feature;
+import fdtmc.PartialConfiguration;
 
 public class DependantFeatureEvaluationTest {
 

@@ -5,8 +5,8 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
-import FeatureFamilyBasedAnalysisTool.FDTMC;
-import FeatureFamilyBasedAnalysisTool.State;
+import fdtmc.FDTMC;
+import fdtmc.State;
 import paramwrapper.ParamWrapper;
 
 public class ReliabilityFormulaTest {

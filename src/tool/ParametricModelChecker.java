@@ -1,7 +1,9 @@
 /**
  *
  */
-package FeatureFamilyBasedAnalysisTool;
+package tool;
+
+import fdtmc.FDTMC;
 
 /**
  * Interface to a parametric model checker.

@@ -9,9 +9,9 @@ import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import FeatureFamilyBasedAnalysisTool.Evaluation;
-import FeatureFamilyBasedAnalysisTool.Feature;
-import FeatureFamilyBasedAnalysisTool.RDGNode;
+import fdtmc.Evaluation;
+import fdtmc.Feature;
+import tool.RDGNode;
 
 
 public class RDGNodeTest {

@@ -5,7 +5,7 @@ import java.util.HashMap;
 
 import org.w3c.dom.DOMException;
 
-import FeatureFamilyBasedAnalysisTool.FDTMC;
+import fdtmc.FDTMC;
 import Parsing.ActivityDiagrams.ADUtil;
 import Parsing.Exceptions.InvalidNodeClassException;
 import Parsing.Exceptions.InvalidNodeType;

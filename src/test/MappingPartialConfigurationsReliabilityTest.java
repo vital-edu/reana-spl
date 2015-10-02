@@ -10,12 +10,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import FeatureFamilyBasedAnalysisTool.Evaluation;
-import FeatureFamilyBasedAnalysisTool.FDTMC;
-import FeatureFamilyBasedAnalysisTool.Feature;
-import FeatureFamilyBasedAnalysisTool.FeatureModel;
-import FeatureFamilyBasedAnalysisTool.PartialConfiguration;
-import FeatureFamilyBasedAnalysisTool.RDGNode;
+import fdtmc.Evaluation;
+import fdtmc.FDTMC;
+import fdtmc.Feature;
+import fdtmc.FeatureModel;
+import fdtmc.PartialConfiguration;
+import tool.RDGNode;
 
 public class MappingPartialConfigurationsReliabilityTest {
 	

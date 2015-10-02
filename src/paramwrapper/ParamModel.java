@@ -13,9 +13,9 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import FeatureFamilyBasedAnalysisTool.FDTMC;
-import FeatureFamilyBasedAnalysisTool.State;
-import FeatureFamilyBasedAnalysisTool.Transition;
+import fdtmc.FDTMC;
+import fdtmc.State;
+import fdtmc.Transition;
 
 
 

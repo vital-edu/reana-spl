@@ -1,22 +1,22 @@
-package FeatureFamilyBasedAnalysisTool;
+package fdtmc;
 
 import java.util.HashSet;
 import java.util.Iterator;
 
 public class FeatureModel {
 
-	private HashSet<Feature> features; 
-	
+	private HashSet<Feature> features;
+
 	public void addFeatures(HashSet<Feature> temp) {
-		this.features = temp;		
+		this.features = temp;
 	}
-	
-	
+
+
 	public HashSet<Feature> getFeatures() {
-		return (HashSet<Feature>) features.clone(); 
+		return (HashSet<Feature>) features.clone();
 	}
-	
-	
+
+
 	@Override
 	public String toString() {
 		System.out.println("Feature Model:");

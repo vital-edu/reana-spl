@@ -11,9 +11,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import FeatureFamilyBasedAnalysisTool.FDTMC;
-import FeatureFamilyBasedAnalysisTool.State;
-import FeatureFamilyBasedAnalysisTool.Transition;
+import fdtmc.FDTMC;
+import fdtmc.State;
+import fdtmc.Transition;
 
 public class FDTMCTest {
 

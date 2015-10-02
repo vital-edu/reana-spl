@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
-import FeatureFamilyBasedAnalysisTool.FDTMC;
-import FeatureFamilyBasedAnalysisTool.State;
+import fdtmc.FDTMC;
+import fdtmc.State;
 import Parsing.ActivityDiagrams.ADReader;
 import Parsing.ActivityDiagrams.Activity;
 import Parsing.ActivityDiagrams.ActivityType;

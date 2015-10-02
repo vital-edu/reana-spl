@@ -2,19 +2,17 @@ package test;
 import static org.junit.Assert.*;
 
 import java.util.HashSet;
-
-
 import java.util.Iterator;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import FeatureFamilyBasedAnalysisTool.BDD;
-import FeatureFamilyBasedAnalysisTool.Evaluation;
-import FeatureFamilyBasedAnalysisTool.Feature;
-import FeatureFamilyBasedAnalysisTool.FeatureModel;
-import FeatureFamilyBasedAnalysisTool.PartialConfiguration;
+import fdtmc.BDD;
+import fdtmc.Evaluation;
+import fdtmc.Feature;
+import fdtmc.FeatureModel;
+import fdtmc.PartialConfiguration;
 
 
 public class BDDTest {

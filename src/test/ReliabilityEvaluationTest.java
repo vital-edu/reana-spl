@@ -10,10 +10,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import FeatureFamilyBasedAnalysisTool.Evaluation;
-import FeatureFamilyBasedAnalysisTool.Feature;
-import FeatureFamilyBasedAnalysisTool.FeatureModel;
-import FeatureFamilyBasedAnalysisTool.RDGNode;
+import fdtmc.Evaluation;
+import fdtmc.Feature;
+import fdtmc.FeatureModel;
+import tool.RDGNode;
 
 public class ReliabilityEvaluationTest {
 

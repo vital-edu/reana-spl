@@ -7,8 +7,8 @@ import java.util.HashMap;
 
 import org.w3c.dom.DOMException;
 
-import FeatureFamilyBasedAnalysisTool.FDTMC;
-import FeatureFamilyBasedAnalysisTool.State;
+import fdtmc.FDTMC;
+import fdtmc.State;
 import Parsing.Node;
 import Parsing.ActivityDiagrams.ADReader;
 import Parsing.ActivityDiagrams.Activity;

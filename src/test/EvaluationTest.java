@@ -8,8 +8,8 @@ import java.util.HashSet;
 import org.junit.Before;
 import org.junit.Test;
 
-import FeatureFamilyBasedAnalysisTool.Evaluation;
-import FeatureFamilyBasedAnalysisTool.Feature;
+import fdtmc.Evaluation;
+import fdtmc.Feature;
 
 
 public class EvaluationTest {

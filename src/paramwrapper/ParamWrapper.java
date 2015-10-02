@@ -14,8 +14,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
-import FeatureFamilyBasedAnalysisTool.FDTMC;
-import FeatureFamilyBasedAnalysisTool.ParametricModelChecker;
+import tool.ParametricModelChecker;
+import fdtmc.FDTMC;
 
 /**
  * Façade to a PARAM executable.
