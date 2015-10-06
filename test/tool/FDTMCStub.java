@@ -39,8 +39,8 @@ public class FDTMCStub {
 		source = target;
 		target = fdtmcOxygenation.createState();
 		target2 = fdtmcOxygenation.createState();
-		fdtmcOxygenation.createTransition(source, target, "sqliteSelection", "fSqlite");
-		fdtmcOxygenation.createTransition(source, target2, "sqliteSelection", "1-fSqlite");
+		fdtmcOxygenation.createTransition(source, target, "sqliteSelection", "1");
+		fdtmcOxygenation.createTransition(source, target2, "sqliteSelection", "0");
 		State sucessSqlite = fdtmcOxygenation.createState();
 		State failSqlite = fdtmcOxygenation.createState();
 		source = target;
@@ -53,8 +53,8 @@ public class FDTMCStub {
 		source = target2;
 		target = fdtmcOxygenation.createState();
 		target2 = fdtmcOxygenation.createState();
-		fdtmcOxygenation.createTransition(source, target, "memorySelection", "fMemory");
-		fdtmcOxygenation.createTransition(source, target2, "memorySelection", "1-fMemory");
+		fdtmcOxygenation.createTransition(source, target, "memorySelection", "1");
+		fdtmcOxygenation.createTransition(source, target2, "memorySelection", "0");
 		State sucessMemory = fdtmcOxygenation.createState();
 		State failMemory = fdtmcOxygenation.createState();
 		source = target;
