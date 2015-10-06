@@ -97,11 +97,15 @@ public class ExpressionSolver {
         }
 
         parser.addVariableAsObject("true", jadd.makeConstant(1));
+        parser.addVariableAsObject("True", jadd.makeConstant(1));
         parser.addVariableAsObject("false", jadd.makeConstant(0));
+        parser.addVariableAsObject("False", jadd.makeConstant(0));
         SymbolTable symbolTable = parser.getSymbolTable();
         Set<String> variables = new HashSet<String>(symbolTable.keySet());
         variables.remove("true");
+        variables.remove("True");
         variables.remove("false");
+        variables.remove("False");
 
         for (Object var: variables) {
             String varName = (String)var;

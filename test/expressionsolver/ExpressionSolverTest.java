@@ -129,11 +129,15 @@ public class ExpressionSolverTest {
     @Test
     public void testBooleanConstants() {
         ADD result = solver.encodeFormula("true && false");
-        assertEquals("Complement of constants should yield an ADD for the result",
+        assertEquals("Aliased constants should yield an ADD for the result",
                 jadd.makeConstant(0), result);
 
         result = solver.encodeFormula("true && !false");
-        assertEquals("Complement of constants should yield an ADD for the result",
+        assertEquals("Complement of aliased constants should yield an ADD for the result",
+                jadd.makeConstant(1), result);
+
+        result = solver.encodeFormula("True && !False");
+        assertEquals("Capitalized aliased constants can also be used",
                 jadd.makeConstant(1), result);
     }
 
