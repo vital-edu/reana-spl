@@ -8,9 +8,6 @@ import jadd.JADD;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,15 +35,25 @@ public class Analyzer {
      * Creates an Analyzer which will follow the logical rules
      * encoded in the provided feature model file.
      *
-     * @param featureModelFile File containing a CNF view of the Feature Model
+     * @param featureModel String containing a CNF view of the Feature Model
      *          expressed using Java logical operators.
      * @throws IOException if there is a problem reading the file.
      */
-    public Analyzer(File featureModelFile) throws IOException {
-        featureModel = parseFeatureModel(featureModelFile);
-        modelChecker = new ParamWrapper();
-        jadd = new JADD();
-        expressionSolver = new ExpressionSolver(jadd);
+    public Analyzer(String featureModel) {
+        this(new JADD(), featureModel);
+    }
+
+    /**
+     * Package-private constructor for testability.
+     * It allows injection of ADD processor an feature model expression.
+     * @param jadd
+     * @param featureModel
+     */
+    Analyzer(JADD jadd, String featureModel) {
+        this.modelChecker = new ParamWrapper();
+        this.jadd = jadd;
+        this.expressionSolver = new ExpressionSolver(jadd);
+        this.featureModel = expressionSolver.encodeFormula(featureModel);
         reliabilityCache = new HashMap<String, ADD>();
     }
 
@@ -74,12 +81,14 @@ public class Analyzer {
             return getCachedReliability(node);
         }
         String reliabilityExpression = getReliabilityExpression(node);
+        System.out.println("Reliability expression for "+ node.getId() + " -> " + reliabilityExpression);
 
         Map<String, ADD> childrenReliabilities = new HashMap<String, ADD>();
-        for (RDGNode child: node.getChildren()) {
+        for (RDGNode child: node.getDependencies()) {
             ADD childReliability = evaluateReliability(child);
+            ADD presenceCondition = expressionSolver.encodeFormula(child.getPresenceCondition());
 
-            ADD phi = child.getPresenceCondition().times(childReliability);
+            ADD phi = presenceCondition.ifThenElse(childReliability, 1);
             childrenReliabilities.put(child.getId(),
                                       phi);
         }
@@ -90,7 +99,13 @@ public class Analyzer {
         // of the reliability ADD. Thus, we must multiply the result by the
         // {0,1} representation of the feature model in order to retain 0 as the
         // value for invalid configurations.
-        return featureModel.times(reliability);
+        ADD result = featureModel.times(reliability);
+
+        jadd.dumpDot("FM*Reliability",
+                     result,
+                     "result-"+node.getId()+".dot");
+        cacheReliability(node, result);
+        return result;
     }
 
     /**
@@ -103,25 +118,6 @@ public class Analyzer {
      */
     public void generateDotFile(ADD familyReliability, String outputFile) {
         jadd.dumpDot("Family Reliability", familyReliability, outputFile);
-    }
-
-    /**
-     * Creates a boolean ADD representing a feature model.
-     *
-     * It is important not to use this ADD with other analyzer, so this
-     * method is private.
-     *
-     * @param featureModelFile File containing a CNF view of the Feature Model
-     *          expressed using Java logical operators.
-     * @return a boolean ADD (only 0 and 1 as terminals) encoding the Feature
-     *          Model rules
-     * @throws IOException if there is a problem reading the file.
-     */
-    private ADD parseFeatureModel(File featureModelFile) throws IOException {
-        Path path = featureModelFile.toPath();
-        String contents = new String(Files.readAllBytes(path), Charset.forName("UTF-8"));
-        ADD featureModel = expressionSolver.encodeFormula(contents);
-        return featureModel;
     }
 
     /**
@@ -141,6 +137,10 @@ public class Analyzer {
 
     private boolean isInCache(RDGNode node) {
         return reliabilityCache.containsKey(node.getId());
+    }
+
+    private void cacheReliability(RDGNode node, ADD reliability) {
+        reliabilityCache.put(node.getId(), reliability);
     }
 
 }

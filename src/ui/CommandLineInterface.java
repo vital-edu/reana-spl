@@ -7,6 +7,9 @@ import jadd.ADD;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import tool.Analyzer;
 import tool.RDGNode;
@@ -28,13 +31,15 @@ public class CommandLineInterface {
         File featureModelFile = new File("fm.txt");
         File umlModels = new File("modeling.xml");
 
-        Analyzer analyzer = null;
+        String featureModel = null;
+        Path path = featureModelFile.toPath();
         try {
-            analyzer = new Analyzer(featureModelFile);
+            featureModel = new String(Files.readAllBytes(path), Charset.forName("UTF-8"));
         } catch (IOException e) {
             System.err.println("Error reading the provided Feature Model.");
             e.printStackTrace();
         }
+        Analyzer analyzer = new Analyzer(featureModel);
         RDGNode rdgRoot = analyzer.model(umlModels);
         ADD familyReliability = analyzer.evaluateReliability(rdgRoot);
         analyzer.generateDotFile(familyReliability, "family-reliability.dot");
