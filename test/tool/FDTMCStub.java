@@ -1,4 +1,7 @@
-package fdtmc;
+package tool;
+
+import fdtmc.FDTMC;
+import fdtmc.State;
 
 public class FDTMCStub {
 

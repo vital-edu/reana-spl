@@ -1,4 +1,4 @@
-package test.paramwrapper;
+package paramwrapper;
 
 import static org.junit.Assert.*;
 
