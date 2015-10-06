@@ -1,4 +1,4 @@
-package test.expressionsolver;
+package expressionsolver;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -49,10 +49,10 @@ public class ExpressionSolverTest {
         assertEquals("Expression evaluation must honor provided interpretations",
                 expected, result);
 
-        jadd.dumpDot("FM", presenceCondition, "out.dot");
-//        jadd.dumpDot(new String[]{"Result", "PresenceCondition"},
-//                     new ADD[]{result, presenceCondition},
-//                     "out.dot");
+//        jadd.dumpDot("FM", presenceCondition, "out.dot");
+        jadd.dumpDot(new String[]{"Result", "PresenceCondition"},
+                     new ADD[]{result, presenceCondition},
+                     "out.dot");
     }
 
     @Test
@@ -123,6 +123,19 @@ public class ExpressionSolverTest {
                 jadd.makeConstant(1), result);
     }
 
+    /**
+     * We defined boolean constants "true" and "false" for better reading.
+     */
+    @Test
+    public void testBooleanConstants() {
+        ADD result = solver.encodeFormula("true && false");
+        assertEquals("Complement of constants should yield an ADD for the result",
+                jadd.makeConstant(0), result);
+
+        result = solver.encodeFormula("true && !false");
+        assertEquals("Complement of constants should yield an ADD for the result",
+                jadd.makeConstant(1), result);
+    }
 
     @Test
     public void testFormula() {

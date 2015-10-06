@@ -4,7 +4,9 @@ import jadd.ADD;
 import jadd.JADD;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.nfunk.jep.JEP;
 import org.nfunk.jep.SymbolTable;
@@ -24,7 +26,6 @@ import expressionsolver.functions.UnaryMinus;
  */
 public class ExpressionSolver {
 
-    private JEP parser;
     private JADD jadd;
 
     /**
@@ -32,19 +33,6 @@ public class ExpressionSolver {
      */
     public ExpressionSolver(JADD jadd) {
         this.jadd = jadd;
-        parser = new JEP(false,
-                         true,
-                         false,
-                         new ADDNumberFactory(jadd));
-        parser.addFunction("\"+\"", new Add());
-        parser.addFunction("\"-\":2", new Subtract());
-        parser.addFunction("\"-\":1", new UnaryMinus());
-        parser.addFunction("\"*\"", new Multiply());
-        parser.addFunction("\"/\"", new Divide());
-
-        parser.addFunction("\"&&\"", new LogicalAnd());
-        parser.addFunction("\"||\"", new LogicalOr());
-        parser.addFunction("\"!\"", new LogicalNot());
     }
 
     /**
@@ -58,6 +46,7 @@ public class ExpressionSolver {
      *      according to the ADDs involved.
      */
     public ADD solveExpression(String expression, Map<String, ADD> interpretation) {
+        JEP parser = makeParser(jadd);
         parser.parseExpression(expression);
         if (parser.hasError()) {
             System.err.println("Parser error: " + parser.getErrorInfo());
@@ -100,19 +89,46 @@ public class ExpressionSolver {
      * @return
      */
     public ADD encodeFormula(String formula) {
+        JEP parser = makeParser(jadd);
         parser.parseExpression(formula);
         if (parser.hasError()) {
             System.err.println("Parser error: " + parser.getErrorInfo());
             return null;
         }
 
+        parser.addVariableAsObject("true", jadd.makeConstant(1));
+        parser.addVariableAsObject("false", jadd.makeConstant(0));
         SymbolTable symbolTable = parser.getSymbolTable();
-        for (Object var: symbolTable.keySet()) {
+        Set<String> variables = new HashSet<String>(symbolTable.keySet());
+        variables.remove("true");
+        variables.remove("false");
+
+        for (Object var: variables) {
             String varName = (String)var;
             ADD variable = jadd.getVariable(varName);
             parser.addVariableAsObject(varName, variable);
         }
         return (ADD)parser.getValueAsObject();
+    }
+
+    /**
+     * @param jadd
+     */
+    private JEP makeParser(JADD jadd) {
+        JEP parser = new JEP(false,
+                true,
+                false,
+                new ADDNumberFactory(jadd));
+        parser.addFunction("\"+\"", new Add());
+        parser.addFunction("\"-\":2", new Subtract());
+        parser.addFunction("\"-\":1", new UnaryMinus());
+        parser.addFunction("\"*\"", new Multiply());
+        parser.addFunction("\"/\"", new Divide());
+
+        parser.addFunction("\"&&\"", new LogicalAnd());
+        parser.addFunction("\"||\"", new LogicalOr());
+        parser.addFunction("\"!\"", new LogicalNot());
+        return parser;
     }
 
 }
