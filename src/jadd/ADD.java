@@ -123,14 +123,23 @@ public class ADD {
         Set<String> variables = new HashSet<String>();
 
         Pointer<Integer> variablesPtr = BigcuddLibrary.Cudd_SupportIndex(dd, this.function);
-        int[] variablesPresence = variablesPtr.getInts(BigcuddLibrary.Cudd_ReadSize(dd));
         int numVars = BigcuddLibrary.Cudd_ReadSize(dd);
+        int[] variablesPresence = variablesPtr.getInts(numVars);
         for (short i = 0; i < numVars; i++) {
             if (variablesPresence[i] == 1) {
                 variables.add(variableStore.getName(i));
             }
         }
         return variables;
+    }
+
+    public double eval(String[] variables) {
+        int[] presenceVector = variableStore.toPresenceVector(variables);
+        Pointer<DdNode> terminal = BigcuddLibrary.Cudd_Eval(dd,
+                                                            function,
+                                                            Pointer.pointerToInts(presenceVector));
+        DdNode terminalNode = terminal.get();
+        return terminalNode.type().value();
     }
 
     /* (non-Javadoc)

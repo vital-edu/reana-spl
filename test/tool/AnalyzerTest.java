@@ -40,17 +40,52 @@ public class AnalyzerTest {
         RDGNode node = BSNNodes.getOxygenationRDGNode();
         ADD reliability = analyzer.evaluateReliability(node);
 
-        analyzer.generateDotFile(reliability, "test/oxygenation.dot");
+        String[] sqliteConfig = new String[]{
+                "Root",
+                "Monitoring",
+                "Storage",
+                "SensorInformation",
+                "Sensor",
+                "Oxygenation",
+                "SPO2",
+                "SQLite"};
+        Assert.assertEquals("Configuration with SQLite",
+                0.9920279440699441, reliability.eval(sqliteConfig), 1E-14);
 
-        ADD featureModel = solver.encodeFormula(fmBSN);
-        ADD sqlite = jadd.getVariable("SQLite").times(jadd.makeConstant(0.9890587955100504));
-        ADD memory = jadd.getVariable("Memory").times(jadd.makeConstant(0.9890587955100504));
-        ADD file = jadd.getVariable("File").times(jadd.makeConstant(0.9890548353295385));
-        ADD expected = featureModel.times(sqlite)
-                       .plus(featureModel.times(memory))
-                       .plus(featureModel.times(file));
-        analyzer.generateDotFile(expected, "test/expected_oxygenation.dot");
-        Assert.assertEquals(expected, reliability);
+        String[] memoryConfig = new String[]{
+                "Root",
+                "Monitoring",
+                "Storage",
+                "SensorInformation",
+                "Sensor",
+                "Oxygenation",
+                "SPO2",
+                "Memory"};
+        Assert.assertEquals("Configuration with Memory",
+                0.9920279440699441, reliability.eval(memoryConfig), 1E-14);
+
+        String[] fileConfig = new String[]{
+                "Root",
+                "Monitoring",
+                "Storage",
+                "SensorInformation",
+                "Sensor",
+                "Oxygenation",
+                "SPO2",
+                "File"};
+        Assert.assertEquals("Configuration without SQLite or Memory",
+                0.994014980014994001, reliability.eval(fileConfig), 1E-14);
+
+        String[] noneConfig = new String[]{
+                "Root",
+                "Monitoring",
+                "Storage",
+                "SensorInformation",
+                "Sensor",
+                "Oxygenation",
+                "SPO2"};
+        Assert.assertEquals("Invalid configuration",
+                0, reliability.eval(noneConfig), 1E-14);
     }
 
 }
