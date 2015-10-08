@@ -1,5 +1,4 @@
-package test;
-
+package fdtmc;
 
 import static org.junit.Assert.*;
 
@@ -31,12 +30,12 @@ public class FDTMCTest {
 		Assert.assertTrue(fdtmc1.getLabels().isEmpty());
 		Assert.assertEquals(0, fdtmc1.getVariableIndex());
 	}
-	
+
 	/**
-	 * This test ensures if a state is created accordingly. The returned state must be 
+	 * This test ensures if a state is created accordingly. The returned state must be
 	 * different than null, it must be inside the FDTMC's states set, it must have the
-	 * index equals to 0 (it is the first state) and it variable name must be equals to 
-	 *  name defined. 
+	 * index equals to 0 (it is the first state) and it variable name must be equals to
+	 *  name defined.
 	 */
 	@Test
 	public void testCreateState() {
@@ -48,7 +47,7 @@ public class FDTMCTest {
 		Assert.assertEquals("x", temp.getVariableName());
 		Assert.assertEquals(temp, fdtmc1.getInitialState());
 	}
-	
+
 	/**
 	 * This test is similar to the test of creation a single state. However it ensures
 	 * states created in sequence will have index value in sequence.
@@ -87,11 +86,11 @@ public class FDTMCTest {
 
 		Assert.assertEquals(s0, fdtmc1.getInitialState());
 	}
-	
-	
+
+
 	/**
-	 * This test ensures we can set a label to a state. It doesn't do too much, 
-	 * but it was useful to create the labeling function for states. 
+	 * This test ensures we can set a label to a state. It doesn't do too much,
+	 * but it was useful to create the labeling function for states.
 	 */
 	@Test
 	public void testCreateLabeledState() {
@@ -108,11 +107,11 @@ public class FDTMCTest {
 
 		Assert.assertEquals(s0, fdtmc1.getInitialState());
 	}
-	
-	
+
+
 	/**
-	 * This test ensures we can create transitions between FDTMC's states, passing the states,  
-	 * transition name and probability value as parameters. 
+	 * This test ensures we can create transitions between FDTMC's states, passing the states,
+	 * transition name and probability value as parameters.
 	 */
 	@Test
 	public void testCreateTransition() {
@@ -124,11 +123,11 @@ public class FDTMCTest {
 		Assert.assertTrue(fdtmc1.createTransition(s0, s1, "alpha", Double.toString(0.95)));
 		Assert.assertTrue(fdtmc1.createTransition(s0, s2, "alpha", Double.toString(0.05)));
 	}
-	
-	
+
+
 	/**
 	 * This test is similar to the test above (testCreateTransition), however it test if the
-	 * creation of transitions with parameters instead of real values works accordingly. 
+	 * creation of transitions with parameters instead of real values works accordingly.
 	 */
 	@Test
 	public void testCreateTransitionWithParameter() {
@@ -140,10 +139,10 @@ public class FDTMCTest {
 		Assert.assertTrue(fdtmc1.createTransition(s0, s1, "alpha", "rAlpha"));
 		Assert.assertTrue(fdtmc1.createTransition(s0, s2, "alpha", "1-rAlpha"));
 	}
-	
-	
+
+
 	/**
-	 * This test ensures a created state can be recovered by its label. 
+	 * This test ensures a created state can be recovered by its label.
 	 */
 	@Test
 	public void testGetStateByLabel() {
@@ -156,20 +155,20 @@ public class FDTMCTest {
 		t0 = fdtmc1.getStateByLabel("init");
 		t1 = fdtmc1.getStateByLabel("success");
 		t2 = fdtmc1.getStateByLabel("error");
-		
+
 		Assert.assertSame(t0, s0);
 		Assert.assertSame(t1, s1);
 		Assert.assertSame(t2, s2);
 	}
-	
-	
+
+
 	/**
-	 * This test ensures it is possible to recover a transition (and all of its information like 
+	 * This test ensures it is possible to recover a transition (and all of its information like
 	 * probability and source and target states) by using its name.
 	 */
 	@Test
 	public void testGetTransitionByActionName() {
-		State s0, s1, s2; 
+		State s0, s1, s2;
 		s0 = fdtmc1.createState("init");
 		s1 = fdtmc1.createState("sucess");
 		s2 = fdtmc1.createState("error");
@@ -186,68 +185,68 @@ public class FDTMCTest {
 		Assert.assertEquals("rAlpha", t1.getProbability());
 		Assert.assertSame(s0, t1.getSource());
 		Assert.assertSame(s1, t1.getTarget());
-		
+
 		Assert.assertNotNull(t2);
 		Assert.assertEquals("alpha_error", t2.getActionName());
 		Assert.assertEquals("1-rAlpha", t2.getProbability());
 		Assert.assertSame(s0, t2.getSource());
 		Assert.assertSame(s2, t2.getTarget());
 	}
-	
-	
-	
+
+
+
 	/**
-	 * This test must ensure that the FDTMC will be printed (or builded) considering the order 
-	 * the states and transitions were build. 
+	 * This test must ensure that the FDTMC will be printed (or builded) considering the order
+	 * the states and transitions were build.
 	 */
 	@Test
 	public void testPrintOrderedFDTMC (){
-		FDTMC fdtmc = new FDTMC(); 
+		FDTMC fdtmc = new FDTMC();
 		fdtmc.setVariableName("sSqlite");
 		State init = fdtmc.createState("init"),
 			  success = fdtmc.createState("success"),
-			  error = fdtmc.createState("fail"), 
-			  source, 
-			  target; 
-		
+			  error = fdtmc.createState("fail"),
+			  source,
+			  target;
+
 		source = init;
-		target = fdtmc.createState(); 
+		target = fdtmc.createState();
 		Assert.assertTrue(fdtmc.createTransition(source, target, "persist", "0.999"));
 		Assert.assertTrue(fdtmc.createTransition(source, error, "persist", "0.001"));
-		
-		source = target; 
+
+		source = target;
 		target = success;
 		Assert.assertTrue(fdtmc.createTransition(source, target, "persist_return", "0.999"));
 		Assert.assertTrue(fdtmc.createTransition(source, target, "persist_return", "0.001"));
-		
+
 		Assert.assertTrue(fdtmc.createTransition(success, success, "", "1.0"));
 		Assert.assertTrue(fdtmc.createTransition(error, error, "", "1.0"));
-		
-		
-		String expectedAnswer = "sSqlite=0(init) --- persist / 0.999 ---> sSqlite=3" + '\n' 
-				+ "sSqlite=0(init) --- persist / 0.001 ---> sSqlite=2(fail)" + '\n' 
-				+ "sSqlite=1(success) ---  / 1.0 ---> sSqlite=1(success)" + '\n' 
-				+ "sSqlite=2(fail) ---  / 1.0 ---> sSqlite=2(fail)" + '\n' 
-				+ "sSqlite=3 --- persist_return / 0.999 ---> sSqlite=1(success)" + '\n' 
+
+
+		String expectedAnswer = "sSqlite=0(init) --- persist / 0.999 ---> sSqlite=3" + '\n'
+				+ "sSqlite=0(init) --- persist / 0.001 ---> sSqlite=2(fail)" + '\n'
+				+ "sSqlite=1(success) ---  / 1.0 ---> sSqlite=1(success)" + '\n'
+				+ "sSqlite=2(fail) ---  / 1.0 ---> sSqlite=2(fail)" + '\n'
+				+ "sSqlite=3 --- persist_return / 0.999 ---> sSqlite=1(success)" + '\n'
 				+ "sSqlite=3 --- persist_return / 0.001 ---> sSqlite=1(success)" + '\n';
-		
+
 		Assert.assertEquals(expectedAnswer, fdtmc.toString());
 	}
 
-	
-	
-	
-	
+
+
+
+
 	/**
 	 * This test aims to ensure if the DOT file for a specific RDG node is being created accordingly.
 	 */
 	@Test
 	public void testCreateDotFile() {
 		fail("Not yet implemented");
-		
-		
+
+
 	}
-	
+
 //	/**
 //	 * This test aims to ensure if the DOT file for a specific RDG node is being created accordingly.
 //	 */
