@@ -11,6 +11,9 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
+import joptsimple.OptionSpec;
 import tool.Analyzer;
 import tool.RDGNode;
 
@@ -26,10 +29,10 @@ public class CommandLineInterface {
      * @param args
      */
     public static void main(String[] args) {
-        // TODO Auto-generated method stub
-        // TODO Use a CLI parser library to get options
-        File featureModelFile = new File("fm.txt");
-        File umlModels = new File("modeling.xml");
+        Options options = Options.parseOptions(args);
+
+        File featureModelFile = new File(options.featureModelFilePath);
+        File umlModels = new File(options.umlModelsFilePath);
 
         String featureModel = null;
         Path path = featureModelFile.toPath();
