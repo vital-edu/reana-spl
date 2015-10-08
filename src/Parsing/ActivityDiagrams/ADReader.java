@@ -11,6 +11,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
+/**
+ * @author andlanna
+ *
+ */
 public class ADReader {
 	private int index;
 	private String name;
@@ -66,6 +70,12 @@ public class ADReader {
 		return next;
 	}
 
+	
+	/**
+	 * retrieveActivities function is responsible for identifying the activity diagrams 
+	 * represented in a XMI file, identify all the activities in each activity diagram and
+	 * create the trace (link) between each activity and its related sequence diagram.    
+	 */
 	public void retrieveActivities() {
 		org.w3c.dom.Node ad;
 		ArrayList<org.w3c.dom.Node> adList = new ArrayList<org.w3c.dom.Node>();
@@ -125,6 +135,16 @@ public class ADReader {
 		}
 	}
 
+	
+	
+	/**
+	 * The retrieveEdges functions is responsible for identifying all the edges between the activities
+	 * represented at an activity diagram. Given an activity diagram the function traverse its XMI 
+	 * fragment and whenever it finds an edge node, the information needed is extract (id, edge name, 
+	 * edge type, source and target activities, guards conditions). By the end the function creates a 
+	 * mapping <id, edge>.  
+	 * @param node The XMI fragment representing a sequence diagram to be parsed. 
+	 */
 	public void retrieveEdges(org.w3c.dom.Node node) {
 		NodeList elements = node.getChildNodes();
 		this.edges = new ArrayList<Edge>();
@@ -173,6 +193,15 @@ public class ADReader {
 		}
 	}
 
+	
+	
+	/**
+	 * The solveActivities' role is to represent the activity diagram in memory (by using Activity 
+	 * and Edge objects. This function is called after retrieveActivities and retrieveEdges functions,
+	 * because all the objects needed for creating the representation are avaiable. In the end the 
+	 * orderActivities function is called to ensure the order which the activities happen.    
+	 * @param node The node object (i.e. the XMI fragment) representing the whole activity diagram.  
+	 */
 	public void solveActivities(org.w3c.dom.Node node) {
 		NodeList elements = node.getChildNodes();
 		for (int s = 0; s < elements.getLength(); s++) {
@@ -194,6 +223,12 @@ public class ADReader {
 		orderActivities();
 	}
 
+	
+	
+	
+	/**
+	 * This function is used to order the activities of a sequence diagram. 
+	 */
 	public void orderActivities() {
 		int i = 0, j;
 		LinkedList<Activity> queue = new LinkedList<Activity>();
