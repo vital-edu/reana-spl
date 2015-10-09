@@ -364,6 +364,8 @@ public class Transformer {
 		Activity sourceAct = adEdge.getSource();
 		State targetState;
 
+		String sourceActivitySD = sourceAct.getSd() != null ? sourceAct.getSd().getName() : "";
+
 		if (sourceAct.getType().equals(ActivityType.initialNode)) {
 			for (Edge e : targetAct.getOutgoing()) {
 				transformPath(fdtmc, fdtmcState, e);
@@ -371,31 +373,31 @@ public class Transformer {
 		} else if (sourceAct.getType().equals(ActivityType.call)) {
 			stateByActID.put(sourceAct.getId(), fdtmcState); // insere source no hashmap
 			targetState = stateByActID.get(targetAct.getId()); // verifica se target esta no hashmap
-			
+
 			if (targetState == null) { // atividade target nao foi criada
 				if (targetAct.getType().equals(ActivityType.finalNode)) {
-					targetState = fdtmc.createState("final");
+					targetState = fdtmc.createState("success");
 					stateByActID.put(targetAct.getId(), targetState);
 					fdtmc.createTransition(targetState, targetState, "", "1.0");
 				}
 				else targetState = fdtmc.createState();
-				
+
 				fdtmc.createTransition(fdtmcState, targetState, sourceAct.getName(), "r"
-						+ sourceAct.getName());
-				
+						+ sourceActivitySD);
+
 				/* continue path */
 				for (Edge e : targetAct.getOutgoing()) {
 					transformPath(fdtmc, targetState, e);
 				}
 			} else { // atividade target ja foi criada
 				fdtmc.createTransition(fdtmcState, targetState, sourceAct.getName(), "r"
-						+ sourceAct.getName());
+						+ sourceActivitySD);
 				/* end path */
 			}
 		} else if (sourceAct.getType().equals(ActivityType.decision)) {
 			stateByActID.put(sourceAct.getId(), fdtmcState); // insere source no hashmap
 			targetState = stateByActID.get(targetAct.getId()); // verifica se target esta no hashmap
-			
+
 			if (targetState == null) { // atividade target nao foi criada
 				if (targetAct.getType().equals(ActivityType.finalNode)) {
 					targetState = fdtmc.createState("final");
