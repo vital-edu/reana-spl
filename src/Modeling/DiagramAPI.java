@@ -1,44 +1,36 @@
 package Modeling;
 
 import java.io.File;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.w3c.dom.DOMException;
 
 import tool.RDGNode;
-import fdtmc.FDTMC;
-import fdtmc.State;
-import Parsing.Node;
 import Parsing.ActivityDiagrams.ADReader;
 import Parsing.ActivityDiagrams.Activity;
-import Parsing.ActivityDiagrams.ActivityType;
-import Parsing.ActivityDiagrams.Edge;
 import Parsing.Exceptions.InvalidNodeClassException;
 import Parsing.Exceptions.InvalidNodeType;
 import Parsing.Exceptions.InvalidNumberOfOperandsException;
 import Parsing.Exceptions.InvalidTagException;
 import Parsing.Exceptions.UnsupportedFragmentTypeException;
 import Parsing.SequenceDiagrams.Fragment;
-import Parsing.SequenceDiagrams.Message;
-import Parsing.SequenceDiagrams.MessageType;
-import Parsing.SequenceDiagrams.Operand;
 import Parsing.SequenceDiagrams.SDReader;
 import Transformation.Transformer;
+import fdtmc.FDTMC;
 
 public class DiagramAPI {
 	// Attributes
-	
+
 		private final File xmlFile;
 		private ArrayList<SDReader> sdParsers;
 		private ADReader adParser;
 		private HashMap<String, Fragment> sdByID;
 		private Transformer transformer;
-		
+
 		//private HashMap<String, FDTMC> fdtmcByName;
 		//private HashMap<String, State> stateByActID;
-	
+
 	// Constructors
 
 		public DiagramAPI(File xmlFile) throws DOMException, UnsupportedFragmentTypeException, InvalidTagException {
@@ -50,14 +42,14 @@ public class DiagramAPI {
 
 			initialize();
 		}
-		
+
 	// Relevant public methods
 
 
 		/**
 		 * Triggers the applicable transformations, either AD or SD based
-		 * @throws InvalidNumberOfOperandsException 
-		 * @throws InvalidNodeClassException 
+		 * @throws InvalidNumberOfOperandsException
+		 * @throws InvalidNodeClassException
 		 */
 		public RDGNode transform() throws InvalidNumberOfOperandsException, InvalidNodeClassException, InvalidNodeType {
 			RDGNode topLevel = transformer.transformSingleAD(adParser);
@@ -66,11 +58,11 @@ public class DiagramAPI {
 			}
 			return topLevel;
 		}
-		
+
 		public void measureSizeModel (FDTMC fdtmc) {
 			transformer.measureSizeModel(fdtmc);
 		}
-		
+
 		public void printNumberOfCalls (String name) {
 			transformer.printNumberOfCalls(name);
 		}
@@ -115,7 +107,7 @@ public class DiagramAPI {
 				}
 			}
 		}
-		
+
 	// Getters and Setters
 
 		public HashMap<String, FDTMC> getFdtmcByName() {
