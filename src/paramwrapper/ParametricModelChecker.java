@@ -1,7 +1,7 @@
 /**
  *
  */
-package tool;
+package paramwrapper;
 
 import fdtmc.FDTMC;
 

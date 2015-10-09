@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import paramwrapper.ParamWrapper;
+import paramwrapper.ParametricModelChecker;
 import expressionsolver.ExpressionSolver;
 import fdtmc.FDTMC;
 
