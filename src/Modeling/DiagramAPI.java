@@ -31,7 +31,7 @@ public class DiagramAPI {
 	
 		private final File xmlFile;
 		private ArrayList<SDReader> sdParsers;
-		private ArrayList<ADReader> adParsers;
+		private ADReader adParser;
 		private HashMap<String, Fragment> sdByID;
 		private Transformer transformer;
 		
@@ -39,47 +39,20 @@ public class DiagramAPI {
 		//private HashMap<String, State> stateByActID;
 	
 	// Constructors
-		
-		public DiagramAPI(File xmlFile) {
+
+		public DiagramAPI(File xmlFile) throws DOMException, UnsupportedFragmentTypeException, InvalidTagException {
 			this.xmlFile = xmlFile;
-			adParsers = new ArrayList<ADReader>();
+			adParser = null;
 			sdParsers = new ArrayList<SDReader>();
 			sdByID = new HashMap<String, Fragment>();
 			transformer = new Transformer();
-			
-			//fdtmcByName = new HashMap<String, FDTMC>();
-			//stateByActID = new HashMap<String, State>();
+
+			initialize();
 		}
 		
 	// Relevant public methods
-		
-		/**
-		 * Initializes the model transformation activities,
-		 * starting from parsing the XMI file and 
-		 * then applying the transformation functions
-		 * @throws InvalidTagException 
-		 * @throws UnsupportedFragmentTypeException 
-		 * @throws InvalidGuardException 
-		 * @throws DOMException 
-		 */
-		public void initialize() throws UnsupportedFragmentTypeException, InvalidTagException, DOMException {
-			ADReader adParser = new ADReader(this.xmlFile, 0);
-			adParser.retrieveActivities();
-			this.adParsers.add(adParser);
-			
-			boolean hasNext = false;
-			int index = 0;
-			do {
-				SDReader sdParser = new SDReader(this.xmlFile, index);
-				sdParser.traceDiagram();
-				sdByID.put(sdParser.getSD().getId(), sdParser.getSD());
-				this.sdParsers.add(sdParser);
-				hasNext = sdParser.hasNext();
-				index++;
-			} while (hasNext);
-			linkSdToActivity(this.adParsers.get(0));
-		}
-		
+
+
 		/**
 		 * Triggers the applicable transformations, either AD or SD based
 		 * @throws InvalidNumberOfOperandsException 
@@ -106,6 +79,33 @@ public class DiagramAPI {
 	// Relevant private methods
 
 		/**
+		 * Initializes the model transformation activities,
+		 * starting from parsing the XMI file and
+		 * then applying the transformation functions
+		 * @throws InvalidTagException
+		 * @throws UnsupportedFragmentTypeException
+		 * @throws InvalidGuardException
+		 * @throws DOMException
+		 */
+		private void initialize() throws UnsupportedFragmentTypeException, InvalidTagException, DOMException {
+		    ADReader adParser = new ADReader(this.xmlFile, 0);
+		    adParser.retrieveActivities();
+		    this.adParser = adParser;
+
+		    boolean hasNext = false;
+		    int index = 0;
+		    do {
+		        SDReader sdParser = new SDReader(this.xmlFile, index);
+		        sdParser.traceDiagram();
+		        sdByID.put(sdParser.getSD().getId(), sdParser.getSD());
+		        this.sdParsers.add(sdParser);
+		        hasNext = sdParser.hasNext();
+		        index++;
+		    } while (hasNext);
+		    linkSdToActivity(this.adParser);
+		}
+
+		/**
 		 * Links activities of an AD to their respective SD
 		 * @param ad
 		 */
@@ -127,15 +127,8 @@ public class DiagramAPI {
 			return sdParsers;
 		}
 
-		public void setSdParsers(ArrayList<SDReader> sdParsers) {
-			this.sdParsers = sdParsers;
+		public ADReader getAdParser() {
+			return adParser;
 		}
 
-		public ArrayList<ADReader> getAdParsers() {
-			return adParsers;
-		}
-
-		public void setAdParsers(ArrayList<ADReader> adParsers) {
-			this.adParsers = adParsers;
-		}
 }
