@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
+import tool.RDGNode;
 import fdtmc.FDTMC;
 import fdtmc.State;
 import Parsing.ActivityDiagrams.ADReader;
@@ -43,7 +44,7 @@ public class Transformer {
 	 * Transforms an AD to a fDTMC
 	 * @param adParser
 	 */
-	public void transformSingleAD(ADReader adParser) {
+	public RDGNode transformSingleAD(ADReader adParser) {
 		FDTMC fdtmc = new FDTMC();
 		State init;
 		
@@ -56,6 +57,12 @@ public class Transformer {
 		
 		transformPath(fdtmc, init, adParser.getActivities().get(0).getOutgoing().get(0));
 		System.out.println(fdtmc.toString());
+
+		// The method currently does not support variability in ADs.
+		RDGNode node = new RDGNode(adParser.getName(),
+		                           "true",
+		                           fdtmc);
+		return node;
 	}
 	
 	/**

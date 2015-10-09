@@ -7,6 +7,7 @@ import java.util.HashMap;
 
 import org.w3c.dom.DOMException;
 
+import tool.RDGNode;
 import fdtmc.FDTMC;
 import fdtmc.State;
 import Parsing.Node;
@@ -58,14 +59,12 @@ public class DiagramAPI {
 		 * @throws InvalidNumberOfOperandsException 
 		 * @throws InvalidNodeClassException 
 		 */
-		public void transform() throws InvalidNumberOfOperandsException, InvalidNodeClassException, InvalidNodeType {
-			for (ADReader adParser : this.adParsers) {
-				transformer.transformSingleAD(adParser);
-			}
-
+		public RDGNode transform() throws InvalidNumberOfOperandsException, InvalidNodeClassException, InvalidNodeType {
+			RDGNode topLevel = transformer.transformSingleAD(adParser);
 			for (SDReader sdParser : this.sdParsers) {
 				transformer.transformSingleSD(sdParser.getSD());
 			}
+			return topLevel;
 		}
 		
 		public void measureSizeModel (FDTMC fdtmc) {
