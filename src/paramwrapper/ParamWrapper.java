@@ -91,11 +91,13 @@ public class ParamWrapper implements ParametricModelChecker {
 	}
 
 	private String invokeAndGetResult(String commandLine, String resultsPath) throws IOException {
+	    System.out.println(commandLine);
 		Process program = Runtime.getRuntime().exec(commandLine);
+		int exitCode = 0;
 		try {
-			int exitCode = program.waitFor();
+			exitCode = program.waitFor();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
+			System.err.println("Exit code: " + exitCode);
 			e.printStackTrace();
 		}
 		List<String> lines = Files.readAllLines(Paths.get(resultsPath), Charset.forName("UTF-8"));
