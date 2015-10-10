@@ -22,6 +22,7 @@ import fdtmc.FDTMC;
 public class ParamWrapper implements ParametricModelChecker {
 	private final String PARAM_PATH = "/opt/param-2-3-64";
 	private final String PRISM_PATH = "/opt/prism-4.2.1-src/bin/prism";
+	private boolean USE_PRISM = false;
 
 	public String fdtmcToParam(FDTMC fdtmc) {
 		ParamModel model = new ParamModel(fdtmc);
@@ -53,14 +54,14 @@ public class ParamWrapper implements ParametricModelChecker {
 			File resultsFile = File.createTempFile("result", null);
 
 			String formula;
-			if (model.contains("param")) {
-				formula = invokeParametricModelChecker(modelFile.getAbsolutePath(),
-													   propertyFile.getAbsolutePath(),
-													   resultsFile.getAbsolutePath());
+			if (USE_PRISM && !model.contains("param")) {
+			    formula = invokeModelChecker(modelFile.getAbsolutePath(),
+			                                 propertyFile.getAbsolutePath(),
+			                                 resultsFile.getAbsolutePath());
 			} else {
-				formula = invokeModelChecker(modelFile.getAbsolutePath(),
-											 propertyFile.getAbsolutePath(),
-											 resultsFile.getAbsolutePath());
+			    formula = invokeParametricModelChecker(modelFile.getAbsolutePath(),
+			                                           propertyFile.getAbsolutePath(),
+			                                           resultsFile.getAbsolutePath());
 			}
 			return formula.trim().replaceAll("\\s+", "");
 		} catch (IOException e) {
