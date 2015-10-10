@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -65,11 +64,17 @@ class ParamModel {
 	private Map<Integer, Command> getCommands(FDTMC fdtmc) {
 		Map<Integer, Command> commands = new TreeMap<Integer, Command>();
 		for (Entry<State, LinkedList<Transition>> entry : fdtmc.getTransitions().entrySet()) {
-			int initialState = entry.getKey().getIndex();
+		    int initialState = entry.getKey().getIndex();
 			Command command = new Command(initialState);
-			for (Transition transition : entry.getValue()) {
-				command.addUpdate(transition.getProbability(),
-								  transition.getTarget().getIndex());
+			if (entry.getValue() != null) {
+			    for (Transition transition : entry.getValue()) {
+			        command.addUpdate(transition.getProbability(),
+			                          transition.getTarget().getIndex());
+			    }
+			} else {
+			    // Workaround: manually adding self-loops in case no
+			    // transition was specified for a given state.
+			    command.addUpdate("1", initialState);
 			}
 			commands.put(initialState, command);
 		}
