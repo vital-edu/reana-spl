@@ -65,7 +65,7 @@ public class RDGNode {
         return id;
     }
 
-    private static RDGNode getNodeById(String id) {
+    public static RDGNode getById(String id) {
         return rdgNodes.get(id);
     }
 

@@ -54,7 +54,8 @@ public class DiagramAPI {
 		public RDGNode transform() throws InvalidNumberOfOperandsException, InvalidNodeClassException, InvalidNodeType {
 			RDGNode topLevel = transformer.transformSingleAD(adParser);
 			for (SDReader sdParser : this.sdParsers) {
-				transformer.transformSingleSD(sdParser.getSD());
+				RDGNode sdRDG = transformer.transformSingleSD(sdParser.getSD());
+				topLevel.addDependency(sdRDG);
 			}
 			return topLevel;
 		}
