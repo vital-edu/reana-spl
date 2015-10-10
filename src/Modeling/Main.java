@@ -5,7 +5,6 @@ import java.util.HashMap;
 
 import org.w3c.dom.DOMException;
 
-import fdtmc.FDTMC;
 import Parsing.ActivityDiagrams.ADUtil;
 import Parsing.Exceptions.InvalidNodeClassException;
 import Parsing.Exceptions.InvalidNodeType;
@@ -14,6 +13,7 @@ import Parsing.Exceptions.InvalidTagException;
 import Parsing.Exceptions.UnsupportedFragmentTypeException;
 import Parsing.SequenceDiagrams.SDReader;
 import Parsing.SequenceDiagrams.SDUtil;
+import fdtmc.FDTMC;
 
 public class Main {
 	private static HashMap<String, FDTMC> fdtmcByName;

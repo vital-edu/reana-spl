@@ -13,16 +13,13 @@ import java.nio.file.Path;
 
 import org.w3c.dom.DOMException;
 
+import tool.Analyzer;
+import tool.RDGNode;
 import Parsing.Exceptions.InvalidNodeClassException;
 import Parsing.Exceptions.InvalidNodeType;
 import Parsing.Exceptions.InvalidNumberOfOperandsException;
 import Parsing.Exceptions.InvalidTagException;
 import Parsing.Exceptions.UnsupportedFragmentTypeException;
-import joptsimple.OptionParser;
-import joptsimple.OptionSet;
-import joptsimple.OptionSpec;
-import tool.Analyzer;
-import tool.RDGNode;
 
 /**
  * Command-line application.

@@ -1,7 +1,6 @@
 package expressionsolver.functions;
 
 import jadd.ADD;
-import jadd.JADD;
 
 import org.nfunk.jep.ParseException;
 

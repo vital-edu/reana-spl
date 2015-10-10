@@ -1,6 +1,6 @@
 package Parsing.SequenceDiagrams;
 
-import Parsing.*;
+import Parsing.Node;
 
 /**
  * Set of static methods to deal with I/O for SDs

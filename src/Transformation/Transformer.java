@@ -7,8 +7,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import tool.RDGNode;
-import fdtmc.FDTMC;
-import fdtmc.State;
+import Parsing.Node;
 import Parsing.ActivityDiagrams.ADReader;
 import Parsing.ActivityDiagrams.Activity;
 import Parsing.ActivityDiagrams.ActivityType;
@@ -20,7 +19,8 @@ import Parsing.SequenceDiagrams.Fragment;
 import Parsing.SequenceDiagrams.Message;
 import Parsing.SequenceDiagrams.MessageType;
 import Parsing.SequenceDiagrams.Operand;
-import Parsing.Node;
+import fdtmc.FDTMC;
+import fdtmc.State;
 
 public class Transformer {
 	// Attributes

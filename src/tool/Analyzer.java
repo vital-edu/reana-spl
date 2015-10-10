@@ -13,14 +13,14 @@ import java.util.Map;
 
 import org.w3c.dom.DOMException;
 
+import paramwrapper.ParamWrapper;
+import paramwrapper.ParametricModelChecker;
 import Modeling.DiagramAPI;
 import Parsing.Exceptions.InvalidNodeClassException;
 import Parsing.Exceptions.InvalidNodeType;
 import Parsing.Exceptions.InvalidNumberOfOperandsException;
 import Parsing.Exceptions.InvalidTagException;
 import Parsing.Exceptions.UnsupportedFragmentTypeException;
-import paramwrapper.ParamWrapper;
-import paramwrapper.ParametricModelChecker;
 import expressionsolver.ExpressionSolver;
 import fdtmc.FDTMC;
 
