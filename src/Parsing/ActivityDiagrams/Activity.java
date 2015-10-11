@@ -13,7 +13,7 @@ public class Activity {
 	private boolean ordered;
 	private String sdID;
 	private Fragment sd;
-	
+
 	public Activity(String id, String name, String type) {
 		this.id = id;
 		this.name = name;
@@ -32,7 +32,7 @@ public class Activity {
 			this.type = ActivityType.merge;
 		}
 	}
-	
+
 	public String getName() {
 		return name;
 	}
@@ -48,19 +48,23 @@ public class Activity {
 	public void setIncoming(ArrayList<Edge> incoming) {
 		this.incoming = incoming;
 	}
-	
+
 	public void addIncoming(Edge edge) {
 		this.incoming.add(edge);
 	}
 
-	public ArrayList<Edge> getOutgoing() {
-		return outgoing;
-	}
+    public ArrayList<Edge> getOutgoing() {
+        return outgoing;
+    }
+
+    public int getOutgoingCount() {
+        return outgoing.size();
+    }
 
 	public void setOutgoing(ArrayList<Edge> outgoing) {
 		this.outgoing = outgoing;
 	}
-	
+
 	public void addOutgoing(Edge edge) {
 		this.outgoing.add(edge);
 	}
@@ -72,7 +76,7 @@ public class Activity {
 	public ActivityType getType() {
 		return type;
 	}
-	
+
 	public boolean isOrdered() {
 		return ordered;
 	}

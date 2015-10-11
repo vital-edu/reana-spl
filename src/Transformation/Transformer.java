@@ -46,16 +46,16 @@ public class Transformer {
 	 */
 	public RDGNode transformSingleAD(ADReader adParser) {
 		FDTMC fdtmc = new FDTMC();
-		State init;
 
 		fdtmc.setVariableName("s" + adParser.getName());
 		fdtmcByName.put(adParser.getName(), fdtmc);
 		nCallsByName.put(adParser.getName(), 1);
 
 		stateByActID = new HashMap<String, State>();
-		init = fdtmc.createState("initial");
+		State init = fdtmc.createState("initial");
+        State error = fdtmc.createState("error");
 
-		transformPath(fdtmc, init, adParser.getActivities().get(0).getOutgoing().get(0));
+		transformPath(fdtmc, init, error, adParser.getActivities().get(0).getOutgoing().get(0));
 		System.out.println(fdtmc.toString());
 
 		// The method currently does not support variability in ADs.
@@ -376,10 +376,10 @@ public class Transformer {
 	/**
 	 * transformSingleAD auxiliary method
 	 * @param fdtmc
-	 * @param fdtmcState
+	 * @param sourceState
 	 * @param adEdge
 	 */
-	private void transformPath(FDTMC fdtmc, State fdtmcState, Edge adEdge) {
+	private void transformPath(FDTMC fdtmc, State sourceState, State errorState, Edge adEdge) {
 		Activity targetAct = adEdge.getTarget();
 		Activity sourceAct = adEdge.getSource();
 		State targetState;
@@ -388,10 +388,10 @@ public class Transformer {
 
 		if (sourceAct.getType().equals(ActivityType.initialNode)) {
 			for (Edge e : targetAct.getOutgoing()) {
-				transformPath(fdtmc, fdtmcState, e);
+				transformPath(fdtmc, sourceState, errorState, e);
 			}
 		} else if (sourceAct.getType().equals(ActivityType.call)) {
-			stateByActID.put(sourceAct.getId(), fdtmcState); // insere source no hashmap
+			stateByActID.put(sourceAct.getId(), sourceState); // insere source no hashmap
 			targetState = stateByActID.get(targetAct.getId()); // verifica se target esta no hashmap
 
 			if (targetState == null) { // atividade target nao foi criada
@@ -402,40 +402,45 @@ public class Transformer {
 				}
 				else targetState = fdtmc.createState();
 
-				fdtmc.createTransition(fdtmcState, targetState, sourceAct.getName(), sourceActivitySD);
+                fdtmc.createTransition(sourceState, targetState, sourceAct.getName(), sourceActivitySD);
+                fdtmc.createTransition(sourceState, errorState, "!"+sourceAct.getName(), "1 - "+sourceActivitySD);
 
 				/* continue path */
 				for (Edge e : targetAct.getOutgoing()) {
-					transformPath(fdtmc, targetState, e);
+					transformPath(fdtmc, targetState, errorState, e);
 				}
 			} else { // atividade target ja foi criada
-				fdtmc.createTransition(fdtmcState, targetState, sourceAct.getName(), sourceActivitySD);
+				fdtmc.createTransition(sourceState, targetState, sourceAct.getName(), sourceActivitySD);
+                fdtmc.createTransition(sourceState, errorState, "!"+sourceAct.getName(), "1 - "+sourceActivitySD);
 				/* end path */
 			}
 		} else if (sourceAct.getType().equals(ActivityType.decision)) {
-			stateByActID.put(sourceAct.getId(), fdtmcState); // insere source no hashmap
+			stateByActID.put(sourceAct.getId(), sourceState); // insere source no hashmap
 			targetState = stateByActID.get(targetAct.getId()); // verifica se target esta no hashmap
 
 			if (targetState == null) { // atividade target nao foi criada
 				if (targetAct.getType().equals(ActivityType.finalNode)) {
-					targetState = fdtmc.createState("final");
+					targetState = fdtmc.createState("success");
 					stateByActID.put(targetAct.getId(), targetState);
 					fdtmc.createTransition(targetState, targetState, "", "1.0");
 				}
 				else targetState = fdtmc.createState();
 
-				fdtmc.createTransition(fdtmcState, targetState, "", adEdge.getGuard());
+				// Assuming equiprobable choice at decision node.
+				// TODO Use annotated probabilities for AD decision nodes.
+				fdtmc.createTransition(sourceState, targetState, "", Double.toString(1.0/sourceAct.getOutgoingCount()));
 
 				/* continue path */
 				for (Edge e : targetAct.getOutgoing()) {
-					transformPath(fdtmc, targetState, e);
+					transformPath(fdtmc, targetState, errorState, e);
 				}
 			} else { // atividade target ja foi criada
-				fdtmc.createTransition(fdtmcState, targetState, "", adEdge.getGuard());
+                // Assuming equiprobable choice at decision node.
+				fdtmc.createTransition(sourceState, targetState, "", Double.toString(1.0/sourceAct.getOutgoingCount()));
 				/* end path */
 			}
 		} else if (sourceAct.getType().equals(ActivityType.merge)) {
-			stateByActID.put(sourceAct.getId(), fdtmcState); // insere source no hashmap
+			stateByActID.put(sourceAct.getId(), sourceState); // insere source no hashmap
 			targetState = stateByActID.get(targetAct.getId()); // verifica se target esta no hashmap
 
 			if (targetState == null) { // atividade target nao foi criada
@@ -446,14 +451,14 @@ public class Transformer {
 				}
 				else targetState = fdtmc.createState();
 
-				fdtmc.createTransition(fdtmcState, targetState, sourceAct.getName(), "1.0");
+				fdtmc.createTransition(sourceState, targetState, sourceAct.getName(), "1.0");
 
 				/* continue path */
 				for (Edge e : targetAct.getOutgoing()) {
-					transformPath(fdtmc, targetState, e);
+					transformPath(fdtmc, targetState, errorState, e);
 				}
 			} else { // atividade target ja foi criada
-				fdtmc.createTransition(fdtmcState, targetState, sourceAct.getName(), "1.0");
+				fdtmc.createTransition(sourceState, targetState, sourceAct.getName(), "1.0");
 				/* end path */
 			}
 		}
