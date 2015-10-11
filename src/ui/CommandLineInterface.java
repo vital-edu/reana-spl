@@ -10,6 +10,9 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.w3c.dom.DOMException;
 
@@ -56,8 +59,36 @@ public class CommandLineInterface {
             System.err.println("Error reading the provided UML Models.");
             e.printStackTrace();
         }
+
         ADD familyReliability = analyzer.evaluateReliability(rdgRoot);
         analyzer.generateDotFile(familyReliability, "family-reliability.dot");
+
+        List<String> configurations = new LinkedList<String>();
+        if (options.configuration != null) {
+            configurations.add(options.configuration);
+        } else {
+            Path configurationsFilePath = Paths.get(options.configurationsFilePath);
+            try {
+                configurations.addAll(Files.readAllLines(configurationsFilePath, Charset.forName("UTF-8")));
+            } catch (IOException e) {
+                System.err.println("Error reading the provided configurations file.");
+                e.printStackTrace();
+            }
+        }
+
+        System.out.println("=========================================");
+        System.out.println("Configurations:");
+        for (String configuration: configurations) {
+            String[] variables = configuration.split(",");
+            double reliability = familyReliability.eval(variables);
+            if (reliability != 0) {
+                System.out.println(configuration + " --> " + reliability);
+            } else {
+                System.out.println(configuration + " --> INVALID");
+            }
+        }
+
+        System.out.println("Family-wide reliability decision diagram dumped at ./family-reliability.dot");
     }
 
 }
