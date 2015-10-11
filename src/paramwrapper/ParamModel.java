@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -86,8 +87,7 @@ class ParamModel {
 
 		Pattern validIdentifier = Pattern.compile("[A-Za-z_][A-Za-z0-9_]*");
 		for (Command command : commands) {
-			for (Map.Entry<String, Integer> update : command.getUpdates().entrySet()) {
-				String probability = update.getKey();
+			for (String probability : command.getUpdatesProbabilities()) {
 				Matcher m = validIdentifier.matcher(probability);
 				while (m.find()) {
 					parameters.add(m.group());
@@ -136,30 +136,34 @@ class ParamModel {
 
 class Command {
 	private int initialState;
-	private Map<String, Integer> updates;
+	private List<String> updatesProbabilities;
+	private List<Integer> updatesActions;
 
 	public Command(int initialState) {
 		this.initialState = initialState;
-		this.updates = new TreeMap<String, Integer>();
+        this.updatesProbabilities = new LinkedList<String>();
+        this.updatesActions = new LinkedList<Integer>();
 	}
 
 	public void addUpdate(String probability, int update) {
-		updates.put(probability, update);
+		updatesProbabilities.add(probability);
+		updatesActions.add(update);
 	}
 
-	public Map<String, Integer> getUpdates() {
-		return updates;
+	public Collection<String> getUpdatesProbabilities() {
+		return updatesProbabilities;
 	}
 
 	public String makeString(String stateVariable) {
 		String command = "[] "+stateVariable+"="+initialState+" -> ";
-		int count = 1;
-		for (Map.Entry<String, Integer> update : updates.entrySet()) {
-			command += "("+update.getKey()+") : ("+stateVariable+"'="+update.getValue()+")";
-			if (count < updates.size()) {
-				command += " + ";
-			}
-			count++;
+		boolean needsPlus = false;
+		for (int i = 0; i < updatesProbabilities.size(); i++) {
+		    if (needsPlus) {
+		        command += " + ";
+		    } else {
+		        needsPlus = true;
+		    }
+			command += "("+updatesProbabilities.get(i)+") : ("+stateVariable+"'="+updatesActions.get(i)+")";
 		}
 		return command+";";
 	}
