@@ -133,7 +133,7 @@ public class ADD {
         return variables;
     }
 
-    public double eval(String[] variables) {
+    public double eval(String[] variables) throws UnrecognizedVariableException {
         int[] presenceVector = variableStore.toPresenceVector(variables);
         Pointer<DdNode> terminal = BigcuddLibrary.Cudd_Eval(dd,
                                                             function,

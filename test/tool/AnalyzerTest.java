@@ -2,6 +2,7 @@ package tool;
 
 import jadd.ADD;
 import jadd.JADD;
+import jadd.UnrecognizedVariableException;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,7 +37,7 @@ public class AnalyzerTest {
     }
 
     @Test
-    public void testEvaluateReliabilityOxygenation() {
+    public void testEvaluateReliabilityOxygenation() throws UnrecognizedVariableException {
         RDGNode node = BSNNodes.getOxygenationRDGNode();
         ADD reliability = analyzer.evaluateReliability(node);
 

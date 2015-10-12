@@ -4,6 +4,7 @@
 package ui;
 
 import jadd.ADD;
+import jadd.UnrecognizedVariableException;
 
 import java.io.File;
 import java.io.IOException;
@@ -61,7 +62,6 @@ public class CommandLineInterface {
         }
 
         ADD familyReliability = analyzer.evaluateReliability(rdgRoot);
-        analyzer.generateDotFile(familyReliability, "family-reliability.dot");
 
         List<String> configurations = new LinkedList<String>();
         if (options.configuration != null) {
@@ -80,14 +80,20 @@ public class CommandLineInterface {
         System.out.println("Configurations:");
         for (String configuration: configurations) {
             String[] variables = configuration.split(",");
-            double reliability = familyReliability.eval(variables);
-            if (reliability != 0) {
-                System.out.println(configuration + " --> " + reliability);
-            } else {
-                System.out.println(configuration + " --> INVALID");
+            System.out.print(configuration + " --> ");
+            try {
+                double reliability = familyReliability.eval(variables);
+                if (reliability != 0) {
+                    System.out.println(reliability);
+                } else {
+                    System.out.println("INVALID");
+                }
+            } catch (UnrecognizedVariableException e) {
+                System.out.println("Unrecognized variable: " + e.getVariableName());
             }
         }
 
+        analyzer.generateDotFile(familyReliability, "family-reliability.dot");
         System.out.println("Family-wide reliability decision diagram dumped at ./family-reliability.dot");
     }
 

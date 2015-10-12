@@ -49,12 +49,16 @@ public class VariableStore {
      * @return an array with 1 in every position whose index is equal to that
      *          of a present variable and 0 in every other position.
      */
-    public int[] toPresenceVector(String[] variables) {
+    public int[] toPresenceVector(String[] variables) throws UnrecognizedVariableException {
         int[] presenceVector = new int[variableIndices.size()];
         Arrays.fill(presenceVector, 0);
         for (String var: variables) {
-            int index = variableIndices.get(var);
-            presenceVector[index] = 1;
+            if (variableIndices.containsKey(var)) {
+                int index = variableIndices.get(var);
+                presenceVector[index] = 1;
+            } else {
+                throw new UnrecognizedVariableException(var);
+            }
         }
         return presenceVector;
     }
