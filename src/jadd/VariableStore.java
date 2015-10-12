@@ -3,6 +3,8 @@ package jadd;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -61,5 +63,27 @@ public class VariableStore {
             }
         }
         return presenceVector;
+    }
+
+    /**
+     * Returns a list of variable names from a corresponding presence vector.
+     *
+     * Whenever a variable is marked as "don't care", we parenthesize its name
+     * to indicate so.
+     * @param presenceVector an array of literals, which are integers in {0, 1, 2};
+     *          0 represents a complemented literal, 1 represents an uncomplemented
+     *          literal, and 2 stands for don't care.
+     * @return
+     */
+    public List<String> fromPresenceVector(int[] presenceVector) {
+        List<String> varNames = new LinkedList<String>();
+        for (short i = 0; i < presenceVector.length; i++) {
+            if (presenceVector[i] == 1) {
+                varNames.add(variableNames.get(i));
+            } else if (presenceVector[i] == 2) {
+                varNames.add("("+variableNames.get(i)+")");
+            }
+        }
+        return varNames;
     }
 }

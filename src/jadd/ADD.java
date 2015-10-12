@@ -1,12 +1,16 @@
 package jadd;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.bridj.Pointer;
 
 import bigcudd.BigcuddLibrary;
 import bigcudd.BigcuddLibrary.Cudd_addApply_arg1_callback;
+import bigcudd.BigcuddLibrary.DdGen;
 import bigcudd.BigcuddLibrary.DdManager;
 import bigcudd.DdNode;
 
@@ -140,6 +144,47 @@ public class ADD {
                                                             Pointer.pointerToInts(presenceVector));
         DdNode terminalNode = terminal.get();
         return terminalNode.type().value();
+    }
+
+    /**
+     * Returns all valid configurations and respective values.
+     *
+     * Variables which may or may not be present are represented parenthesized.
+     * @return
+     */
+    public Map<List<String>, Double> getValidConfigurations() {
+        Pointer<Integer> dummy = Pointer.allocateInt();
+        // A pointer to a freshly allocated pointer to int.
+        // As Cudd_FirstCube and Cudd_NextCube allocate the returned cubes,
+        // allocating a whole int[] here makes no sense. Thus, we allocate
+        // only the position where the address to the generated cubes are
+        // to be stored.
+        Pointer<Pointer<Integer>> cubePtr = Pointer.pointerToPointer(dummy);
+        // A pointer to a freshly allocated double.
+        Pointer<Double> valuePtr = Pointer.pointerToDouble(0);
+
+        Map<List<String>, Double> configurationsAndValues = new HashMap<List<String>, Double>();
+        // So let's start the iteration!
+        Pointer<DdGen> generator = BigcuddLibrary.Cudd_FirstCube(dd,
+                                                                 function,
+                                                                 cubePtr,
+                                                                 valuePtr);
+        int numVars = BigcuddLibrary.Cudd_ReadSize(dd);
+        while (BigcuddLibrary.Cudd_IsGenEmpty(generator) == 0) {
+            Double value = valuePtr.get();
+            Pointer<Integer> cube = cubePtr.getPointer(Integer.class);
+            int[] presenceVector = cube.getInts(numVars);
+            List<String> configuration = variableStore.fromPresenceVector(presenceVector);
+
+            configurationsAndValues.put(configuration, value);
+
+            BigcuddLibrary.Cudd_NextCube(generator,
+                                         cubePtr,
+                                         valuePtr);
+        }
+        BigcuddLibrary.Cudd_GenFree(generator);
+
+        return configurationsAndValues;
     }
 
     /* (non-Javadoc)
