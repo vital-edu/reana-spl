@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.w3c.dom.DOMException;
 
@@ -35,21 +36,15 @@ public class CommandLineInterface {
 
     /**
      * @param args
+     * @throws IOException
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         Options options = Options.parseOptions(args);
 
         File featureModelFile = new File(options.featureModelFilePath);
         File umlModels = new File(options.umlModelsFilePath);
 
-        String featureModel = null;
-        Path path = featureModelFile.toPath();
-        try {
-            featureModel = new String(Files.readAllBytes(path), Charset.forName("UTF-8"));
-        } catch (IOException e) {
-            System.err.println("Error reading the provided Feature Model.");
-            e.printStackTrace();
-        }
+        String featureModel = readFeatureModel(featureModelFile);
         Analyzer analyzer = new Analyzer(featureModel);
         RDGNode rdgRoot = null;
         try {
@@ -63,6 +58,24 @@ public class CommandLineInterface {
 
         ADD familyReliability = analyzer.evaluateReliability(rdgRoot);
 
+        System.out.println("Configurations:");
+        System.out.println("=========================================");
+        if (options.printAllConfigurations) {
+            printAllConfigurationsValues(familyReliability);
+        } else {
+            printConfigurationsValues(options, familyReliability);
+        }
+        System.out.println("=========================================");
+
+        analyzer.generateDotFile(familyReliability, "family-reliability.dot");
+        System.out.println("Family-wide reliability decision diagram dumped at ./family-reliability.dot");
+    }
+
+    /**
+     * @param options
+     * @param familyReliability
+     */
+    private static void printConfigurationsValues(Options options, ADD familyReliability) {
         List<String> configurations = new LinkedList<String>();
         if (options.configuration != null) {
             configurations.add(options.configuration);
@@ -76,25 +89,48 @@ public class CommandLineInterface {
             }
         }
 
-        System.out.println("=========================================");
-        System.out.println("Configurations:");
         for (String configuration: configurations) {
             String[] variables = configuration.split(",");
-            System.out.print(configuration + " --> ");
             try {
                 double reliability = familyReliability.eval(variables);
-                if (reliability != 0) {
-                    System.out.println(reliability);
-                } else {
-                    System.out.println("INVALID");
-                }
+                printSingleConfiguration(configuration, reliability);
             } catch (UnrecognizedVariableException e) {
-                System.out.println("Unrecognized variable: " + e.getVariableName());
+                System.err.println("Unrecognized variable: " + e.getVariableName());
             }
         }
+    }
 
-        analyzer.generateDotFile(familyReliability, "family-reliability.dot");
-        System.out.println("Family-wide reliability decision diagram dumped at ./family-reliability.dot");
+    private static void printAllConfigurationsValues(ADD familyReliability) {
+        Map<List<String>, Double> configurations = familyReliability.getValidConfigurations();
+        for (Map.Entry<List<String>, Double> entry: configurations.entrySet()) {
+            printSingleConfiguration(entry.getKey().toString(),
+                                     entry.getValue());
+        }
+    }
+
+    private static void printSingleConfiguration(String configuration, double reliability) {
+        System.out.print(configuration + " --> ");
+        if (reliability != 0) {
+            System.out.println(reliability);
+        } else {
+            System.out.println("INVALID");
+        }
+    }
+
+    /**
+     * @param featureModelFile
+     * @return
+     */
+    private static String readFeatureModel(File featureModelFile) {
+        String featureModel = null;
+        Path path = featureModelFile.toPath();
+        try {
+            featureModel = new String(Files.readAllBytes(path), Charset.forName("UTF-8"));
+        } catch (IOException e) {
+            System.err.println("Error reading the provided Feature Model.");
+            e.printStackTrace();
+        }
+        return featureModel;
     }
 
 }
