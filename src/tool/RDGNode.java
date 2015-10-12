@@ -10,7 +10,6 @@ import fdtmc.FDTMC;
 public class RDGNode {
 
 	//This reference is used to store all the RDGnodes created during the evaluation
-    // TODO Will this be ever used?
 	private static Map<String, RDGNode> rdgNodes = new HashMap<String, RDGNode>();
 
 	// Node identifier

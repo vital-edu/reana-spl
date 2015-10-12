@@ -24,7 +24,6 @@ class CUtils {
             Pointer<?> fcloseAddress = libc.getSymbolPointer("fclose");
             fcloseHandle = fcloseAddress.asDynamicFunction(null, int.class, Pointer.class);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }

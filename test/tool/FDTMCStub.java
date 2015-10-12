@@ -81,7 +81,7 @@ public class FDTMCStub {
 
 
 
-	private static FDTMC createPositionFDTMC() {
+	public static FDTMC createPositionFDTMC() {
 		FDTMC fdtmcPosition = new FDTMC();
 		fdtmcPosition.setVariableName("sPosition");
 
@@ -157,7 +157,7 @@ public class FDTMCStub {
 
 
 
-	private static FDTMC createSituationFDTMC() {
+	public static FDTMC createSituationFDTMC() {
 		FDTMC fdtmcSituation = new FDTMC();
 		fdtmcSituation.setVariableName("sSituation");
 
@@ -355,19 +355,4 @@ public class FDTMCStub {
 		return fdtmcPulseRate;
 	}
 
-
-
-	public static void main (String[] args) {
-//		FDTMCStub f = new FDTMCStub();
-//		System.out.println(f.createFDTMC(Feature.getFeatureByName("File")));
-//		System.out.println(f.createFDTMC("Sqlite"));
-//
-//		System.out.println(f.createFDTMC("Mem"));
-//
-//		System.out.println(f.createFDTMC("File"));
-//
-//		System.out.println(f.createFDTMC("pulserate"));
-//
-//		System.out.println(f.createFDTMC("Situation"));
-	}
 }

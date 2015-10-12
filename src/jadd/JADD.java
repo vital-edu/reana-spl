@@ -58,7 +58,6 @@ public class JADD {
         BigcuddLibrary.Cudd_DumpDot(dd,
                                     functions.length,
                                     Pointer.pointerToPointers(nodes),
-                                    // TODO Name variables!
                                     Pointer.pointerToCStrings(orderedVariableNames),
                                     Pointer.pointerToCStrings(functionNames),
                                     output);

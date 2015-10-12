@@ -13,6 +13,7 @@ public class LogicalNot extends PostfixMathCommand {
         numberOfParameters = 1;
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public void run(Stack inStack) throws ParseException {
         checkStack(inStack);// check the stack

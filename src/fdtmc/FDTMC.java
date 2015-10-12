@@ -148,8 +148,6 @@ public class FDTMC {
 	}
 
 	public String toString2() {
-		String msg = new String();
-
 		Set<State> states =  transitionSystem.keySet();
 		System.out.println("states " + states);
 		Iterator<State> it = states.iterator();

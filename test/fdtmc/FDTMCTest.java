@@ -1,18 +1,10 @@
 package fdtmc;
 
-import static org.junit.Assert.*;
-
-import java.awt.List;
-import java.util.ArrayList;
-import java.util.Map;
+import static org.junit.Assert.fail;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import fdtmc.FDTMC;
-import fdtmc.State;
-import fdtmc.Transition;
 
 public class FDTMCTest {
 

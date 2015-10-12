@@ -101,6 +101,7 @@ public class ExpressionSolver {
         parser.addVariableAsObject("false", jadd.makeConstant(0));
         parser.addVariableAsObject("False", jadd.makeConstant(0));
         SymbolTable symbolTable = parser.getSymbolTable();
+        @SuppressWarnings("unchecked")
         Set<String> variables = new HashSet<String>(symbolTable.keySet());
         variables.remove("true");
         variables.remove("True");
