@@ -106,6 +106,18 @@ public class CommandLineInterface {
             printSingleConfiguration(entry.getKey().toString(),
                                      entry.getValue());
         }
+
+        int count = 0;
+        for (List<String> config: configurations.keySet()) {
+            int tmpCount = 1;
+            for (String feature: config) {
+                if (feature.startsWith("(")) {
+                    tmpCount *= 2;
+                }
+            }
+            count += tmpCount;
+        }
+        System.out.println(">>>> Total configurations: " + count);
     }
 
     private static void printSingleConfiguration(String configuration, double reliability) {
