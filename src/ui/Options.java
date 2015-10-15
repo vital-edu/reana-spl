@@ -17,6 +17,7 @@ class Options {
     public String configuration;
     public String configurationsFilePath;
     public boolean printAllConfigurations;
+    public boolean statsEnabled;
 
     static Options parseOptions(String[] args) throws IOException {
         OptionParser optionParser = new OptionParser();
@@ -38,6 +39,8 @@ class Options {
                 .withRequiredArg();
         OptionSpec<Void> allConfigurationsOption = optionParser
                 .accepts("all-configurations");
+        OptionSpec<Void> statsEnabledOption = optionParser
+                .accepts("stats");
 
         OptionSpec<Void> helpOption = optionParser
                 .accepts("help")
@@ -55,6 +58,7 @@ class Options {
         result.configuration = options.valueOf(configurationOption);
         result.configurationsFilePath = options.valueOf(configurationsFileOption);
         result.printAllConfigurations = options.has(allConfigurationsOption);
+        result.statsEnabled = options.has(statsEnabledOption);
 
         return result;
     }
