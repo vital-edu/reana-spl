@@ -15,6 +15,8 @@ import org.w3c.dom.DOMException;
 
 import paramwrapper.ParamWrapper;
 import paramwrapper.ParametricModelChecker;
+import tool.stats.IFormulaCollector;
+import tool.stats.ITimeCollector;
 import Modeling.DiagramAPI;
 import Parsing.Exceptions.InvalidNodeClassException;
 import Parsing.Exceptions.InvalidNodeType;
@@ -40,6 +42,9 @@ public class Analyzer {
     private Map<String, ADD> reliabilityCache;
     private JADD jadd;
 
+    private ITimeCollector timeCollector;
+    private IFormulaCollector formulaCollector;
+
     /**
      * Creates an Analyzer which will follow the logical rules
      * encoded in the provided feature model file.
@@ -48,8 +53,12 @@ public class Analyzer {
      *          expressed using Java logical operators.
      * @throws IOException if there is a problem reading the file.
      */
-    public Analyzer(String featureModel) {
+    public Analyzer(String featureModel, ITimeCollector timeCollector, IFormulaCollector formulaCollector) {
         this(new JADD(), featureModel);
+
+        //TODO Use a factory for building the time collector based on CLI argument.
+        this.timeCollector = timeCollector;
+        this.formulaCollector = formulaCollector;
     }
 
     /**
@@ -79,8 +88,13 @@ public class Analyzer {
      * @throws InvalidNumberOfOperandsException
      */
     public RDGNode model(File umlModels) throws DOMException, UnsupportedFragmentTypeException, InvalidTagException, InvalidNumberOfOperandsException, InvalidNodeClassException, InvalidNodeType {
+        timeCollector.startParsingTimer();
+
         DiagramAPI modeler = new DiagramAPI(umlModels);
-        return modeler.transform();
+        RDGNode result = modeler.transform();
+
+        timeCollector.stopParsingTimer();
+        return result;
     }
 
     /**
@@ -95,18 +109,28 @@ public class Analyzer {
         if (isInCache(node)) {
             return getCachedReliability(node);
         }
+
+        timeCollector.startFeatureBasedTimer();
         String reliabilityExpression = getReliabilityExpression(node);
+        timeCollector.stopFeatureBasedTimer();
+        formulaCollector.collectFormula(reliabilityExpression);
+
         System.out.println("Reliability expression for "+ node.getId() + " -> " + reliabilityExpression);
 
         Map<String, ADD> childrenReliabilities = new HashMap<String, ADD>();
         for (RDGNode child: node.getDependencies()) {
             ADD childReliability = evaluateReliability(child);
+
+            timeCollector.startFamilyBasedTimer();
             ADD presenceCondition = expressionSolver.encodeFormula(child.getPresenceCondition());
 
             ADD phi = presenceCondition.ifThenElse(childReliability, 1);
             childrenReliabilities.put(child.getId(),
                                       phi);
+            timeCollector.stopFamilyBasedTimer();
         }
+
+        timeCollector.startFamilyBasedTimer();
         ADD reliability = expressionSolver.solveExpression(reliabilityExpression,
                                                            childrenReliabilities);
 
@@ -115,6 +139,7 @@ public class Analyzer {
         // {0,1} representation of the feature model in order to retain 0 as the
         // value for invalid configurations.
         ADD result = featureModel.times(reliability);
+        timeCollector.stopFamilyBasedTimer();
 
         jadd.dumpDot("FM*Reliability",
                      result,
@@ -156,6 +181,14 @@ public class Analyzer {
 
     private void cacheReliability(RDGNode node, ADD reliability) {
         reliabilityCache.put(node.getId(), reliability);
+    }
+
+    public void printStats() {
+        System.out.println("-----------------------------");
+        System.out.println("Stats:");
+        System.out.println("------");
+        timeCollector.printStats();
+        formulaCollector.printStats();
     }
 
 }

@@ -20,6 +20,8 @@ import org.w3c.dom.DOMException;
 
 import tool.Analyzer;
 import tool.RDGNode;
+import tool.stats.FormulaCollector;
+import tool.stats.TimeCollector;
 import Parsing.Exceptions.InvalidNodeClassException;
 import Parsing.Exceptions.InvalidNodeType;
 import Parsing.Exceptions.InvalidNumberOfOperandsException;
@@ -40,12 +42,15 @@ public class CommandLineInterface {
      */
     public static void main(String[] args) throws IOException {
         Options options = Options.parseOptions(args);
+        long startTime = System.currentTimeMillis();
 
         File featureModelFile = new File(options.featureModelFilePath);
         File umlModels = new File(options.umlModelsFilePath);
 
         String featureModel = readFeatureModel(featureModelFile);
-        Analyzer analyzer = new Analyzer(featureModel);
+        Analyzer analyzer = new Analyzer(featureModel,
+                                         new TimeCollector(),
+                                         new FormulaCollector());
         RDGNode rdgRoot = null;
         try {
             rdgRoot = analyzer.model(umlModels);
@@ -69,6 +74,10 @@ public class CommandLineInterface {
 
         analyzer.generateDotFile(familyReliability, "family-reliability.dot");
         System.out.println("Family-wide reliability decision diagram dumped at ./family-reliability.dot");
+
+        analyzer.printStats();
+        long totalRunningTime = System.currentTimeMillis() - startTime;
+        System.out.println("Total running time: " +  totalRunningTime + " ms");
     }
 
     /**
