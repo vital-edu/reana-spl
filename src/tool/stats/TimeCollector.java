@@ -59,9 +59,9 @@ public class TimeCollector implements ITimeCollector {
 
     @Override
     public void printStats() {
-        System.out.println("Parsing time: " + getParsingTime() + " ms");
-        System.out.println("Feature-based time: " + getFeatureBasedTime() + " ms");
-        System.out.println("Family-based time: " + getFamilyBasedTime() + " ms");
+        System.out.println("Parsing time: " + getParsingTime()/1E+6 + " ms");
+        System.out.println("Feature-based time: " + getFeatureBasedTime()/1E+6 + " ms");
+        System.out.println("Family-based time: " + getFamilyBasedTime()/1E+6 + " ms");
     }
 
 }

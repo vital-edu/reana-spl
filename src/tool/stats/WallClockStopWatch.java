@@ -6,11 +6,11 @@ public class WallClockStopWatch {
     private long cumulativeTime = 0;
 
     public void start() {
-        startTime = System.currentTimeMillis();
+        startTime = System.nanoTime();
     }
 
     public long stop() {
-        long delta = System.currentTimeMillis() - startTime;
+        long delta = System.nanoTime() - startTime;
         cumulativeTime += delta;
         return delta;
     }
