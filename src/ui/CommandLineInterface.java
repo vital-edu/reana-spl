@@ -20,6 +20,7 @@ import org.w3c.dom.DOMException;
 
 import tool.Analyzer;
 import tool.RDGNode;
+import tool.stats.IMemoryCollector;
 import tool.stats.StatsCollectorFactory;
 import Parsing.Exceptions.InvalidNodeClassException;
 import Parsing.Exceptions.InvalidNodeType;
@@ -48,10 +49,13 @@ public class CommandLineInterface {
 
         String featureModel = readFeatureModel(featureModelFile);
         StatsCollectorFactory statsCollectorFactory = new StatsCollectorFactory(options.statsEnabled);
+        IMemoryCollector memoryCollector = statsCollectorFactory.createMemoryCollector();
+
         Analyzer analyzer = new Analyzer(featureModel,
                                          statsCollectorFactory.createTimeCollector(),
                                          statsCollectorFactory.createFormulaCollector());
         RDGNode rdgRoot = null;
+        memoryCollector.takeSnapshot("before model parsing");
         try {
             rdgRoot = analyzer.model(umlModels);
         } catch (DOMException | UnsupportedFragmentTypeException
@@ -60,8 +64,11 @@ public class CommandLineInterface {
             System.err.println("Error reading the provided UML Models.");
             e.printStackTrace();
         }
+        memoryCollector.takeSnapshot("after model parsing");
 
+        memoryCollector.takeSnapshot("before evaluation");
         ADD familyReliability = analyzer.evaluateReliability(rdgRoot);
+        memoryCollector.takeSnapshot("after evaluation");
 
         System.out.println("Configurations:");
         System.out.println("=========================================");
@@ -77,6 +84,7 @@ public class CommandLineInterface {
 
         if (options.statsEnabled) {
             analyzer.printStats();
+            memoryCollector.printStats();
         }
         long totalRunningTime = System.currentTimeMillis() - startTime;
         System.out.println("Total running time: " +  totalRunningTime + " ms");

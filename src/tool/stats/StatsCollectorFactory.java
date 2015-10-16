@@ -24,4 +24,12 @@ public class StatsCollectorFactory {
         }
     }
 
+    public IMemoryCollector createMemoryCollector() {
+        if (collectionEnabled) {
+            return new MemoryCollector();
+        } else {
+            return new NoopMemoryCollector();
+        }
+    }
+
 }
