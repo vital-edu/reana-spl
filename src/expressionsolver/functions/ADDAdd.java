@@ -13,7 +13,7 @@ import org.nfunk.jep.ParseException;
  * @author thiago
  *
  */
-public class Add extends org.nfunk.jep.function.Add {
+public class ADDAdd extends org.nfunk.jep.function.Add {
 
     @Override
     public Object add(Object param1, Object param2) throws ParseException {

@@ -11,13 +11,13 @@ import java.util.Set;
 import org.nfunk.jep.JEP;
 import org.nfunk.jep.SymbolTable;
 
-import expressionsolver.functions.Add;
-import expressionsolver.functions.Divide;
+import expressionsolver.functions.ADDAdd;
+import expressionsolver.functions.ADDDivide;
 import expressionsolver.functions.LogicalAnd;
 import expressionsolver.functions.LogicalNot;
 import expressionsolver.functions.LogicalOr;
-import expressionsolver.functions.Multiply;
-import expressionsolver.functions.Subtract;
+import expressionsolver.functions.ADDMultiply;
+import expressionsolver.functions.ADDSubtract;
 import expressionsolver.functions.UnaryMinus;
 
 /**
@@ -124,11 +124,11 @@ public class ExpressionSolver {
                 true,
                 false,
                 new ADDNumberFactory(jadd));
-        parser.addFunction("\"+\"", new Add());
-        parser.addFunction("\"-\":2", new Subtract());
+        parser.addFunction("\"+\"", new ADDAdd());
+        parser.addFunction("\"-\":2", new ADDSubtract());
         parser.addFunction("\"-\":1", new UnaryMinus());
-        parser.addFunction("\"*\"", new Multiply());
-        parser.addFunction("\"/\"", new Divide());
+        parser.addFunction("\"*\"", new ADDMultiply());
+        parser.addFunction("\"/\"", new ADDDivide());
 
         parser.addFunction("\"&&\"", new LogicalAnd());
         parser.addFunction("\"||\"", new LogicalOr());

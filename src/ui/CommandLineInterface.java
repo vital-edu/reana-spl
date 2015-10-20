@@ -63,6 +63,7 @@ public class CommandLineInterface {
                 | InvalidNodeClassException | InvalidNodeType e) {
             System.err.println("Error reading the provided UML Models.");
             e.printStackTrace();
+            System.exit(1);
         }
         memoryCollector.takeSnapshot("after model parsing");
 

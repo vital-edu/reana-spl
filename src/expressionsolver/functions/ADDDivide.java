@@ -5,7 +5,7 @@ import jadd.ADD;
 import org.nfunk.jep.ParseException;
 
 
-public class Divide extends org.nfunk.jep.function.Divide {
+public class ADDDivide extends org.nfunk.jep.function.Divide {
 
     /* (non-Javadoc)
      * @see org.nfunk.jep.function.Divide#div(java.lang.Object, java.lang.Object)

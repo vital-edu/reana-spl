@@ -9,7 +9,7 @@ import org.nfunk.jep.ParseException;
  * @author thiago
  *
  */
-public class Multiply extends org.nfunk.jep.function.Multiply {
+public class ADDMultiply extends org.nfunk.jep.function.Multiply {
 
     /* (non-Javadoc)
      * @see org.nfunk.jep.function.Multiply#mul(java.lang.Object, java.lang.Object)

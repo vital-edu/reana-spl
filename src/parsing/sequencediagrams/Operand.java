@@ -45,7 +45,7 @@ public class Operand extends Node {
 
 		@Override
 		public boolean equals(Object obj) {
-		    return super.equals(obj) && ((Operand) obj).guard == guard;
+		    return super.equals(obj) && guard.equals(((Operand) obj).guard);
 		}
 
 		@Override

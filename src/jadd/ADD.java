@@ -192,6 +192,9 @@ public class ADD {
      */
     @Override
     public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
         ADD other = (ADD) obj;
         return this.function.equals(other.function)
                 || (BigcuddLibrary.Cudd_EqualSupNorm(dd,
@@ -214,7 +217,7 @@ public class ADD {
      *** Operators definitions
      *************************************************************/
 
-    private static BigcuddLibrary.Cudd_addApply_arg1_callback TIMES = new BigcuddLibrary.Cudd_addApply_arg1_callback() {
+    private static final BigcuddLibrary.Cudd_addApply_arg1_callback TIMES = new BigcuddLibrary.Cudd_addApply_arg1_callback() {
         @Override
         public Pointer<DdNode > apply(Pointer<BigcuddLibrary.DdManager > dd,
                                       Pointer<Pointer<DdNode > > node1,
@@ -223,7 +226,7 @@ public class ADD {
         }
     };
 
-    private static BigcuddLibrary.Cudd_addApply_arg1_callback PLUS = new BigcuddLibrary.Cudd_addApply_arg1_callback() {
+    private static final BigcuddLibrary.Cudd_addApply_arg1_callback PLUS = new BigcuddLibrary.Cudd_addApply_arg1_callback() {
         @Override
         public Pointer<DdNode > apply(Pointer<BigcuddLibrary.DdManager > dd,
                                       Pointer<Pointer<DdNode > > node1,
@@ -232,7 +235,7 @@ public class ADD {
         }
     };
 
-    private static BigcuddLibrary.Cudd_addApply_arg1_callback DIVIDE = new BigcuddLibrary.Cudd_addApply_arg1_callback() {
+    private static final BigcuddLibrary.Cudd_addApply_arg1_callback DIVIDE = new BigcuddLibrary.Cudd_addApply_arg1_callback() {
         @Override
         public Pointer<DdNode > apply(Pointer<BigcuddLibrary.DdManager > dd,
                                       Pointer<Pointer<DdNode > > node1,
@@ -241,7 +244,7 @@ public class ADD {
         }
     };
 
-    private static BigcuddLibrary.Cudd_addApply_arg1_callback MINUS = new BigcuddLibrary.Cudd_addApply_arg1_callback() {
+    private static final BigcuddLibrary.Cudd_addApply_arg1_callback MINUS = new BigcuddLibrary.Cudd_addApply_arg1_callback() {
         @Override
         public Pointer<DdNode > apply(Pointer<BigcuddLibrary.DdManager > dd,
                                       Pointer<Pointer<DdNode > > node1,
@@ -250,7 +253,7 @@ public class ADD {
         }
     };
 
-    private static BigcuddLibrary.Cudd_addApply_arg1_callback LOGICAL_OR = new BigcuddLibrary.Cudd_addApply_arg1_callback() {
+    private static final BigcuddLibrary.Cudd_addApply_arg1_callback LOGICAL_OR = new BigcuddLibrary.Cudd_addApply_arg1_callback() {
         @Override
         public Pointer<DdNode > apply(Pointer<BigcuddLibrary.DdManager > dd,
                                       Pointer<Pointer<DdNode > > node1,
