@@ -11,18 +11,19 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import modeling.DiagramAPI;
+
 import org.w3c.dom.DOMException;
 
 import paramwrapper.ParamWrapper;
 import paramwrapper.ParametricModelChecker;
+import parsing.exceptions.InvalidNodeClassException;
+import parsing.exceptions.InvalidNodeType;
+import parsing.exceptions.InvalidNumberOfOperandsException;
+import parsing.exceptions.InvalidTagException;
+import parsing.exceptions.UnsupportedFragmentTypeException;
 import tool.stats.IFormulaCollector;
 import tool.stats.ITimeCollector;
-import Modeling.DiagramAPI;
-import Parsing.Exceptions.InvalidNodeClassException;
-import Parsing.Exceptions.InvalidNodeType;
-import Parsing.Exceptions.InvalidNumberOfOperandsException;
-import Parsing.Exceptions.InvalidTagException;
-import Parsing.Exceptions.UnsupportedFragmentTypeException;
 import expressionsolver.ExpressionSolver;
 import fdtmc.FDTMC;
 
@@ -56,7 +57,6 @@ public class Analyzer {
     public Analyzer(String featureModel, ITimeCollector timeCollector, IFormulaCollector formulaCollector) {
         this(new JADD(), featureModel);
 
-        //TODO Use a factory for building the time collector based on CLI argument.
         this.timeCollector = timeCollector;
         this.formulaCollector = formulaCollector;
     }

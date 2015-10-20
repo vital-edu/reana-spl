@@ -1,11 +1,11 @@
-package Parsing.Exceptions;
+package parsing.exceptions;
 
 public class InvalidTagException extends Exception {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1L;
-	String tagName;
+	private final String tagName;
 
 	public InvalidTagException(String message, String tagName) {
 		super(message);

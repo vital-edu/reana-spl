@@ -1,39 +1,38 @@
-package Modeling;
+package modeling;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.w3c.dom.DOMException;
 
+import parsing.activitydiagrams.ADReader;
+import parsing.activitydiagrams.Activity;
+import parsing.exceptions.InvalidNodeClassException;
+import parsing.exceptions.InvalidNodeType;
+import parsing.exceptions.InvalidNumberOfOperandsException;
+import parsing.exceptions.InvalidTagException;
+import parsing.exceptions.UnsupportedFragmentTypeException;
+import parsing.sequencediagrams.Fragment;
+import parsing.sequencediagrams.SDReader;
 import tool.RDGNode;
-import Parsing.ActivityDiagrams.ADReader;
-import Parsing.ActivityDiagrams.Activity;
-import Parsing.Exceptions.InvalidNodeClassException;
-import Parsing.Exceptions.InvalidNodeType;
-import Parsing.Exceptions.InvalidNumberOfOperandsException;
-import Parsing.Exceptions.InvalidTagException;
-import Parsing.Exceptions.UnsupportedFragmentTypeException;
-import Parsing.SequenceDiagrams.Fragment;
-import Parsing.SequenceDiagrams.SDReader;
-import Transformation.Transformer;
+import transformation.Transformer;
 import fdtmc.FDTMC;
 
 public class DiagramAPI {
 	// Attributes
 
 		private final File xmlFile;
-		private ArrayList<SDReader> sdParsers;
+		private List<SDReader> sdParsers;
 		private ADReader adParser;
-		private HashMap<String, Fragment> sdByID;
+		private Map<String, Fragment> sdByID;
 		private Transformer transformer;
-
-		//private HashMap<String, FDTMC> fdtmcByName;
-		//private HashMap<String, State> stateByActID;
 
 	// Constructors
 
-		public DiagramAPI(File xmlFile) throws DOMException, UnsupportedFragmentTypeException, InvalidTagException {
+		public DiagramAPI(File xmlFile) throws UnsupportedFragmentTypeException, InvalidTagException {
 			this.xmlFile = xmlFile;
 			adParser = null;
 			sdParsers = new ArrayList<SDReader>();
@@ -79,10 +78,10 @@ public class DiagramAPI {
 		 * @throws InvalidGuardException
 		 * @throws DOMException
 		 */
-		private void initialize() throws UnsupportedFragmentTypeException, InvalidTagException, DOMException {
-		    ADReader adParser = new ADReader(this.xmlFile, 0);
-		    adParser.retrieveActivities();
-		    this.adParser = adParser;
+		private void initialize() throws UnsupportedFragmentTypeException, InvalidTagException {
+		    ADReader tmpAdParser = new ADReader(this.xmlFile, 0);
+		    tmpAdParser.retrieveActivities();
+		    this.adParser = tmpAdParser;
 
 		    boolean hasNext = false;
 		    int index = 0;
@@ -111,11 +110,11 @@ public class DiagramAPI {
 
 	// Getters and Setters
 
-		public HashMap<String, FDTMC> getFdtmcByName() {
+		public Map<String, FDTMC> getFdtmcByName() {
 			return transformer.getFdtmcByName();
 		}
 
-		public ArrayList<SDReader> getSdParsers() {
+		public List<SDReader> getSdParsers() {
 			return sdParsers;
 		}
 

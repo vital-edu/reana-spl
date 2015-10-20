@@ -12,7 +12,7 @@ public class UnrecognizedVariableException extends Exception {
      * UUID for warning resolution.
      */
     private static final long serialVersionUID = -6767550900715447808L;
-    private String variableName;
+    private final String variableName;
 
     public UnrecognizedVariableException(String variableName) {
         super("Unrecognized variable: " + variableName);

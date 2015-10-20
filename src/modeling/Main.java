@@ -1,22 +1,22 @@
-package Modeling;
+package modeling;
 
 import java.io.File;
-import java.util.HashMap;
+import java.util.Map;
 
 import org.w3c.dom.DOMException;
 
-import Parsing.ActivityDiagrams.ADUtil;
-import Parsing.Exceptions.InvalidNodeClassException;
-import Parsing.Exceptions.InvalidNodeType;
-import Parsing.Exceptions.InvalidNumberOfOperandsException;
-import Parsing.Exceptions.InvalidTagException;
-import Parsing.Exceptions.UnsupportedFragmentTypeException;
-import Parsing.SequenceDiagrams.SDReader;
-import Parsing.SequenceDiagrams.SDUtil;
+import parsing.activitydiagrams.ADUtil;
+import parsing.exceptions.InvalidNodeClassException;
+import parsing.exceptions.InvalidNodeType;
+import parsing.exceptions.InvalidNumberOfOperandsException;
+import parsing.exceptions.InvalidTagException;
+import parsing.exceptions.UnsupportedFragmentTypeException;
+import parsing.sequencediagrams.SDReader;
+import parsing.sequencediagrams.SDUtil;
 import fdtmc.FDTMC;
 
 public class Main {
-	private static HashMap<String, FDTMC> fdtmcByName;
+	private static Map<String, FDTMC> fdtmcByName;
 
 	public static void main(String[] args) throws InvalidTagException, UnsupportedFragmentTypeException, DOMException, InvalidNumberOfOperandsException, InvalidNodeClassException, InvalidNodeType {
 		File xmlFile = new File("modeling.xml");

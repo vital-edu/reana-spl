@@ -1,4 +1,4 @@
-package Parsing.Exceptions;
+package parsing.exceptions;
 
 public class InvalidNodeType extends Exception {
 

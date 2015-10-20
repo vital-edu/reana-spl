@@ -1,15 +1,16 @@
-package Parsing.ActivityDiagrams;
+package parsing.activitydiagrams;
 
 import java.util.ArrayList;
+import java.util.List;
 
-import Parsing.SequenceDiagrams.Fragment;
+import parsing.sequencediagrams.Fragment;
 
 public class Activity {
 	private String id;
 	private String name;
 	private ActivityType type;
-	private ArrayList<Edge> incoming;
-	private ArrayList<Edge> outgoing;
+	private List<Edge> incoming;
+	private List<Edge> outgoing;
 	private boolean ordered;
 	private String sdID;
 	private Fragment sd;
@@ -41,11 +42,11 @@ public class Activity {
 		this.name = name;
 	}
 
-	public ArrayList<Edge> getIncoming() {
+	public List<Edge> getIncoming() {
 		return incoming;
 	}
 
-	public void setIncoming(ArrayList<Edge> incoming) {
+	public void setIncoming(List<Edge> incoming) {
 		this.incoming = incoming;
 	}
 
@@ -53,7 +54,7 @@ public class Activity {
 		this.incoming.add(edge);
 	}
 
-    public ArrayList<Edge> getOutgoing() {
+    public List<Edge> getOutgoing() {
         return outgoing;
     }
 
@@ -61,7 +62,7 @@ public class Activity {
         return outgoing.size();
     }
 
-	public void setOutgoing(ArrayList<Edge> outgoing) {
+	public void setOutgoing(List<Edge> outgoing) {
 		this.outgoing = outgoing;
 	}
 

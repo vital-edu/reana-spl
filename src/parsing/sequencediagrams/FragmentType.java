@@ -1,6 +1,6 @@
-package Parsing.SequenceDiagrams;
+package parsing.sequencediagrams;
 
-import Parsing.Exceptions.UnsupportedFragmentTypeException;
+import parsing.exceptions.UnsupportedFragmentTypeException;
 
 public enum FragmentType {
 	loop, alternative, optional, parallel;

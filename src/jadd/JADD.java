@@ -69,7 +69,7 @@ public class JADD {
         String[] functionNames = new String[functions.size()];
         ADD[] nodes = new ADD[functions.size()];
 
-        // TODO Do Map.values() and Map.keys() always return values and respective keys in the same order?
+        // Do Map.values() and Map.keys() always return values and respective keys in the same order?
         // If so, we can avoid explicit iteration by using only these methods.
         int i = 0;
         for (Map.Entry<String, ADD> function: functions.entrySet()) {

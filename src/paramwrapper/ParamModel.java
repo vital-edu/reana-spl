@@ -63,10 +63,10 @@ class ParamModel {
 	}
 
 	private Map<Integer, Command> getCommands(FDTMC fdtmc) {
-		Map<Integer, Command> commands = new TreeMap<Integer, Command>();
-		for (Entry<State, LinkedList<Transition>> entry : fdtmc.getTransitions().entrySet()) {
-		    int initialState = entry.getKey().getIndex();
-			Command command = new Command(initialState);
+		Map<Integer, Command> tmpCommands = new TreeMap<Integer, Command>();
+		for (Entry<State, List<Transition>> entry : fdtmc.getTransitions().entrySet()) {
+		    int initState = entry.getKey().getIndex();
+			Command command = new Command(initState);
 			if (entry.getValue() != null) {
 			    for (Transition transition : entry.getValue()) {
 			        command.addUpdate(transition.getProbability(),
@@ -75,26 +75,26 @@ class ParamModel {
 			} else {
 			    // Workaround: manually adding self-loops in case no
 			    // transition was specified for a given state.
-			    command.addUpdate("1", initialState);
+			    command.addUpdate("1", initState);
 			}
-			commands.put(initialState, command);
+			tmpCommands.put(initState, command);
 		}
-		return commands;
+		return tmpCommands;
 	}
 
 	private Set<String> getParameters(Collection<Command> commands) {
-		Set<String> parameters = new HashSet<String>();
+		Set<String> tmpParameters = new HashSet<String>();
 
 		Pattern validIdentifier = Pattern.compile("[A-Za-z_][A-Za-z0-9_]*");
 		for (Command command : commands) {
 			for (String probability : command.getUpdatesProbabilities()) {
 				Matcher m = validIdentifier.matcher(probability);
 				while (m.find()) {
-					parameters.add(m.group());
+					tmpParameters.add(m.group());
 				}
 			}
 		}
-		return parameters;
+		return tmpParameters;
 	}
 
 	@Override

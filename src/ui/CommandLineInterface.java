@@ -18,15 +18,15 @@ import java.util.Map;
 
 import org.w3c.dom.DOMException;
 
+import parsing.exceptions.InvalidNodeClassException;
+import parsing.exceptions.InvalidNodeType;
+import parsing.exceptions.InvalidNumberOfOperandsException;
+import parsing.exceptions.InvalidTagException;
+import parsing.exceptions.UnsupportedFragmentTypeException;
 import tool.Analyzer;
 import tool.RDGNode;
 import tool.stats.IMemoryCollector;
 import tool.stats.StatsCollectorFactory;
-import Parsing.Exceptions.InvalidNodeClassException;
-import Parsing.Exceptions.InvalidNodeType;
-import Parsing.Exceptions.InvalidNumberOfOperandsException;
-import Parsing.Exceptions.InvalidTagException;
-import Parsing.Exceptions.UnsupportedFragmentTypeException;
 
 /**
  * Command-line application.
@@ -44,11 +44,11 @@ public class CommandLineInterface {
         Options options = Options.parseOptions(args);
         long startTime = System.currentTimeMillis();
 
-        File featureModelFile = new File(options.featureModelFilePath);
-        File umlModels = new File(options.umlModelsFilePath);
+        File featureModelFile = new File(options.getFeatureModelFilePath());
+        File umlModels = new File(options.getUmlModelsFilePath());
 
         String featureModel = readFeatureModel(featureModelFile);
-        StatsCollectorFactory statsCollectorFactory = new StatsCollectorFactory(options.statsEnabled);
+        StatsCollectorFactory statsCollectorFactory = new StatsCollectorFactory(options.hasStatsEnabled());
         IMemoryCollector memoryCollector = statsCollectorFactory.createMemoryCollector();
 
         Analyzer analyzer = new Analyzer(featureModel,
@@ -72,7 +72,7 @@ public class CommandLineInterface {
 
         System.out.println("Configurations:");
         System.out.println("=========================================");
-        if (options.printAllConfigurations) {
+        if (options.hasPrintAllConfigurations()) {
             printAllConfigurationsValues(familyReliability);
         } else {
             printConfigurationsValues(options, familyReliability);
@@ -82,7 +82,7 @@ public class CommandLineInterface {
         analyzer.generateDotFile(familyReliability, "family-reliability.dot");
         System.out.println("Family-wide reliability decision diagram dumped at ./family-reliability.dot");
 
-        if (options.statsEnabled) {
+        if (options.hasStatsEnabled()) {
             analyzer.printStats();
             memoryCollector.printStats();
         }
@@ -96,10 +96,10 @@ public class CommandLineInterface {
      */
     private static void printConfigurationsValues(Options options, ADD familyReliability) {
         List<String> configurations = new LinkedList<String>();
-        if (options.configuration != null) {
-            configurations.add(options.configuration);
+        if (options.getConfiguration() != null) {
+            configurations.add(options.getConfiguration());
         } else {
-            Path configurationsFilePath = Paths.get(options.configurationsFilePath);
+            Path configurationsFilePath = Paths.get(options.getConfigurationsFilePath());
             try {
                 configurations.addAll(Files.readAllLines(configurationsFilePath, Charset.forName("UTF-8")));
             } catch (IOException e) {

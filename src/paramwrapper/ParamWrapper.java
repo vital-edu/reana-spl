@@ -20,9 +20,9 @@ import fdtmc.FDTMC;
  *
  */
 public class ParamWrapper implements ParametricModelChecker {
-	private final String PARAM_PATH = "/opt/param-2-3-64";
-	private final String PRISM_PATH = "/opt/prism-4.2.1-src/bin/prism";
-	private boolean USE_PRISM = false;
+	private final String paramPath = "/opt/param-2-3-64";
+	private final String prismPath = "/opt/prism-4.2.1-src/bin/prism";
+	private boolean usePrism = false;
 
 	public String fdtmcToParam(FDTMC fdtmc) {
 		ParamModel model = new ParamModel(fdtmc);
@@ -54,7 +54,7 @@ public class ParamWrapper implements ParametricModelChecker {
 			File resultsFile = File.createTempFile("result", null);
 
 			String formula;
-			if (USE_PRISM && !model.contains("param")) {
+			if (usePrism && !model.contains("param")) {
 			    formula = invokeModelChecker(modelFile.getAbsolutePath(),
 			                                 propertyFile.getAbsolutePath(),
 			                                 resultsFile.getAbsolutePath());
@@ -73,7 +73,7 @@ public class ParamWrapper implements ParametricModelChecker {
 	private String invokeParametricModelChecker(String modelPath,
 												String propertyPath,
 												String resultsPath) throws IOException {
-		String commandLine = PARAM_PATH+" "
+		String commandLine = paramPath+" "
 							 +modelPath+" "
 							 +propertyPath+" "
 							 +"--result-file "+resultsPath;
@@ -83,7 +83,7 @@ public class ParamWrapper implements ParametricModelChecker {
 	private String invokeModelChecker(String modelPath,
 									  String propertyPath,
 									  String resultsPath) throws IOException {
-		String commandLine = PRISM_PATH+" "
+		String commandLine = prismPath+" "
 				 			 +modelPath+" "
 				 			 +propertyPath+" "
 				 			 +"-exportresults "+resultsPath;
@@ -101,8 +101,8 @@ public class ParamWrapper implements ParametricModelChecker {
 			e.printStackTrace();
 		}
 		List<String> lines = Files.readAllLines(Paths.get(resultsPath), Charset.forName("UTF-8"));
-		String formula = lines.get(lines.size()-1);
-		return formula;
+		// Formula
+		return lines.get(lines.size()-1);
 	}
 
 }

@@ -1,4 +1,4 @@
-package Parsing.ActivityDiagrams;
+package parsing.activitydiagrams;
 
 public enum ActivityType {
 	initialNode, finalNode, call, decision, merge;

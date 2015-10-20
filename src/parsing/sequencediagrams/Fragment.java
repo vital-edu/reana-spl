@@ -1,18 +1,19 @@
-package Parsing.SequenceDiagrams;
+package parsing.sequencediagrams;
 
 import java.util.ArrayList;
+import java.util.List;
 
-import Parsing.Node;
-import Parsing.Exceptions.UnsupportedFragmentTypeException;
+import parsing.Node;
+import parsing.exceptions.UnsupportedFragmentTypeException;
 
 public class Fragment extends Node {
-	
+
 	// Atributos
 		private String name;
 		private FragmentType type;
-		private ArrayList<Node> nodes;
-		private ArrayList<Lifeline> lifelines;
-	
+		private List<Node> nodes;
+		private List<Lifeline> lifelines;
+
 	// Construtores
 		public Fragment(String id) {
 			super(id);
@@ -21,39 +22,36 @@ public class Fragment extends Node {
 			nodes = new ArrayList<Node>();
 			lifelines = new ArrayList<Lifeline>();
 		}
-		
+
 		public Fragment(String id, FragmentType type) {
 			this(id);
 			this.type = type;
 		}
-		
+
 		public Fragment(String id, String name) {
 			this(id);
 			this.name = name;
 		}
-		
+
 		public Fragment(String id, String typeName, String name) throws UnsupportedFragmentTypeException {
 			this(id, FragmentType.getType(typeName));
 			this.name = name;
 		}
-		
+
 	// Métodos relevantes
 		public void setType(String typeName) throws UnsupportedFragmentTypeException{
 			this.setType(FragmentType.getType(typeName));
 		}
-		
+
 		public void addLifeline(Lifeline toAdd) {
 			lifelines.add(toAdd);
 		}
-		
+
 		public void addNode(Node toAdd) {
 			nodes.add(toAdd);
-		} 
-		
-		public void print() {
-			super.print();
 		}
-		
+
+
 	// Getters e Setters
 		public String getName() {
 			return name;
@@ -71,19 +69,29 @@ public class Fragment extends Node {
 			this.type = type;
 		}
 
-		public ArrayList<Node> getNodes() {
+		public List<Node> getNodes() {
 			return nodes;
 		}
 
-		public void setNodes(ArrayList<Node> nodes) {
+		public void setNodes(List<Node> nodes) {
 			this.nodes = nodes;
 		}
 
-		public ArrayList<Lifeline> getLifelines() {
+		public List<Lifeline> getLifelines() {
 			return lifelines;
 		}
 
-		public void setLifelines(ArrayList<Lifeline> lifelines) {
-			this.lifelines = lifelines;
+		public void setLifelines(List<Lifeline> lifelines2) {
+			this.lifelines = lifelines2;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+		    return super.equals(obj) && ((Fragment) obj).type == this.type;
+		}
+
+		@Override
+		public int hashCode() {
+		    return (this.getId() + this.getClass() + this.type).hashCode();
 		}
 }

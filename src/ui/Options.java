@@ -12,12 +12,12 @@ import joptsimple.OptionSpec;
  *
  */
 class Options {
-    public String featureModelFilePath;
-    public String umlModelsFilePath;
-    public String configuration;
-    public String configurationsFilePath;
-    public boolean printAllConfigurations;
-    public boolean statsEnabled;
+    private String featureModelFilePath;
+    private String umlModelsFilePath;
+    private String configuration;
+    private String configurationsFilePath;
+    private boolean printAllConfigurations;
+    private boolean statsEnabled;
 
     static Options parseOptions(String[] args) throws IOException {
         OptionParser optionParser = new OptionParser();
@@ -62,4 +62,29 @@ class Options {
 
         return result;
     }
+
+    public String getFeatureModelFilePath() {
+        return featureModelFilePath;
+    }
+
+    public String getUmlModelsFilePath() {
+        return umlModelsFilePath;
+    }
+
+    public boolean hasStatsEnabled() {
+        return statsEnabled;
+    }
+
+    public boolean hasPrintAllConfigurations() {
+        return printAllConfigurations;
+    }
+
+    public String getConfiguration() {
+        return configuration;
+    }
+
+    public String getConfigurationsFilePath() {
+        return configurationsFilePath;
+    }
+
 }

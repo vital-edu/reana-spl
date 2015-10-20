@@ -1,33 +1,34 @@
-package Transformation;
+package transformation;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import parsing.Node;
+import parsing.activitydiagrams.ADReader;
+import parsing.activitydiagrams.Activity;
+import parsing.activitydiagrams.ActivityType;
+import parsing.activitydiagrams.Edge;
+import parsing.exceptions.InvalidNodeClassException;
+import parsing.exceptions.InvalidNodeType;
+import parsing.exceptions.InvalidNumberOfOperandsException;
+import parsing.sequencediagrams.Fragment;
+import parsing.sequencediagrams.Message;
+import parsing.sequencediagrams.MessageType;
+import parsing.sequencediagrams.Operand;
 import tool.RDGNode;
-import Parsing.Node;
-import Parsing.ActivityDiagrams.ADReader;
-import Parsing.ActivityDiagrams.Activity;
-import Parsing.ActivityDiagrams.ActivityType;
-import Parsing.ActivityDiagrams.Edge;
-import Parsing.Exceptions.InvalidNodeClassException;
-import Parsing.Exceptions.InvalidNodeType;
-import Parsing.Exceptions.InvalidNumberOfOperandsException;
-import Parsing.SequenceDiagrams.Fragment;
-import Parsing.SequenceDiagrams.Message;
-import Parsing.SequenceDiagrams.MessageType;
-import Parsing.SequenceDiagrams.Operand;
 import fdtmc.FDTMC;
 import fdtmc.State;
 
 public class Transformer {
 	// Attributes
 
-	private HashMap<String, FDTMC> fdtmcByName;
-	private HashMap<String, Integer> nCallsByName;
-	private HashMap<String, State> stateByActID;
+	private Map<String, FDTMC> fdtmcByName;
+	private Map<String, Integer> nCallsByName;
+	private Map<String, State> stateByActID;
 	private int parNum;
 	private int loopNum;
 
@@ -59,10 +60,9 @@ public class Transformer {
 		System.out.println(fdtmc.toString());
 
 		// The method currently does not support variability in ADs.
-		RDGNode node = new RDGNode(adParser.getName(),
-		                           "true",
-		                           fdtmc);
-		return node;
+		return new RDGNode(adParser.getName(),
+		                   "true",
+		                   fdtmc);
 	}
 
 	/**
@@ -103,40 +103,42 @@ public class Transformer {
 		return rdgNode;
 	}
 
-	public void transformFDTMCNodes(FDTMC fdtmc, ArrayList<Node> nodes, State source, State error, RDGNode currentRDGNode) throws InvalidNumberOfOperandsException, InvalidNodeClassException, InvalidNodeType {
+	public void transformFDTMCNodes(FDTMC fdtmc, List<Node> list, State source, State error, RDGNode currentRDGNode) throws InvalidNumberOfOperandsException, InvalidNodeClassException, InvalidNodeType {
 		int i = 1;
-		for (Node n : nodes) {
-			if (i++ >= nodes.size()) {
+		State currentSource = source;
+		for (Node n : list) {
+			if (i++ >= list.size()) {
 				State success = fdtmc.createState("success");
 				if (n.getClass().equals(Message.class)) {
-					transformMessage(fdtmc, (Message)n, source, success, error);
+					transformMessage(fdtmc, (Message)n, currentSource, success, error);
 				} else if (n.getClass().equals(Fragment.class)) {
-					transformFragment(fdtmc, (Fragment)n, source, success, error, currentRDGNode);
+					transformFragment(fdtmc, (Fragment)n, currentSource, success, error, currentRDGNode);
 				}
 			} else {
 				if (n.getClass().equals(Message.class)) {
-					source = transformMessage(fdtmc, (Message)n, source, fdtmc.createState(), error);
+				    currentSource = transformMessage(fdtmc, (Message)n, currentSource, fdtmc.createState(), error);
 				} else if (n.getClass().equals(Fragment.class)) {
-					source = transformFragment(fdtmc, (Fragment)n, source, fdtmc.createState(), error, currentRDGNode);
+				    currentSource = transformFragment(fdtmc, (Fragment)n, currentSource, fdtmc.createState(), error, currentRDGNode);
 				}
 			}
 		}
 	}
 
-	public void transformFDTMCNodes(FDTMC fdtmc, ArrayList<Node> nodes, State source, State target, State error, RDGNode currentRdgNode) throws InvalidNumberOfOperandsException, InvalidNodeClassException, InvalidNodeType {
+	public void transformFDTMCNodes(FDTMC fdtmc, List<Node> nodes, State source, State target, State error, RDGNode currentRdgNode) throws InvalidNumberOfOperandsException, InvalidNodeClassException, InvalidNodeType {
 		int i = 1;
+		State currentSource = source;
 		for (Node n : nodes) {
 			if (i++ >= nodes.size()) {
 				if (n.getClass().equals(Message.class)) {
-					transformMessage(fdtmc, (Message)n, source, target, error);
+					transformMessage(fdtmc, (Message)n, currentSource, target, error);
 				} else if (n.getClass().equals(Fragment.class)) {
-					transformFragment(fdtmc, (Fragment)n, source, target, error, currentRdgNode);
+					transformFragment(fdtmc, (Fragment)n, currentSource, target, error, currentRdgNode);
 				}
 			} else {
 				if (n.getClass().equals(Message.class)) {
-					source = transformMessage(fdtmc, (Message)n, source, fdtmc.createState(), error);
+				    currentSource = transformMessage(fdtmc, (Message)n, currentSource, fdtmc.createState(), error);
 				} else if (n.getClass().equals(Fragment.class)) {
-					source = transformFragment(fdtmc, (Fragment)n, source, fdtmc.createState(), error, currentRdgNode);
+				    currentSource = transformFragment(fdtmc, (Fragment)n, currentSource, fdtmc.createState(), error, currentRdgNode);
 				}
 			}
 		}
@@ -200,10 +202,12 @@ public class Transformer {
 	 * @throws InvalidNodeClassException
 	 */
 	private State transformLoopFragment(FDTMC fdtmc, Fragment fragment, State source, State target, State error, RDGNode currentRdgNode) throws InvalidNumberOfOperandsException, InvalidNodeClassException, InvalidNodeType {
-		if (fragment.getNodes().size() > 1) throw new InvalidNumberOfOperandsException("A Loop fragment can only have 1 operand!");
+		if (fragment.getNodes().size() > 1) {
+		    throw new InvalidNumberOfOperandsException("A Loop fragment can only have 1 operand!");
+		}
 
 		Operand operand = (Operand)fragment.getNodes().get(0);
-		String name = (fragment.getName() != null & !fragment.getName().isEmpty()) ? fragment.getName() : "Loop" + ++loopNum;
+		String name = (fragment.getName() != null && !fragment.getName().isEmpty()) ? fragment.getName() : "Loop" + ++loopNum;
 		State opStart = fdtmc.createState("initial" + name);
 		State opEnd = fdtmc.createState("end" + name);
 
@@ -231,12 +235,14 @@ public class Transformer {
 	 * @throws InvalidNumberOfOperandsException
 	 */
 	private State transformAltFragment(FDTMC fdtmc, Fragment fragment, State source, State target, State error, RDGNode currentRdgNode) throws InvalidNodeClassException, InvalidNumberOfOperandsException, InvalidNodeType {
-		ArrayList<Node> operands = fragment.getNodes();
+		List<Node> operands = fragment.getNodes();
 		String name;
 
 		String opElse = "";
 		for(Node node : operands) {
-			if (!node.getClass().equals(Operand.class)) throw new InvalidNodeClassException("An Alt Fragment can only have Operand objects as Nodes!");
+			if (!node.getClass().equals(Operand.class)) {
+			    throw new InvalidNodeClassException("An Alt Fragment can only have Operand objects as Nodes!");
+			}
 			Operand operand = (Operand)node; // to facilitate the nodes use
 
 			String guard = operand.getGuard();
@@ -279,7 +285,9 @@ public class Transformer {
 	 * @throws InvalidNodeClassException
 	 */
 	private State transformOptFragment(FDTMC fdtmc, Fragment fragment, State source, State target, State error, RDGNode currentRdgNode) throws InvalidNumberOfOperandsException, InvalidNodeClassException, InvalidNodeType {
-		if (fragment.getNodes().size() > 1) throw new InvalidNumberOfOperandsException("An Opt fragment can only have 1 operand!");
+		if (fragment.getNodes().size() > 1) {
+		    throw new InvalidNumberOfOperandsException("An Opt fragment can only have 1 operand!");
+		}
 
 		Operand operand = (Operand)fragment.getNodes().get(0);
 		String name = operand.getGuard();
@@ -288,9 +296,6 @@ public class Transformer {
 		State featureEnd = fdtmc.createState("end" + name);
 		State featureError = fdtmc.createState("error" + name);
 
-		// TODO: Check if the commented lines are being missed.
-		//fdtmc.createTransition(source, target, operand.getGuard(), "1 - f" + operand.getGuard()); // not entering opt
-        //fdtmc.createTransition(source, featureStart, operand.getGuard(), "f" + operand.getGuard().toString()); // into Feature
         fdtmc.createTransition(source, featureStart, name, "1.0"); // into Feature
         // When the feature is not present, its reliability will be taken as 1.
 		fdtmc.createTransition(featureStart, featureEnd, "", name); // interface transitions
@@ -314,7 +319,7 @@ public class Transformer {
 	 * @return the $target itself, the point in the fDTMC where the execution or not of this $fragment will transit to
 	 */
 	private State transformParallelFragment(FDTMC fdtmc, Fragment fragment, State source, State target, State error, RDGNode currentRdgNode) throws InvalidNodeClassException, InvalidNumberOfOperandsException, InvalidNodeType {
-		ArrayList<Node> operands = fragment.getNodes();
+		List<Node> operands = fragment.getNodes();
 		String fragName, opName;
 		int n = operands.size(), opNum;
 		float val = 1/(float)n;
@@ -322,7 +327,9 @@ public class Transformer {
 		fragName = !fragment.getName().isEmpty() ? fragment.getName() : "Par" + ++parNum;
 		opNum = 0;
 		for(Node node : operands) {
-			if (!node.getClass().equals(Operand.class)) throw new InvalidNodeClassException("A Par Fragment can only have Operand objects as Nodes!");
+			if (!node.getClass().equals(Operand.class)) {
+			    throw new InvalidNodeClassException("A Par Fragment can only have Operand objects as Nodes!");
+			}
 			Operand operand = (Operand)node; // to facilitate the nodes use
 			opName = fragName + "-Op" + ++opNum;
 
@@ -502,11 +509,11 @@ public class Transformer {
 
 	// Getters and Setters
 
-	public HashMap<String, FDTMC> getFdtmcByName() {
+	public Map<String, FDTMC> getFdtmcByName() {
 		return fdtmcByName;
 	}
 
-	public HashMap<String, Integer> getnCallsByName() {
+	public Map<String, Integer> getnCallsByName() {
 		return nCallsByName;
 	}
 }

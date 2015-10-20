@@ -1,13 +1,13 @@
-package Parsing.SequenceDiagrams;
+package parsing.sequencediagrams;
 
-import Parsing.Node;
+import parsing.Node;
 
 public class Message extends Node {
 	private String name;
 	private Lifeline sender;
 	private Lifeline receiver;
 	private MessageType type;
-	
+
 	public Message(String id) {
 		super(id);
 	}
@@ -44,7 +44,4 @@ public class Message extends Node {
 		this.type = type;
 	}
 
-	public void print() {
-		super.print();
-	}
 }

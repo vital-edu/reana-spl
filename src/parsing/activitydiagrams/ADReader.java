@@ -1,9 +1,12 @@
-package Parsing.ActivityDiagrams;
+package parsing.activitydiagrams;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -19,22 +22,19 @@ public class ADReader {
 	private int index;
 	private String name;
 	private boolean next;
-	private HashMap<String, Activity> activitiesByID;
-	private HashMap<String, Edge> edgesByID;
+	private Map<String, Activity> activitiesByID;
+	private Map<String, Edge> edgesByID;
 	private Document doc;
-	private ArrayList<Activity> activities;
-	private ArrayList<Edge> edges;
-	//private ArrayList<Activity> mergeActivities;
-	//private ArrayList<Activity> forkActivities;
+	private List<Activity> activities;
+	private List<Edge> edges;
 
-	
+
 
 	public ADReader(File xmlFile, int index) {
 		this.index = index;
 		try {
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			DocumentBuilder db = dbf.newDocumentBuilder();
-			// this.coverage = new HashMap<Lifeline, ArrayList<String>>();
 			this.doc = db.parse(xmlFile);
 			this.doc.getDocumentElement().normalize();
 		} catch (Exception e) {
@@ -50,19 +50,19 @@ public class ADReader {
 		return name;
 	}
 
-	public ArrayList<Activity> getActivities() {
+	public List<Activity> getActivities() {
 		return activities;
 	}
 
-	public void setActivities(ArrayList<Activity> activities) {
+	public void setActivities(List<Activity> activities) {
 		this.activities = activities;
 	}
 
-	public ArrayList<Edge> getEdges() {
+	public List<Edge> getEdges() {
 		return edges;
 	}
 
-	public void setEdges(ArrayList<Edge> edges) {
+	public void setEdges(List<Edge> edges) {
 		this.edges = edges;
 	}
 
@@ -70,15 +70,15 @@ public class ADReader {
 		return next;
 	}
 
-	
+
 	/**
-	 * retrieveActivities function is responsible for identifying the activity diagrams 
+	 * retrieveActivities function is responsible for identifying the activity diagrams
 	 * represented in a XMI file, identify all the activities in each activity diagram and
-	 * create the trace (link) between each activity and its related sequence diagram.    
+	 * create the trace (link) between each activity and its related sequence diagram.
 	 */
 	public void retrieveActivities() {
 		org.w3c.dom.Node ad;
-		ArrayList<org.w3c.dom.Node> adList = new ArrayList<org.w3c.dom.Node>();
+		List<org.w3c.dom.Node> adList = new ArrayList<org.w3c.dom.Node>();
 		NodeList nodes = this.doc.getElementsByTagName("packagedElement");
 		for (int i = 0; i < nodes.getLength(); i++) {
 			if (nodes.item(i).getAttributes().getNamedItem("xmi:type") != null) {
@@ -119,7 +119,7 @@ public class ADReader {
 				} else {
 					tmp.setSdID(null);
 				}
-				
+
 				this.activities.add(tmp);
 			}
 		}
@@ -135,15 +135,15 @@ public class ADReader {
 		}
 	}
 
-	
-	
+
+
 	/**
 	 * The retrieveEdges functions is responsible for identifying all the edges between the activities
-	 * represented at an activity diagram. Given an activity diagram the function traverse its XMI 
-	 * fragment and whenever it finds an edge node, the information needed is extract (id, edge name, 
-	 * edge type, source and target activities, guards conditions). By the end the function creates a 
-	 * mapping <id, edge>.  
-	 * @param node The XMI fragment representing a sequence diagram to be parsed. 
+	 * represented at an activity diagram. Given an activity diagram the function traverse its XMI
+	 * fragment and whenever it finds an edge node, the information needed is extract (id, edge name,
+	 * edge type, source and target activities, guards conditions). By the end the function creates a
+	 * mapping <id, edge>.
+	 * @param node The XMI fragment representing a sequence diagram to be parsed.
 	 */
 	public void retrieveEdges(org.w3c.dom.Node node) {
 		NodeList elements = node.getChildNodes();
@@ -193,14 +193,14 @@ public class ADReader {
 		}
 	}
 
-	
-	
+
+
 	/**
-	 * The solveActivities' role is to represent the activity diagram in memory (by using Activity 
+	 * The solveActivities' role is to represent the activity diagram in memory (by using Activity
 	 * and Edge objects. This function is called after retrieveActivities and retrieveEdges functions,
-	 * because all the objects needed for creating the representation are avaiable. In the end the 
-	 * orderActivities function is called to ensure the order which the activities happen.    
-	 * @param node The node object (i.e. the XMI fragment) representing the whole activity diagram.  
+	 * because all the objects needed for creating the representation are avaiable. In the end the
+	 * orderActivities function is called to ensure the order which the activities happen.
+	 * @param node The node object (i.e. the XMI fragment) representing the whole activity diagram.
 	 */
 	public void solveActivities(org.w3c.dom.Node node) {
 		NodeList elements = node.getChildNodes();
@@ -208,13 +208,13 @@ public class ADReader {
 			if (elements.item(s).getNodeName().equals("node")) {
 				Activity activity = this.activitiesByID.get(elements.item(s).getAttributes()
 						.getNamedItem("xmi:id").getTextContent());
-				NodeList edges = elements.item(s).getChildNodes();
-				for (int t = 0; t < edges.getLength(); t++) {
-					if (edges.item(t).getNodeName().equals("incoming")) {
-						activity.addIncoming(this.edgesByID.get(edges.item(t).getAttributes()
+				NodeList tmpEdges = elements.item(s).getChildNodes();
+				for (int t = 0; t < tmpEdges.getLength(); t++) {
+					if (tmpEdges.item(t).getNodeName().equals("incoming")) {
+						activity.addIncoming(this.edgesByID.get(tmpEdges.item(t).getAttributes()
 								.getNamedItem("xmi:idref").getTextContent()));
-					} else if (edges.item(t).getNodeName().equals("outgoing")) {
-						activity.addOutgoing(this.edgesByID.get(edges.item(t).getAttributes()
+					} else if (tmpEdges.item(t).getNodeName().equals("outgoing")) {
+						activity.addOutgoing(this.edgesByID.get(tmpEdges.item(t).getAttributes()
 								.getNamedItem("xmi:idref").getTextContent()));
 					}
 				}
@@ -223,15 +223,15 @@ public class ADReader {
 		orderActivities();
 	}
 
-	
-	
-	
+
+
+
 	/**
-	 * This function is used to order the activities of a sequence diagram. 
+	 * This function is used to order the activities of a sequence diagram.
 	 */
 	public void orderActivities() {
 		int i = 0, j;
-		LinkedList<Activity> queue = new LinkedList<Activity>();
+		Queue<Activity> queue = new LinkedList<Activity>();
 		Activity target, temp;
 
 		j = -1;
