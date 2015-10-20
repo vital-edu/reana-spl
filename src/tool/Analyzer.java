@@ -87,7 +87,7 @@ public class Analyzer {
      * @throws InvalidNodeClassException
      * @throws InvalidNumberOfOperandsException
      */
-    public RDGNode model(File umlModels) throws DOMException, UnsupportedFragmentTypeException, InvalidTagException, InvalidNumberOfOperandsException, InvalidNodeClassException, InvalidNodeType {
+    public RDGNode model(File umlModels) throws UnsupportedFragmentTypeException, InvalidTagException, InvalidNumberOfOperandsException, InvalidNodeClassException, InvalidNodeType {
         timeCollector.startParsingTimer();
 
         DiagramAPI modeler = new DiagramAPI(umlModels);

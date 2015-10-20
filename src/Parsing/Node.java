@@ -13,6 +13,7 @@ public abstract class Node {
 		this.id = id;
 	}
 
+	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
 			return true;
@@ -32,6 +33,15 @@ public abstract class Node {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	public int hashCode() {
+	    if (this.id != null) {
+	        return (this.id + this.getClass()).hashCode();
+	    } else {
+	        return 0;
+	    }
 	}
 
 	public float getEnergy() {

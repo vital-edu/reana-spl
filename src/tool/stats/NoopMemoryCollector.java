@@ -4,14 +4,12 @@ public class NoopMemoryCollector implements IMemoryCollector {
 
     @Override
     public void takeSnapshot(String name) {
-        // TODO Auto-generated method stub
-
+        // No-op
     }
 
     @Override
     public void printStats() {
-        // TODO Auto-generated method stub
-
+        // No-op
     }
 
 }
