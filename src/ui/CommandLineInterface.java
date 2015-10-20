@@ -142,7 +142,7 @@ public class CommandLineInterface {
 
     private static void printSingleConfiguration(String configuration, double reliability) {
         System.out.print(configuration + " --> ");
-        if (Double.doubleToRawLongBits(reliability) == 0) {
+        if (Double.doubleToRawLongBits(reliability) != 0) {
             System.out.println(reliability);
         } else {
             System.out.println("INVALID");
