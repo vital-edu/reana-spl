@@ -10,6 +10,7 @@ public interface IFormulaCollector {
     public void collectFormula(String formula);
     public long getMinFormulaSize();
     public long getMaxFormulaSize();
+    public long getSizesSum();
 
     public void printStats();
 
