@@ -24,6 +24,7 @@ import parsing.exceptions.InvalidNumberOfOperandsException;
 import parsing.exceptions.InvalidTagException;
 import parsing.exceptions.UnsupportedFragmentTypeException;
 import tool.Analyzer;
+import tool.PruningStrategyFactory;
 import tool.RDGNode;
 import tool.stats.IMemoryCollector;
 import tool.stats.StatsCollectorFactory;
@@ -54,6 +55,8 @@ public class CommandLineInterface {
         Analyzer analyzer = new Analyzer(featureModel,
                                          statsCollectorFactory.createTimeCollector(),
                                          statsCollectorFactory.createFormulaCollector());
+        analyzer.setPruningStrategy(PruningStrategyFactory.createPruningStrategy(options.getPruningStrategy()));
+
         RDGNode rdgRoot = null;
         memoryCollector.takeSnapshot("before model parsing");
         try {

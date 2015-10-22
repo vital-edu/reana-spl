@@ -5,6 +5,8 @@ import java.io.IOException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
+import tool.PruningStrategy;
+
 
 /**
  * Command-line options.
@@ -18,29 +20,43 @@ class Options {
     private String configurationsFilePath;
     private boolean printAllConfigurations;
     private boolean statsEnabled;
+    private PruningStrategy pruningStrategy;
 
     static Options parseOptions(String[] args) throws IOException {
         OptionParser optionParser = new OptionParser();
         OptionSpec<String> featureModelOption = optionParser
                 .accepts("feature-model")
                 .withRequiredArg()
-                .defaultsTo("fm.txt");
+                .defaultsTo("fm.txt")
+                .describedAs("File");
         OptionSpec<String> umlModelsOption = optionParser
                 .accepts("uml-models")
                 .withRequiredArg()
-                .defaultsTo("modeling.xml");
+                .defaultsTo("modeling.xml")
+                .describedAs("File");
 
         OptionSpec<String> configurationsFileOption = optionParser
                 .accepts("configurations-file")
                 .withRequiredArg()
-                .defaultsTo("configurations.txt");
+                .defaultsTo("configurations.txt")
+                .describedAs("File");
         OptionSpec<String> configurationOption = optionParser
                 .accepts("configuration")
                 .withRequiredArg();
         OptionSpec<Void> allConfigurationsOption = optionParser
-                .accepts("all-configurations");
+                .accepts("all-configurations",
+                         "Print the reliabilities of all valid configurations");
         OptionSpec<Void> statsEnabledOption = optionParser
-                .accepts("stats");
+                .accepts("stats",
+                         "Print profiling stats");
+
+        OptionSpec<PruningStrategy> pruningStrategyOption = optionParser
+                .accepts("pruning-strategy",
+                         "The strategy that should be used for pruning invalid configurations. Can be one of: FM (whole feature model); NONE (no pruning)")
+                .withRequiredArg()
+                .ofType(PruningStrategy.class)
+                .defaultsTo(PruningStrategy.FM)
+                .describedAs("FM | NONE");
 
         OptionSpec<Void> helpOption = optionParser
                 .accepts("help")
@@ -59,6 +75,7 @@ class Options {
         result.configurationsFilePath = options.valueOf(configurationsFileOption);
         result.printAllConfigurations = options.has(allConfigurationsOption);
         result.statsEnabled = options.has(statsEnabledOption);
+        result.pruningStrategy = options.valueOf(pruningStrategyOption);
 
         return result;
     }
@@ -85,6 +102,10 @@ class Options {
 
     public String getConfigurationsFilePath() {
         return configurationsFilePath;
+    }
+
+    public PruningStrategy getPruningStrategy() {
+        return pruningStrategy;
     }
 
 }

@@ -42,6 +42,7 @@ public class Analyzer {
     private ExpressionSolver expressionSolver;
     private Map<String, ADD> reliabilityCache;
     private JADD jadd;
+    private IPruningStrategy pruningStrategy;
 
     private ITimeCollector timeCollector;
     private IFormulaCollector formulaCollector;
@@ -72,7 +73,21 @@ public class Analyzer {
         this.jadd = jadd;
         this.expressionSolver = new ExpressionSolver(jadd);
         this.featureModel = expressionSolver.encodeFormula(featureModel);
-        reliabilityCache = new HashMap<String, ADD>();
+        this.reliabilityCache = new HashMap<String, ADD>();
+    }
+
+    /**
+     * Sets the pruning strategy to be used for preventing calculation
+     * of reliability values for invalid configurations.
+     *
+     * If none is set, the default behavior is to multiply the reliability
+     * mappings by the feature model's 0,1-ADD (so that valid configurations
+     * yield the same reliability, but invalid ones yield 0).
+     *
+     * @param pruningStrategy the pruningStrategy to set
+     */
+    public void setPruningStrategy(IPruningStrategy pruningStrategy) {
+        this.pruningStrategy = pruningStrategy;
     }
 
     /**
@@ -98,53 +113,25 @@ public class Analyzer {
     }
 
     /**
-     * Recursively evaluates the reliability function of an RDG node.
+     * Evaluates the family-based reliability function of an RDG node, based
+     * on the reliabilities of the nodes on which it depends.
+     *
      * A reliability function is a boolean function from the set of features
-     * to Real values.
+     * to Real values, where the reliability of any invalid configuration is 0.
      *
      * @param node RDG node whose reliability is to be evaluated.
      * @return
      */
     public ADD evaluateReliability(RDGNode node) {
-        if (isInCache(node)) {
-            return getCachedReliability(node);
-        }
-
-        timeCollector.startFeatureBasedTimer();
-        String reliabilityExpression = getReliabilityExpression(node);
-        timeCollector.stopFeatureBasedTimer();
-        formulaCollector.collectFormula(reliabilityExpression);
-
-        System.out.println("Reliability expression for "+ node.getId() + " -> " + reliabilityExpression);
-
-        Map<String, ADD> childrenReliabilities = new HashMap<String, ADD>();
-        for (RDGNode child: node.getDependencies()) {
-            ADD childReliability = evaluateReliability(child);
-
-            timeCollector.startFamilyBasedTimer();
-            ADD presenceCondition = expressionSolver.encodeFormula(child.getPresenceCondition());
-
-            ADD phi = presenceCondition.ifThenElse(childReliability, 1);
-            childrenReliabilities.put(child.getId(),
-                                      phi);
-            timeCollector.stopFamilyBasedTimer();
-        }
+        ADD reliability = evaluatePartialReliability(node);
 
         timeCollector.startFamilyBasedTimer();
-        ADD reliability = expressionSolver.solveExpression(reliabilityExpression,
-                                                           childrenReliabilities);
-
         // After evaluating the expression, constant terms alter the {0,1} nature
         // of the reliability ADD. Thus, we must multiply the result by the
         // {0,1} representation of the feature model in order to retain 0 as the
         // value for invalid configurations.
         ADD result = featureModel.times(reliability);
         timeCollector.stopFamilyBasedTimer();
-
-        jadd.dumpDot("FM*Reliability",
-                     result,
-                     "result-"+node.getId()+".dot");
-        cacheReliability(node, result);
         return result;
     }
 
@@ -169,6 +156,54 @@ public class Analyzer {
     private String getReliabilityExpression(RDGNode node) {
         FDTMC model = node.getFDTMC();
         return modelChecker.getReliability(model);
+    }
+
+    /**
+     * Recursively evaluates the reliability function of an RDG node.
+     * A reliability function is a boolean function from the set of features
+     * to Real values.
+     *
+     * @param node RDG node whose reliability is to be evaluated.
+     * @return
+     */
+    private ADD evaluatePartialReliability(RDGNode node) {
+        if (isInCache(node)) {
+            return getCachedReliability(node);
+        }
+
+        timeCollector.startFeatureBasedTimer();
+        String reliabilityExpression = getReliabilityExpression(node);
+        timeCollector.stopFeatureBasedTimer();
+        formulaCollector.collectFormula(reliabilityExpression);
+
+        System.out.println("Reliability expression for "+ node.getId() + " -> " + reliabilityExpression);
+
+        Map<String, ADD> childrenReliabilities = new HashMap<String, ADD>();
+        for (RDGNode child: node.getDependencies()) {
+            ADD childReliability = evaluatePartialReliability(child);
+
+            timeCollector.startFamilyBasedTimer();
+            ADD presenceCondition = expressionSolver.encodeFormula(child.getPresenceCondition());
+
+            ADD phi = presenceCondition.ifThenElse(childReliability, 1);
+            childrenReliabilities.put(child.getId(),
+                                      phi);
+            timeCollector.stopFamilyBasedTimer();
+        }
+
+        timeCollector.startFamilyBasedTimer();
+        ADD reliability = expressionSolver.solveExpression(reliabilityExpression,
+                                                           childrenReliabilities);
+        reliability = pruningStrategy.pruneInvalidConfigurations(node,
+                                                                 reliability,
+                                                                 featureModel);
+        timeCollector.stopFamilyBasedTimer();
+
+        cacheReliability(node, reliability);
+        jadd.dumpDot(reliabilityExpression,
+                     reliability,
+                     "result-"+node.getId()+".dot");
+        return reliability;
     }
 
     private ADD getCachedReliability(RDGNode node) {
