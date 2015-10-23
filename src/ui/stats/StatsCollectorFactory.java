@@ -1,4 +1,11 @@
-package tool.stats;
+package ui.stats;
+
+import tool.stats.IFormulaCollector;
+import tool.stats.IMemoryCollector;
+import tool.stats.ITimeCollector;
+import tool.stats.NoopFormulaCollector;
+import tool.stats.NoopMemoryCollector;
+import tool.stats.NoopTimeCollector;
 
 public class StatsCollectorFactory {
 

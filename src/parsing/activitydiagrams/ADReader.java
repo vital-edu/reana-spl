@@ -7,6 +7,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -19,6 +21,8 @@ import org.w3c.dom.NodeList;
  *
  */
 public class ADReader {
+    private static final Logger LOGGER = Logger.getLogger(ADReader.class.getName());
+
 	private int index;
 	private String name;
 	private boolean next;
@@ -38,7 +42,7 @@ public class ADReader {
 			this.doc = db.parse(xmlFile);
 			this.doc.getDocumentElement().normalize();
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOGGER.log(Level.SEVERE, e.toString(), e);
 		}
 	}
 

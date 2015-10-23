@@ -19,7 +19,7 @@ public class Lifeline {
 	public String getName() {
 		return this.name;
 	}
-	
+
 	public void setLink(String link) {
 		this.link = link;
 	}
@@ -28,7 +28,4 @@ public class Lifeline {
 		return this.link;
 	}
 
-	public void print() {
-		System.out.println("Lifeline: " + this.name);
-	}
 }

@@ -1,4 +1,4 @@
-package tool.stats;
+package ui.stats;
 
 public class WallClockStopWatch {
 

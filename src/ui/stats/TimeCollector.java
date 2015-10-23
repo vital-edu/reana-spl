@@ -1,4 +1,8 @@
-package tool.stats;
+package ui.stats;
+
+import java.io.PrintStream;
+
+import tool.stats.ITimeCollector;
 
 public class TimeCollector implements ITimeCollector {
 
@@ -58,10 +62,10 @@ public class TimeCollector implements ITimeCollector {
     }
 
     @Override
-    public void printStats() {
-        System.out.println("Parsing time: " + getParsingTime()/1E+6 + " ms");
-        System.out.println("Feature-based time: " + getFeatureBasedTime()/1E+6 + " ms");
-        System.out.println("Family-based time: " + getFamilyBasedTime()/1E+6 + " ms");
+    public void printStats(PrintStream out) {
+        out.println("Parsing time: " + getParsingTime()/1E+6 + " ms");
+        out.println("Feature-based time: " + getFeatureBasedTime()/1E+6 + " ms");
+        out.println("Family-based time: " + getFamilyBasedTime()/1E+6 + " ms");
     }
 
 }

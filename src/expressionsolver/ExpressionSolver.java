@@ -7,17 +7,18 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import org.nfunk.jep.JEP;
 import org.nfunk.jep.SymbolTable;
 
 import expressionsolver.functions.ADDAdd;
 import expressionsolver.functions.ADDDivide;
+import expressionsolver.functions.ADDMultiply;
+import expressionsolver.functions.ADDSubtract;
 import expressionsolver.functions.LogicalAnd;
 import expressionsolver.functions.LogicalNot;
 import expressionsolver.functions.LogicalOr;
-import expressionsolver.functions.ADDMultiply;
-import expressionsolver.functions.ADDSubtract;
 import expressionsolver.functions.UnaryMinus;
 
 /**
@@ -25,6 +26,7 @@ import expressionsolver.functions.UnaryMinus;
  *
  */
 public class ExpressionSolver {
+    private static final Logger LOGGER = Logger.getLogger(ExpressionSolver.class.getName());
 
     private JADD jadd;
 
@@ -49,7 +51,7 @@ public class ExpressionSolver {
         JEP parser = makeParser(jadd);
         parser.parseExpression(expression);
         if (parser.hasError()) {
-            System.err.println("Parser error: " + parser.getErrorInfo());
+            LOGGER.warning("Parser error: " + parser.getErrorInfo());
             return null;
         }
 
@@ -59,7 +61,7 @@ public class ExpressionSolver {
             if (interpretation.containsKey(varName)) {
                 parser.addVariableAsObject(varName, interpretation.get(varName));
             } else {
-                System.err.println("No interpretation for variable <"+varName+"> was provided");
+                LOGGER.warning("No interpretation for variable <"+varName+"> was provided");
             }
         }
         return (ADD)parser.getValueAsObject();
@@ -92,7 +94,7 @@ public class ExpressionSolver {
         JEP parser = makeParser(jadd);
         parser.parseExpression(formula);
         if (parser.hasError()) {
-            System.err.println("Parser error: " + parser.getErrorInfo());
+            LOGGER.warning("Parser error: " + parser.getErrorInfo());
             return null;
         }
 

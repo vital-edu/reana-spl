@@ -10,6 +10,8 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import fdtmc.FDTMC;
 
@@ -20,6 +22,8 @@ import fdtmc.FDTMC;
  *
  */
 public class ParamWrapper implements ParametricModelChecker {
+    private static final Logger LOGGER = Logger.getLogger(ParamWrapper.class.getName());
+
 	private final String paramPath = "/opt/param-2-3-64";
 	private final String prismPath = "/opt/prism-4.2.1-src/bin/prism";
 	private boolean usePrism = false;
@@ -65,7 +69,7 @@ public class ParamWrapper implements ParametricModelChecker {
 			}
 			return formula.trim().replaceAll("\\s+", "");
 		} catch (IOException e) {
-			e.printStackTrace();
+			LOGGER.log(Level.SEVERE, e.toString(), e);
 		}
 		return "";
 	}
@@ -91,14 +95,14 @@ public class ParamWrapper implements ParametricModelChecker {
 	}
 
 	private String invokeAndGetResult(String commandLine, String resultsPath) throws IOException {
-	    System.out.println(commandLine);
+	    LOGGER.fine(commandLine);
 		Process program = Runtime.getRuntime().exec(commandLine);
 		int exitCode = 0;
 		try {
 			exitCode = program.waitFor();
 		} catch (InterruptedException e) {
-			System.err.println("Exit code: " + exitCode);
-			e.printStackTrace();
+			LOGGER.severe("Exit code: " + exitCode);
+			LOGGER.log(Level.SEVERE, e.toString(), e);
 		}
 		List<String> lines = Files.readAllLines(Paths.get(resultsPath), Charset.forName("UTF-8"));
 		// Formula

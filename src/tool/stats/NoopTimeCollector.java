@@ -1,5 +1,7 @@
 package tool.stats;
 
+import java.io.PrintStream;
+
 public class NoopTimeCollector implements ITimeCollector {
 
     @Override
@@ -52,7 +54,7 @@ public class NoopTimeCollector implements ITimeCollector {
     }
 
     @Override
-    public void printStats() {
+    public void printStats(PrintStream out) {
         // No-op
     }
 

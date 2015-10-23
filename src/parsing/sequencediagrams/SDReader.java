@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -27,7 +29,7 @@ import parsing.exceptions.UnsupportedFragmentTypeException;
  * Later, and SDReader instance will be consumed by an DiagramAPI instance
  */
 public class SDReader {
-	// Atributos
+    private static final Logger LOGGER = Logger.getLogger(SDReader.class.getName());
 
 		private int index;
 		private boolean next;
@@ -51,7 +53,7 @@ public class SDReader {
 				this.messages = new ArrayList<Message>();
 				setDoc(xmiFile);
 			} catch (Exception e) {
-				e.printStackTrace();
+	            LOGGER.log(Level.SEVERE, e.toString(), e);
 			}
 		}
 

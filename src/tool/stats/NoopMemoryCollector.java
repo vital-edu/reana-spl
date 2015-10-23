@@ -1,5 +1,7 @@
 package tool.stats;
 
+import java.io.PrintStream;
+
 public class NoopMemoryCollector implements IMemoryCollector {
 
     @Override
@@ -8,7 +10,7 @@ public class NoopMemoryCollector implements IMemoryCollector {
     }
 
     @Override
-    public void printStats() {
+    public void printStats(PrintStream out) {
         // No-op
     }
 

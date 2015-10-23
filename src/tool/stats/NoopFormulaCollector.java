@@ -1,5 +1,7 @@
 package tool.stats;
 
+import java.io.PrintStream;
+
 public class NoopFormulaCollector implements IFormulaCollector {
 
     @Override
@@ -20,8 +22,14 @@ public class NoopFormulaCollector implements IFormulaCollector {
     }
 
     @Override
-    public void printStats() {
+    public void printStats(PrintStream out) {
         // No-op
+    }
+
+    @Override
+    public long getSizesSum() {
+        // No-op
+        return 0;
     }
 
 }

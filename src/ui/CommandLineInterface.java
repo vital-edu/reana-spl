@@ -7,7 +7,9 @@ import jadd.ADD;
 import jadd.UnrecognizedVariableException;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,6 +17,9 @@ import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 import org.w3c.dom.DOMException;
 
@@ -27,7 +32,7 @@ import tool.Analyzer;
 import tool.PruningStrategyFactory;
 import tool.RDGNode;
 import tool.stats.IMemoryCollector;
-import tool.stats.StatsCollectorFactory;
+import ui.stats.StatsCollectorFactory;
 
 /**
  * Command-line application.
@@ -36,13 +41,18 @@ import tool.stats.StatsCollectorFactory;
  *
  */
 public class CommandLineInterface {
+    private static final Logger LOGGER = Logger.getLogger(CommandLineInterface.class.getName());
+    private static final PrintStream OUTPUT = System.out;
 
-    /**
-     * @param args
-     * @throws IOException
-     */
+    private CommandLineInterface() {
+        // NO-OP
+    }
+
     public static void main(String[] args) throws IOException {
         Options options = Options.parseOptions(args);
+        LogManager logManager = LogManager.getLogManager();
+        logManager.readConfiguration(new FileInputStream("logging.properties"));
+
         long startTime = System.currentTimeMillis();
 
         File featureModelFile = new File(options.getFeatureModelFilePath());
@@ -64,8 +74,8 @@ public class CommandLineInterface {
         } catch (DOMException | UnsupportedFragmentTypeException
                 | InvalidTagException | InvalidNumberOfOperandsException
                 | InvalidNodeClassException | InvalidNodeType e) {
-            System.err.println("Error reading the provided UML Models.");
-            e.printStackTrace();
+            LOGGER.severe("Error reading the provided UML Models.");
+            LOGGER.log(Level.SEVERE, e.toString(), e);
             System.exit(1);
         }
         memoryCollector.takeSnapshot("after model parsing");
@@ -74,24 +84,24 @@ public class CommandLineInterface {
         ADD familyReliability = analyzer.evaluateReliability(rdgRoot);
         memoryCollector.takeSnapshot("after evaluation");
 
-        System.out.println("Configurations:");
-        System.out.println("=========================================");
+        OUTPUT.println("Configurations:");
+        OUTPUT.println("=========================================");
         if (options.hasPrintAllConfigurations()) {
             printAllConfigurationsValues(familyReliability);
         } else {
             printConfigurationsValues(options, familyReliability);
         }
-        System.out.println("=========================================");
+        OUTPUT.println("=========================================");
 
         analyzer.generateDotFile(familyReliability, "family-reliability.dot");
-        System.out.println("Family-wide reliability decision diagram dumped at ./family-reliability.dot");
+        OUTPUT.println("Family-wide reliability decision diagram dumped at ./family-reliability.dot");
 
         if (options.hasStatsEnabled()) {
-            analyzer.printStats();
-            memoryCollector.printStats();
+            analyzer.printStats(OUTPUT);
+            memoryCollector.printStats(OUTPUT);
         }
         long totalRunningTime = System.currentTimeMillis() - startTime;
-        System.out.println("Total running time: " +  totalRunningTime + " ms");
+        OUTPUT.println("Total running time: " +  totalRunningTime + " ms");
     }
 
     /**
@@ -107,8 +117,8 @@ public class CommandLineInterface {
             try {
                 configurations.addAll(Files.readAllLines(configurationsFilePath, Charset.forName("UTF-8")));
             } catch (IOException e) {
-                System.err.println("Error reading the provided configurations file.");
-                e.printStackTrace();
+                LOGGER.severe("Error reading the provided configurations file.");
+                LOGGER.log(Level.SEVERE, e.toString(), e);
             }
         }
 
@@ -118,7 +128,8 @@ public class CommandLineInterface {
                 double reliability = familyReliability.eval(variables);
                 printSingleConfiguration(configuration, reliability);
             } catch (UnrecognizedVariableException e) {
-                System.err.println("Unrecognized variable: " + e.getVariableName());
+                LOGGER.severe("Unrecognized variable: " + e.getVariableName());
+                LOGGER.log(Level.SEVERE, e.toString(), e);
             }
         }
     }
@@ -140,15 +151,15 @@ public class CommandLineInterface {
             }
             count += tmpCount;
         }
-        System.out.println(">>>> Total configurations: " + count);
+        OUTPUT.println(">>>> Total configurations: " + count);
     }
 
     private static void printSingleConfiguration(String configuration, double reliability) {
-        System.out.print(configuration + " --> ");
+        String message = configuration + " --> ";
         if (Double.doubleToRawLongBits(reliability) != 0) {
-            System.out.println(reliability);
+            OUTPUT.println(message + reliability);
         } else {
-            System.out.println("INVALID");
+            OUTPUT.println(message + "INVALID");
         }
     }
 
@@ -162,8 +173,9 @@ public class CommandLineInterface {
         try {
             featureModel = new String(Files.readAllBytes(path), Charset.forName("UTF-8"));
         } catch (IOException e) {
-            System.err.println("Error reading the provided Feature Model.");
-            e.printStackTrace();
+            LOGGER.severe("Error reading the provided Feature Model.");
+            LOGGER.log(Level.SEVERE, e.toString(), e);
+            System.exit(1);
         }
         return featureModel;
     }

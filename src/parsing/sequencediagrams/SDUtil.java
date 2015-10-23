@@ -1,5 +1,8 @@
 package parsing.sequencediagrams;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import parsing.Node;
 
 /**
@@ -7,85 +10,89 @@ import parsing.Node;
  *
  */
 public class SDUtil {
+    private static final Logger LOGGER = Logger.getLogger(SDUtil.class.getName());
+
 	/**
 	 * For DEBUG purposes only.
-	 * Prints to STDOUT the information of a SD Fragment  
+	 * Prints to STDOUT the information of a SD Fragment
 	 * @param f a MagicDraw UML SD fragment
 	 */
-	public static void printFragment(Fragment f) {
+	private static String printFragment(Fragment f) {
 		if (f.getName() != null && !f.getName().isEmpty()) {
-			System.out.println("[Fragment = " + f.getName() + "]");
+			return "[Fragment = " + f.getName() + "]\n";
 		} else {
-			System.out.println("[Fragment = " + ((Operand) f.getNodes().get(0)).getGuard() + "]");
+			return "[Fragment = " + ((Operand) f.getNodes().get(0)).getGuard() + "]\n";
 		}
 	}
-	
+
 	/**
 	 * For DEBUG purposes only.
-	 * Prints to STDOUT the information of a SD Message  
+	 * Prints to STDOUT the information of a SD Message
 	 * @param m a MagicDraw UML SD message
 	 */
-	public static void printMessage(Message m) {
-		System.out.println("[" + m.getName() + "]: "
+	private static String printMessage(Message m) {
+		return "[" + m.getName() + "]: "
 				+ m.getSender().getName() + "->"
 				+ m.getReceiver().getName() + " (" + m.getType()
 				+ ") p = " + m.getProb() + "; egy: " + m.getEnergy() + "; ex: "
-				+ m.getExecTime());
+				+ m.getExecTime()
+				+ "\n";
 	}
-	
+
 	/**
 	 * For DEBUG purposes only.
 	 * Prints to STDOUT the information of a SD Fragment
 	 * @param sd the Magic Draw UML Sequence Diagram
 	 * @param indent the indentation being applied to the output
 	 */
-	public static void printInSequence(Fragment fragment, String indent) {
-		
-		System.out.print(indent);
-		System.out.println("Lifelines: ");
+	private static String printInSequence(Fragment fragment, String indent) {
+	    String message = indent;
+		message += "Lifelines:\n";
 		for (Lifeline l: fragment.getLifelines()) {
-			System.out.print(indent);
-			System.out.println(l.getName());
+		    message += indent;
+		    message += l.getName() + "\n";
 		}
-		System.out.println();
-		
-		System.out.print(indent);
-		System.out.println("Nodes: ");
+		message += "\n";
+
+		message += indent;
+		message += "Nodes:\n";
 		for (Node n: fragment.getNodes()) {
-			System.out.print(indent);
+		    message += indent;
 			if (n.getClass().equals(Fragment.class)) {
 				Fragment f = (Fragment)n;
-				printFragment(f);
-				printInSequence(f, indent+"\t");
+				message += printFragment(f);
+				message += printInSequence(f, indent+"\t");
 			} else if (n.getClass().equals(Operand.class)) {
 				Operand o = (Operand)n;
-				System.out.println("Guard = " + o.getGuard());
+				message += "Guard = " + o.getGuard() + "\n";
 				for (Node n1: o.getNodes()) {
-					System.out.print(indent);
+				    message += indent;
 					if (n1.getClass().equals(Message.class)) {
-						printMessage((Message)n1);
+					    message += printMessage((Message)n1);
 					} else if (n1.getClass().equals(Fragment.class)) {
 						Fragment f = (Fragment)n1;
-						printFragment(f);
-						printInSequence((Fragment)n1, indent+'\t');
+						message += printFragment(f);
+						message += printInSequence((Fragment)n1, indent+'\t');
 					}
 				}
 			} else if (n.getClass().equals(Message.class)) {
-				printMessage((Message)n);
+			    message += printMessage((Message)n);
 			}
 		}
-		System.out.println();
+		return message;
 	}
-	
+
 	/**
 	 * For DEBUG purposes only.
-	 * Prints to STDOUT the important information of a SDReader instance, 
+	 * Prints to STDOUT the important information of a SDReader instance,
 	 * following a format that facilitates DEBUGGING
 	 * @param sdr
 	 */
 	public static void printAll(SDReader sdr) {
-		System.out.print("Sequence Diagram "+ (sdr.getIndex() + 1) + ": " + sdr.getSD().getName() + "\n\n");
-		printInSequence(sdr.getSD(), "");
-	} 
-	
+	    if (LOGGER.isLoggable(Level.FINER)) {
+	        String message = "Sequence Diagram "+ (sdr.getIndex() + 1) + ": " + sdr.getSD().getName() + "\n\n";
+	        LOGGER.finer(message + printInSequence(sdr.getSD(), ""));
+	    }
+	}
+
 }

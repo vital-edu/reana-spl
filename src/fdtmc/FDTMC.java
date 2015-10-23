@@ -135,15 +135,16 @@ public class FDTMC {
 	}
 
 	public String toString2() {
+	    String result = "";
 		Set<State> tmpStates =  transitionSystem.keySet();
-		System.out.println("states " + tmpStates);
+		result += "states " + tmpStates + "\n";
 		Iterator<State> it = tmpStates.iterator();
 		//Imprimir chaves em ordem
 		while (it.hasNext()) {
 			State s = it.next();
-			System.out.println(s.getVariableName() + s.getIndex());
+			result += s.getVariableName() + s.getIndex() + "\n";
 		}
-		return "";
+		return result;
 	}
 
 	public Map<State, List<Transition>> getTransitions() {

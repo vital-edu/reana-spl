@@ -1,4 +1,8 @@
-package tool.stats;
+package ui.stats;
+
+import java.io.PrintStream;
+
+import tool.stats.IFormulaCollector;
 
 public class FormulaCollector implements IFormulaCollector {
 
@@ -32,11 +36,11 @@ public class FormulaCollector implements IFormulaCollector {
     }
 
     @Override
-    public void printStats() {
-        System.out.println("Maximum formula size: " + maxSize);
-        System.out.println("Minimum formula size: " + minSize);
-        System.out.println("Sum of formulae sizes: " + sizesSum);
-        System.out.println("Number of formulae: " + count);
+    public void printStats(PrintStream out) {
+        out.println("Maximum formula size: " + maxSize);
+        out.println("Minimum formula size: " + minSize);
+        out.println("Sum of formulae sizes: " + sizesSum);
+        out.println("Number of formulae: " + count);
     }
 
 }

@@ -8,8 +8,10 @@ import jadd.JADD;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import modeling.DiagramAPI;
 
@@ -36,6 +38,7 @@ import fdtmc.FDTMC;
  * @author thiago
  */
 public class Analyzer {
+    private static final Logger LOGGER = Logger.getLogger(ParamWrapper.class.getName());
 
     private ADD featureModel;
     private ParametricModelChecker modelChecker;
@@ -176,7 +179,7 @@ public class Analyzer {
         timeCollector.stopFeatureBasedTimer();
         formulaCollector.collectFormula(reliabilityExpression);
 
-        System.out.println("Reliability expression for "+ node.getId() + " -> " + reliabilityExpression);
+        LOGGER.fine("Reliability expression for "+ node.getId() + " -> " + reliabilityExpression);
 
         Map<String, ADD> childrenReliabilities = new HashMap<String, ADD>();
         for (RDGNode child: node.getDependencies()) {
@@ -218,12 +221,12 @@ public class Analyzer {
         reliabilityCache.put(node.getId(), reliability);
     }
 
-    public void printStats() {
-        System.out.println("-----------------------------");
-        System.out.println("Stats:");
-        System.out.println("------");
-        timeCollector.printStats();
-        formulaCollector.printStats();
+    public void printStats(PrintStream out) {
+        out.println("-----------------------------");
+        out.println("Stats:");
+        out.println("------");
+        timeCollector.printStats(out);
+        formulaCollector.printStats(out);
     }
 
 }

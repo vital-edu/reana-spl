@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import parsing.Node;
 import parsing.activitydiagrams.ADReader;
@@ -24,6 +25,7 @@ import fdtmc.FDTMC;
 import fdtmc.State;
 
 public class Transformer {
+    private static final Logger LOGGER = Logger.getLogger(Transformer.class.getName());
 	// Attributes
 
 	private Map<String, FDTMC> fdtmcByName;
@@ -57,7 +59,7 @@ public class Transformer {
         State error = fdtmc.createState("error");
 
 		transformPath(fdtmc, init, error, adParser.getActivities().get(0).getOutgoing().get(0));
-		System.out.println(fdtmc.toString());
+		LOGGER.finer(fdtmc.toString());
 
 		// The method currently does not support variability in ADs.
 		return new RDGNode(adParser.getName(),
@@ -99,7 +101,7 @@ public class Transformer {
 		RDGNode rdgNode = new RDGNode(fragment.getName(), "true", fdtmc);
 		transformFDTMCNodes(fdtmc, fragment.getNodes(), source, error, rdgNode);
 
-		System.out.println(fdtmc.toString());
+		LOGGER.finer(fdtmc.toString());
 		return rdgNode;
 	}
 
@@ -369,7 +371,7 @@ public class Transformer {
 
 		RDGNode rdgNode = new RDGNode(name, presenceCondition, fdtmc);
 		transformFDTMCNodes(fdtmc, operand.getNodes(), source, error, rdgNode);
-		System.out.println(fdtmc.toString());
+		LOGGER.finer(fdtmc.toString());
 
 		return rdgNode;
 	}
@@ -377,7 +379,7 @@ public class Transformer {
 	private void transformLoopOperand (FDTMC fdtmc, String name, Operand operand, State source, State target, State error, RDGNode currentRdgNode) throws InvalidNumberOfOperandsException, InvalidNodeClassException, InvalidNodeType {
 
 		transformFDTMCNodes(fdtmc, operand.getNodes(), source, target, error, currentRdgNode);
-		System.out.println(fdtmc.toString());
+		LOGGER.finer(fdtmc.toString());
 	}
 
 	/**
@@ -499,12 +501,12 @@ public class Transformer {
 			if (fdtmc.getTransitions().get(temp) != null)
 				nTrans += fdtmc.getTransitions().get(temp).size();
 		}
-		System.out.println("Model Size: " + nStates + " states; " + nTrans + " transitions.");
+		LOGGER.finer("Model Size: " + nStates + " states; " + nTrans + " transitions.");
 	}
 
 	public void printNumberOfCalls (String name) {
 		int num = nCallsByName.get(name);
-		System.out.println(num);
+		LOGGER.finer(Integer.toString(num));
 	}
 
 	// Getters and Setters

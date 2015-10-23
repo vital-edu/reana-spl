@@ -1,33 +1,38 @@
 package parsing.activitydiagrams;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class ADUtil {
+    private static final Logger LOGGER = Logger.getLogger(ADUtil.class.getName());
 
 	public static void printAll(ADReader adParser) { // jogar pra cima?? DiagramAPI
-		System.out.print("Activity Diagram " + (adParser.getIndex() + 1) + ": " + adParser.getName() + "\n\n");
-		printInSequence(adParser);
-		System.out.print("\n\n");
+	    if (LOGGER.isLoggable(Level.FINER)) {
+	        String message = "Activity Diagram " + (adParser.getIndex() + 1) + ": " + adParser.getName() + "\n\n";
+	        message += printInSequence(adParser);
+	        LOGGER.finer(message);
+	    }
 	}
 
-	public static void printInSequence(ADReader adParser) {
-
-		System.out.println("Activities:");
+	private static String printInSequence(ADReader adParser) {
+	    String message = "Activities:\n";
 		for (Activity a : adParser.getActivities()) {
-			a.print();
+			message += a.print();
 			if (!a.getIncoming().isEmpty()) {
-				System.out.println("\tIncoming Edges:");
+				message += "\tIncoming Edges:\n";
 				for (Edge e : a.getIncoming()) {
-					System.out.print("\t\t");
-					e.print();
+				    message += "\t\t";
+					message += e.print();
 				}
 			}
 			if (!a.getOutgoing().isEmpty()) {
-				System.out.println("\tOutgoing Edges:");
+			    message += "\tOutgoing Edges:\n";
 				for (Edge e : a.getOutgoing()) {
-					System.out.print("\t\t");
-					e.print();
+				    message += "\t\t";
+				    message += e.print();
 				}
 			}
 		}
-		System.out.println();
+		return message;
 	}
 }

@@ -1,5 +1,7 @@
 package tool.stats;
 
+import java.io.PrintStream;
+
 /**
  * Interface for a time stats collector for the ReAna tool.
  * @author thiago
@@ -31,6 +33,6 @@ public interface ITimeCollector {
      */
     public long getFamilyBasedTime();
 
-    public void printStats();
+    public void printStats(PrintStream out);
 
 }

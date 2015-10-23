@@ -74,11 +74,6 @@ public abstract class Node {
 		this.prob = prob;
 	}
 
-	public void print() {
-		System.out.println("Node: " + this.id + " duration: " + this.execTime + " prob: "
-				+ this.prob + " energy: " + this.energy + " Class: " + getClass());
-	}
-
 	public void setEnergy(float energy) {
 		this.hasEnergy = true;
 		this.energy = energy;

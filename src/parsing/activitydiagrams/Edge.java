@@ -17,11 +17,11 @@ public class Edge {
 			this.type = EdgeType.objectFlow;
 		}
 	}
-	
+
 	public String getName() {
 		return name;
 	}
-	
+
 	public String getGuard() {
 		return guard;
 	}
@@ -53,8 +53,8 @@ public class Edge {
 	public EdgeType getType() {
 		return type;
 	}
-	
-	public void print() {
-		System.out.println("Type: " + this.type + "; Name: " + this.name + "; Guard: " + this.guard);
+
+	public String print() {
+		return "Type: " + this.type + "; Name: " + this.name + "; Guard: " + this.guard + "\n";
 	}
 }

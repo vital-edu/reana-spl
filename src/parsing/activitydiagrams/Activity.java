@@ -102,12 +102,11 @@ public class Activity {
 		this.sd = sd;
 	}
 
-	public void print() {
-		System.out.print("Type: " + this.type + "; Name: " + this.name);
+	public String print() {
+		String message = "Type: " + this.type + "; Name: " + this.name;
 		if (this.sd != null) {
-			System.out.println("; SD: " + this.sd.getName());
-		} else {
-			System.out.println();
+		    message += "; SD: " + this.sd.getName();
 		}
+		return message + "\n";
 	}
 }

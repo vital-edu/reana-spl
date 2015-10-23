@@ -1,12 +1,16 @@
 package jadd;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.bridj.DynamicFunction;
 import org.bridj.NativeLibrary;
 import org.bridj.Pointer;
 
 class CUtils {
+    private static final Logger LOGGER = Logger.getLogger(CUtils.class.getName());
+
     private static NativeLibrary libc;
     private static DynamicFunction<Pointer<?>> fopenHandle;
     private static DynamicFunction<?> fcloseHandle;
@@ -24,7 +28,7 @@ class CUtils {
             Pointer<?> fcloseAddress = libc.getSymbolPointer("fclose");
             fcloseHandle = fcloseAddress.asDynamicFunction(null, int.class, Pointer.class);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, e.toString(), e);
         }
     }
 

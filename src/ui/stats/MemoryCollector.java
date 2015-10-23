@@ -1,7 +1,10 @@
-package tool.stats;
+package ui.stats;
 
+import java.io.PrintStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import tool.stats.IMemoryCollector;
 
 public class MemoryCollector implements IMemoryCollector {
 
@@ -20,10 +23,10 @@ public class MemoryCollector implements IMemoryCollector {
     }
 
     @Override
-    public void printStats() {
+    public void printStats(PrintStream out) {
         for (Map.Entry<String, Long> snapshot: snapshots.entrySet()) {
             double valueInMegabytes = snapshot.getValue()/(1024.0*1024.0);
-            System.out.println("Memory used "+snapshot.getKey()+": "+valueInMegabytes+" MB");
+            out.println("Memory used "+snapshot.getKey()+": "+valueInMegabytes+" MB");
         }
     }
 
