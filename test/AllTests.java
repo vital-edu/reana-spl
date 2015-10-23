@@ -6,6 +6,7 @@ import org.junit.runners.Suite.SuiteClasses;
 import paramwrapper.FDTMCToParamTest;
 import paramwrapper.ReliabilityFormulaTest;
 import tool.AnalyzerTest;
+import tool.RDGNodeTest;
 import expressionsolver.ExpressionSolverTest;
 import fdtmc.FDTMCTest;
 
@@ -15,7 +16,8 @@ import fdtmc.FDTMCTest;
     FDTMCToParamTest.class,
     ReliabilityFormulaTest.class,
     ExpressionSolverTest.class,
-    AnalyzerTest.class
+    AnalyzerTest.class,
+    RDGNodeTest.class
 })
 public class AllTests {
 
