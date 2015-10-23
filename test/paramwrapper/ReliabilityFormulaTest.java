@@ -87,6 +87,6 @@ public class ReliabilityFormulaTest {
 		fdtmc.createTransition(s3, s3, null, "1");
 
 		String formula = paramWrapper.getReliability(fdtmc);
-		assertEquals("0.9801", formula);
+		assertEquals("(9801)/(10000)", formula);
 	}
 }
