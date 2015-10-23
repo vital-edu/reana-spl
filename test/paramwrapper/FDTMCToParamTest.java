@@ -74,7 +74,7 @@ public class FDTMCToParamTest {
 				+ "\n"
 				+ "module dummyModule\n"
 				+ "	s : [0..1] init 0;\n"
-				+ "	[] s=0 -> (1-rLoop) : (s'=1) + (rLoop) : (s'=0);\n"
+				+ "	[] s=0 -> (rLoop) : (s'=0) + (1-rLoop) : (s'=1);\n"
 				+ "	[] s=1 -> (1) : (s'=1);\n"
 				+ "endmodule\n\n";
 
@@ -105,7 +105,7 @@ public class FDTMCToParamTest {
 				+ "\n"
 				+ "module dummyModule\n"
 				+ "	s : [0..3] init 0;\n"
-				+ "	[] s=0 -> (1-rLoop) : (s'=1) + (rLoop) : (s'=0);\n"
+				+ "	[] s=0 -> (rLoop) : (s'=0) + (1-rLoop) : (s'=1);\n"
 				+ "	[] s=1 -> (1-rFail) : (s'=2) + (rFail) : (s'=3);\n"
 				+ "	[] s=2 -> (1) : (s'=2);\n"
 				+ "	[] s=3 -> (1) : (s'=3);\n"

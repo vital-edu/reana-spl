@@ -26,7 +26,7 @@ public class AnalyzerTest {
     }
 
     @Test
-    public void testEvaluateReliabilitySQLite() throws CyclicRdgException {
+    public void testEvaluateReliabilitySQLite() {
         RDGNode sqlite = BSNNodes.getSQLiteRDGNode();
         ADD reliability = analyzer.evaluateReliability(sqlite);
 
@@ -38,7 +38,7 @@ public class AnalyzerTest {
     }
 
     @Test
-    public void testEvaluateReliabilityOxygenation() throws UnrecognizedVariableException, CyclicRdgException {
+    public void testEvaluateReliabilityOxygenation() throws UnrecognizedVariableException {
         RDGNode node = BSNNodes.getOxygenationRDGNode();
         ADD reliability = analyzer.evaluateReliability(node);
 

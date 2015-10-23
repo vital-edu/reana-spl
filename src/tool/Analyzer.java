@@ -26,6 +26,8 @@ import parsing.exceptions.InvalidTagException;
 import parsing.exceptions.UnsupportedFragmentTypeException;
 import tool.stats.IFormulaCollector;
 import tool.stats.ITimeCollector;
+import tool.stats.NoopFormulaCollector;
+import tool.stats.NoopTimeCollector;
 import expressionsolver.ExpressionSolver;
 import fdtmc.FDTMC;
 
@@ -77,6 +79,10 @@ public class Analyzer {
         this.expressionSolver = new ExpressionSolver(jadd);
         this.featureModel = expressionSolver.encodeFormula(featureModel);
         this.reliabilityCache = new HashMap<String, ADD>();
+
+        this.timeCollector = new NoopTimeCollector();
+        this.formulaCollector = new NoopFormulaCollector();
+        this.pruningStrategy = new NoPruningStrategy();
     }
 
     /**
