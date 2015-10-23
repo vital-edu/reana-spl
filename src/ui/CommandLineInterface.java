@@ -62,7 +62,9 @@ public class CommandLineInterface {
         StatsCollectorFactory statsCollectorFactory = new StatsCollectorFactory(options.hasStatsEnabled());
         IMemoryCollector memoryCollector = statsCollectorFactory.createMemoryCollector();
 
+        String paramPath = options.getParamPath();
         Analyzer analyzer = new Analyzer(featureModel,
+                                         paramPath,
                                          statsCollectorFactory.createTimeCollector(),
                                          statsCollectorFactory.createFormulaCollector());
         analyzer.setPruningStrategy(PruningStrategyFactory.createPruningStrategy(options.getPruningStrategy()));

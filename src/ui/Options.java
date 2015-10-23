@@ -16,6 +16,7 @@ import tool.PruningStrategy;
 class Options {
     private String featureModelFilePath;
     private String umlModelsFilePath;
+    private String paramPath;
     private String configuration;
     private String configurationsFilePath;
     private boolean printAllConfigurations;
@@ -34,6 +35,11 @@ class Options {
                 .withRequiredArg()
                 .defaultsTo("modeling.xml")
                 .describedAs("File");
+        OptionSpec<String> paramPathOption = optionParser
+                .accepts("param-path")
+                .withRequiredArg()
+                .defaultsTo("/opt/param-2-3-64")
+                .describedAs("Directory");
 
         OptionSpec<String> configurationsFileOption = optionParser
                 .accepts("configurations-file")
@@ -71,6 +77,7 @@ class Options {
         Options result = new Options();
         result.featureModelFilePath = options.valueOf(featureModelOption);
         result.umlModelsFilePath = options.valueOf(umlModelsOption);
+        result.paramPath = options.valueOf(paramPathOption);
         result.configuration = options.valueOf(configurationOption);
         result.configurationsFilePath = options.valueOf(configurationsFileOption);
         result.printAllConfigurations = options.has(allConfigurationsOption);
@@ -86,6 +93,10 @@ class Options {
 
     public String getUmlModelsFilePath() {
         return umlModelsFilePath;
+    }
+
+    public String getParamPath() {
+        return paramPath;
     }
 
     public boolean hasStatsEnabled() {

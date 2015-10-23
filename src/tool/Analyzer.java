@@ -58,8 +58,8 @@ public class Analyzer {
      *          expressed using Java logical operators.
      * @throws IOException if there is a problem reading the file.
      */
-    public Analyzer(String featureModel, ITimeCollector timeCollector, IFormulaCollector formulaCollector) {
-        this(new JADD(), featureModel);
+    public Analyzer(String featureModel, String paramPath, ITimeCollector timeCollector, IFormulaCollector formulaCollector) {
+        this(new JADD(), featureModel, paramPath);
 
         this.timeCollector = timeCollector;
         this.formulaCollector = formulaCollector;
@@ -71,8 +71,8 @@ public class Analyzer {
      * @param jadd
      * @param featureModel
      */
-    Analyzer(JADD jadd, String featureModel) {
-        this.modelChecker = new ParamWrapper();
+    Analyzer(JADD jadd, String featureModel, String paramPath) {
+        this.modelChecker = new ParamWrapper(paramPath);
         this.jadd = jadd;
         this.expressionSolver = new ExpressionSolver(jadd);
         this.featureModel = expressionSolver.encodeFormula(featureModel);

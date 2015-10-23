@@ -24,9 +24,13 @@ import fdtmc.FDTMC;
 public class ParamWrapper implements ParametricModelChecker {
     private static final Logger LOGGER = Logger.getLogger(ParamWrapper.class.getName());
 
-	private final String paramPath = "/opt/param-2-3-64";
+	private String paramPath;
 	private final String prismPath = "/opt/prism-4.2.1-src/bin/prism";
 	private boolean usePrism = false;
+
+	public ParamWrapper(String paramPath) {
+	    this.paramPath = paramPath;
+	}
 
 	public String fdtmcToParam(FDTMC fdtmc) {
 		ParamModel model = new ParamModel(fdtmc);
