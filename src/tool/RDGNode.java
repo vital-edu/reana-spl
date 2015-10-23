@@ -2,6 +2,8 @@ package tool;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import fdtmc.FDTMC;
@@ -66,6 +68,58 @@ public class RDGNode {
 
     public static RDGNode getById(String id) {
         return rdgNodes.get(id);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj != null && obj instanceof RDGNode) {
+            return ((RDGNode) obj).id.equals(id);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+
+    /**
+     * Retrieves the transitive closure of the RDGNode dependency relation.
+     * The node itself is part of the returned list.
+     *
+     * It implements the Cormen et al.'s topological sort algorithm.
+     *
+     * @return The descendant RDG nodes ordered bottom-up (depended-upon to dependent).
+     * @throws CyclicRdgException if there is a path with a cycle starting from this node.
+     */
+    public List<RDGNode> getDependenciesTransitiveClosure() throws CyclicRdgException {
+        List<RDGNode> transitiveDependencies = new LinkedList<RDGNode>();
+        Map<RDGNode, Boolean> marks = new HashMap<RDGNode, Boolean>();
+        topoSortVisit(this, marks, transitiveDependencies);
+        return transitiveDependencies;
+    }
+
+    /**
+     * Topological sort {@code visit} function (Cormen et al.'s algorithm).
+     * @param node
+     * @param marks
+     * @param sorted
+     * @throws CyclicRdgException
+     */
+    private void topoSortVisit(RDGNode node, Map<RDGNode, Boolean> marks, List<RDGNode> sorted) throws CyclicRdgException {
+        if (marks.containsKey(node) && marks.get(node) == false) {
+            // Visiting temporarily marked node -- this means a cyclic dependency!
+            throw new CyclicRdgException();
+        } else if (!marks.containsKey(node)) {
+            // Mark node temporarily (cycle detection)
+            marks.put(node, false);
+            for (RDGNode child: node.getDependencies()) {
+                topoSortVisit(child, marks, sorted);
+            }
+            // Mark node permanently (finished sorting branch)
+            marks.put(node, true);
+            sorted.add(node);
+        }
     }
 
 }

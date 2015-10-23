@@ -29,6 +29,7 @@ import parsing.exceptions.InvalidNumberOfOperandsException;
 import parsing.exceptions.InvalidTagException;
 import parsing.exceptions.UnsupportedFragmentTypeException;
 import tool.Analyzer;
+import tool.CyclicRdgException;
 import tool.PruningStrategyFactory;
 import tool.RDGNode;
 import tool.stats.IMemoryCollector;
@@ -83,7 +84,14 @@ public class CommandLineInterface {
         memoryCollector.takeSnapshot("after model parsing");
 
         memoryCollector.takeSnapshot("before evaluation");
-        ADD familyReliability = analyzer.evaluateReliability(rdgRoot);
+        ADD familyReliability = null;
+        try {
+            familyReliability = analyzer.evaluateReliability(rdgRoot);
+        } catch (CyclicRdgException e) {
+            LOGGER.severe("Cyclic dependency detected in RDG.");
+            LOGGER.log(Level.SEVERE, e.toString(), e);
+            System.exit(2);
+        }
         memoryCollector.takeSnapshot("after evaluation");
 
         OUTPUT.println("Configurations:");

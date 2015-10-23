@@ -10,7 +10,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.logging.Logger;
 
 import modeling.DiagramAPI;
@@ -43,7 +46,6 @@ public class Analyzer {
     private ADD featureModel;
     private ParametricModelChecker modelChecker;
     private ExpressionSolver expressionSolver;
-    private Map<String, ADD> reliabilityCache;
     private JADD jadd;
     private IPruningStrategy pruningStrategy;
 
@@ -76,7 +78,6 @@ public class Analyzer {
         this.jadd = jadd;
         this.expressionSolver = new ExpressionSolver(jadd);
         this.featureModel = expressionSolver.encodeFormula(featureModel);
-        this.reliabilityCache = new HashMap<String, ADD>();
     }
 
     /**
@@ -124,9 +125,13 @@ public class Analyzer {
      *
      * @param node RDG node whose reliability is to be evaluated.
      * @return
+     * @throws CyclicRdgException
      */
-    public ADD evaluateReliability(RDGNode node) {
-        ADD reliability = evaluatePartialReliability(node);
+    public ADD evaluateReliability(RDGNode node) throws CyclicRdgException {
+        List<RDGNode> dependencies = node.getDependenciesTransitiveClosure();
+        LinkedHashMap<RDGNode, String> expressionsByNode = getReliabilityExpressions(dependencies);
+        Map<RDGNode, ADD> reliabilities = evaluateReliabilities(expressionsByNode);
+        ADD reliability = reliabilities.get(node);
 
         timeCollector.startFamilyBasedTimer();
         // After evaluating the expression, constant terms alter the {0,1} nature
@@ -162,63 +167,92 @@ public class Analyzer {
     }
 
     /**
-     * Recursively evaluates the reliability function of an RDG node.
+     * Computes the reliability expression for the model of the given RDG nodes,
+     * returning them in a map which is conveniently sorted in the same order as
+     * the input list.
+     *
+     * This function implements the feature-based part of the analysis.
+     *
+     * @see {@link Analyzer.getReliabilityExpression}
+     * @param node
+     * @return
+     */
+    private LinkedHashMap<RDGNode, String> getReliabilityExpressions(List<RDGNode> nodes) {
+        LinkedHashMap<RDGNode, String> reliabilityExpressions = new LinkedHashMap<RDGNode, String>();
+        for (RDGNode node: nodes) {
+            timeCollector.startFeatureBasedTimer();
+            String reliabilityExpression = getReliabilityExpression(node);
+            timeCollector.stopFeatureBasedTimer();
+
+            reliabilityExpressions.put(node, reliabilityExpression);
+            formulaCollector.collectFormula(reliabilityExpression);
+            LOGGER.fine("Reliability expression for "+ node.getId() + " -> " + reliabilityExpression);
+        }
+        return reliabilityExpressions;
+    }
+
+    /**
+     * Evaluates the reliability functions of the RDG nodes according to the
+     * correspondent pre-computed reliability expressions.
      * A reliability function is a boolean function from the set of features
      * to Real values.
+     *
+     * This function implements the family-based part of the analysis.
      *
      * @param node RDG node whose reliability is to be evaluated.
      * @return
      */
-    private ADD evaluatePartialReliability(RDGNode node) {
-        if (isInCache(node)) {
-            return getCachedReliability(node);
-        }
+    private Map<RDGNode, ADD> evaluateReliabilities(LinkedHashMap<RDGNode, String> expressionsByNode) {
+        Map<RDGNode, ADD> reliabilities = new HashMap<RDGNode, ADD>();
 
-        timeCollector.startFeatureBasedTimer();
-        String reliabilityExpression = getReliabilityExpression(node);
-        timeCollector.stopFeatureBasedTimer();
-        formulaCollector.collectFormula(reliabilityExpression);
-
-        LOGGER.fine("Reliability expression for "+ node.getId() + " -> " + reliabilityExpression);
-
-        Map<String, ADD> childrenReliabilities = new HashMap<String, ADD>();
-        for (RDGNode child: node.getDependencies()) {
-            ADD childReliability = evaluatePartialReliability(child);
+        for (SortedMap.Entry<RDGNode, String> entry: expressionsByNode.entrySet()) {
+            RDGNode node = entry.getKey();
+            String reliabilityExpression = entry.getValue();
 
             timeCollector.startFamilyBasedTimer();
-            ADD presenceCondition = expressionSolver.encodeFormula(child.getPresenceCondition());
+            ADD reliability = evaluateNodeReliability(node,
+                                                      reliabilityExpression,
+                                                      reliabilities);
+            timeCollector.stopFamilyBasedTimer();
 
+            reliabilities.put(node, reliability);
+            jadd.dumpDot(reliabilityExpression,
+                         reliability,
+                         "result-"+node.getId()+".dot");
+        }
+
+        return reliabilities;
+    }
+
+    /**
+     * Evaluates the reliability function of a single RDG node according to the
+     * correspondent pre-computed reliability expression and the given cache of
+     * previously evaluated reliabilities.
+     *
+     * @param node
+     * @param reliabilityExpression
+     * @param reliabilityCache
+     * @return
+     */
+    private ADD evaluateNodeReliability(RDGNode node, String reliabilityExpression, Map<RDGNode, ADD> reliabilityCache) {
+        Map<String, ADD> childrenReliabilities = new HashMap<String, ADD>();
+        for (RDGNode child: node.getDependencies()) {
+            // This must work without checking, since we expect the expressionsByNode
+            // map to be topologically sorted, i.e., dependencies will have already
+            // been evaluated.
+            ADD childReliability = reliabilityCache.get(child);
+            ADD presenceCondition = expressionSolver.encodeFormula(child.getPresenceCondition());
             ADD phi = presenceCondition.ifThenElse(childReliability, 1);
             childrenReliabilities.put(child.getId(),
                                       phi);
-            timeCollector.stopFamilyBasedTimer();
         }
 
-        timeCollector.startFamilyBasedTimer();
         ADD reliability = expressionSolver.solveExpression(reliabilityExpression,
                                                            childrenReliabilities);
         reliability = pruningStrategy.pruneInvalidConfigurations(node,
-                                                                 reliability,
-                                                                 featureModel);
-        timeCollector.stopFamilyBasedTimer();
-
-        cacheReliability(node, reliability);
-        jadd.dumpDot(reliabilityExpression,
-                     reliability,
-                     "result-"+node.getId()+".dot");
+                reliability,
+                featureModel);
         return reliability;
-    }
-
-    private ADD getCachedReliability(RDGNode node) {
-        return reliabilityCache.get(node.getId());
-    }
-
-    private boolean isInCache(RDGNode node) {
-        return reliabilityCache.containsKey(node.getId());
-    }
-
-    private void cacheReliability(RDGNode node, ADD reliability) {
-        reliabilityCache.put(node.getId(), reliability);
     }
 
     public void printStats(PrintStream out) {
