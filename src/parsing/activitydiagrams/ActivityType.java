@@ -1,5 +1,9 @@
 package parsing.activitydiagrams;
 
 public enum ActivityType {
-	initialNode, finalNode, call, decision, merge;
+	INITIAL_NODE,
+	FINAL_NODE,
+	CALL,
+	DECISION,
+	MERGE;
 }

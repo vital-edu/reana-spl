@@ -1,5 +1,6 @@
 package parsing.activitydiagrams;
 
 public enum EdgeType {
-	controlFlow, objectFlow;
+	CONTROL_FLOW,
+	OBJECT_FLOW;
 }

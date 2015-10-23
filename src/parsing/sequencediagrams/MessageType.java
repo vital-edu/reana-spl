@@ -1,5 +1,7 @@
 package parsing.sequencediagrams;
 
 public enum MessageType {
-	synchronous, asynchronous, reply;
+	SYNCHRONOUS,
+	ASYNCHRONOUS,
+	REPLY;
 }

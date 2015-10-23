@@ -11,10 +11,10 @@ public class Edge {
 	public Edge(String id, String name, String type) {
 		this.id = id;
 		this.name = name;
-		if (type.equals("uml:ControlFlow")) {
-			this.type = EdgeType.controlFlow;
-		} else if (type.equals("uml:ObjectFlow")) {
-			this.type = EdgeType.objectFlow;
+		if ("uml:ControlFlow".equals(type)) {
+			this.type = EdgeType.CONTROL_FLOW;
+		} else if ("uml:ObjectFlow".equals(type)) {
+			this.type = EdgeType.OBJECT_FLOW;
 		}
 	}
 

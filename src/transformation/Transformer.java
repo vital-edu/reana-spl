@@ -161,7 +161,7 @@ public class Transformer {
 		BigDecimal a = new BigDecimal("1.0");
 		BigDecimal b = new BigDecimal(Float.toString(msg.getProb()));
 
-		if (msg.getType().equals(MessageType.asynchronous)) {
+		if (msg.getType().equals(MessageType.ASYNCHRONOUS)) {
 			fdtmc.createTransition(source, target, "", b.toString());
 			fdtmc.createTransition(source, error, "", a.subtract(b).toString());
 		} else { /* Mensagem sincrona */
@@ -178,13 +178,13 @@ public class Transformer {
 	 */
 	private State transformFragment(FDTMC fdtmc, Fragment fragment, State source, State target, State error, RDGNode currentRdgNode) throws InvalidNumberOfOperandsException, InvalidNodeClassException, InvalidNodeType {
 		switch(fragment.getType()) {
-			case loop:
+			case LOOP:
 				return transformLoopFragment(fdtmc, fragment, source, target, error, currentRdgNode);
-			case alternative:
+			case ALTERNATIVE:
 				return transformAltFragment(fdtmc, fragment, source, target, error, currentRdgNode);
-			case optional:
+			case OPTIONAL:
 				return transformOptFragment(fdtmc, fragment, source, target, error, currentRdgNode);
-			case parallel:
+			case PARALLEL:
 				return transformParallelFragment(fdtmc, fragment, source, target, error, currentRdgNode);
 			default:
 				break;
@@ -249,12 +249,12 @@ public class Transformer {
 
 			String guard = operand.getGuard();
 
-			name = guard.equals("else") ? fragment.getName() + guard : guard;
+			name = "else".equals(guard) ? fragment.getName() + guard : guard;
 			State opStart = fdtmc.createState("initial" + name);
 			State opEnd = fdtmc.createState("end" + name);
 			State opError = fdtmc.createState("error" + name);
 
-			if (!operand.getGuard().equals("else")) {
+			if (!"else".equals(operand.getGuard())) {
 			    // TODO Think about these feature-presence transitions...
 			    // They do not adapt to the phi-functions
 				opElse = opElse + "f" + guard + " - ";
@@ -395,16 +395,16 @@ public class Transformer {
 
 		String sourceActivitySD = sourceAct.getSd() != null ? sourceAct.getSd().getName() : "";
 
-		if (sourceAct.getType().equals(ActivityType.initialNode)) {
+		if (sourceAct.getType().equals(ActivityType.INITIAL_NODE)) {
 			for (Edge e : targetAct.getOutgoing()) {
 				transformPath(fdtmc, sourceState, errorState, e);
 			}
-		} else if (sourceAct.getType().equals(ActivityType.call)) {
+		} else if (sourceAct.getType().equals(ActivityType.CALL)) {
 			stateByActID.put(sourceAct.getId(), sourceState); // insere source no hashmap
 			targetState = stateByActID.get(targetAct.getId()); // verifica se target esta no hashmap
 
 			if (targetState == null) { // atividade target nao foi criada
-				if (targetAct.getType().equals(ActivityType.finalNode)) {
+				if (targetAct.getType().equals(ActivityType.FINAL_NODE)) {
 					targetState = fdtmc.createState("success");
 					stateByActID.put(targetAct.getId(), targetState);
 					fdtmc.createTransition(targetState, targetState, "", "1.0");
@@ -423,12 +423,12 @@ public class Transformer {
                 fdtmc.createTransition(sourceState, errorState, "!"+sourceAct.getName(), "1 - "+sourceActivitySD);
 				/* end path */
 			}
-		} else if (sourceAct.getType().equals(ActivityType.decision)) {
+		} else if (sourceAct.getType().equals(ActivityType.DECISION)) {
 			stateByActID.put(sourceAct.getId(), sourceState); // insere source no hashmap
 			targetState = stateByActID.get(targetAct.getId()); // verifica se target esta no hashmap
 
 			if (targetState == null) { // atividade target nao foi criada
-				if (targetAct.getType().equals(ActivityType.finalNode)) {
+				if (targetAct.getType().equals(ActivityType.FINAL_NODE)) {
 					targetState = fdtmc.createState("success");
 					stateByActID.put(targetAct.getId(), targetState);
 					fdtmc.createTransition(targetState, targetState, "", "1.0");
@@ -448,12 +448,12 @@ public class Transformer {
 				fdtmc.createTransition(sourceState, targetState, "", Double.toString(1.0/sourceAct.getOutgoingCount()));
 				/* end path */
 			}
-		} else if (sourceAct.getType().equals(ActivityType.merge)) {
+		} else if (sourceAct.getType().equals(ActivityType.MERGE)) {
 			stateByActID.put(sourceAct.getId(), sourceState); // insere source no hashmap
 			targetState = stateByActID.get(targetAct.getId()); // verifica se target esta no hashmap
 
 			if (targetState == null) { // atividade target nao foi criada
-				if (targetAct.getType().equals(ActivityType.finalNode)) {
+				if (targetAct.getType().equals(ActivityType.FINAL_NODE)) {
 					targetState = fdtmc.createState("final");
 					stateByActID.put(targetAct.getId(), targetState);
 					fdtmc.createTransition(targetState, targetState, "", "1.0");

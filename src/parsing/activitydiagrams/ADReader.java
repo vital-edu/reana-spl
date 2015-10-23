@@ -241,7 +241,7 @@ public class ADReader {
 		j = -1;
 		for (Activity a : this.activities) {
 			j++;
-			if (a.getType().equals(ActivityType.initialNode)) {
+			if (a.getType().equals(ActivityType.INITIAL_NODE)) {
 				if (!this.activities.get(i).equals(a)) { // PEGAR EXEMPLO P
 															// TESTAR AQUI
 					temp = this.activities.get(i);

@@ -89,13 +89,13 @@ public class SDReader {
 				if (child.getNodeName().equals("fragment")) {
 
 					String xmiType = child.getAttributes().getNamedItem("xmi:type").getTextContent();
-					if (xmiType.equals("uml:MessageOccurrenceSpecification")) {
+					if ("uml:MessageOccurrenceSpecification".equals(xmiType)) {
 
 						String msgID = child.getAttributes().getNamedItem("message").getTextContent();
 						this.sd.addNode(this.messagesByID.get(msgID));
 						i += 2;
 
-					} else if (xmiType.equals("uml:CombinedFragment")) {
+					} else if ("uml:CombinedFragment".equals(xmiType)) {
 
 						NamedNodeMap cAttrs = child.getAttributes();
 						Fragment newFragment =
@@ -187,13 +187,14 @@ public class SDReader {
 					}
 
 					if (sAttrs.getNamedItem("messageSort") != null) {
-						if (sAttrs.getNamedItem("messageSort").getTextContent().equals("asynchCall") || sAttrs.getNamedItem("messageSort").getTextContent().equals("asynchSignal")) {
-							message.setType(MessageType.asynchronous);
-						} else if (sAttrs.getNamedItem("messageSort").getTextContent().equals("reply")) {
-							message.setType(MessageType.reply);
+					    String messageSortContent = sAttrs.getNamedItem("messageSort").getTextContent();
+						if ("asynchCall".equals(messageSortContent) || "asynchSignal".equals(messageSortContent)) {
+							message.setType(MessageType.ASYNCHRONOUS);
+						} else if ("reply".equals(messageSortContent)) {
+							message.setType(MessageType.REPLY);
 						}
 					} else {
-						message.setType(MessageType.synchronous);
+						message.setType(MessageType.SYNCHRONOUS);
 					}
 
 					retrieveProbEnergyTime(message);
@@ -216,16 +217,18 @@ public class SDReader {
 
 			for (int k = 0; k < oChilds.getLength(); k++) {
 
-				if (oChilds.item(k).getNodeName().equals("fragment")) {
+				org.w3c.dom.Node itemK = oChilds.item(k);
+                if ("fragment".equals(itemK.getNodeName())) {
 
-					NamedNodeMap kAttrs = oChilds.item(k).getAttributes();
-					if (kAttrs.getNamedItem("xmi:type").getTextContent().equals("uml:MessageOccurrenceSpecification")) {
+					NamedNodeMap kAttrs = itemK.getAttributes();
+					String typeContent = kAttrs.getNamedItem("xmi:type").getTextContent();
+					if ("uml:MessageOccurrenceSpecification".equals(typeContent)) {
 
 						String msgID = kAttrs.getNamedItem("message").getTextContent();
 						operand.addNode(this.messagesByID.get(msgID));
 						k+=2;
 
-					} else if (kAttrs.getNamedItem("xmi:type").getTextContent().equals("uml:CombinedFragment")) {
+					} else if ("uml:CombinedFragment".equals(typeContent)) {
 
 						Fragment innerFragment =
 									new Fragment(
@@ -236,14 +239,15 @@ public class SDReader {
 
 						retrieveProbEnergyTime(innerFragment);
 						operand.addNode(innerFragment);
-						traceFragment(innerFragment, oChilds.item(k));
+						traceFragment(innerFragment, itemK);
 					}
 
-				} else if (oChilds.item(k).getNodeName().equals("guard")) {
-					NodeList kChilds = oChilds.item(k).getChildNodes();
+				} else if ("guard".equals(itemK.getNodeName())) {
+					NodeList kChilds = itemK.getChildNodes();
 					for (int l = 0; l < kChilds.getLength(); l++) {
-						if (kChilds.item(l).getNodeName().equals("specification")) {
-							operand.setGuard(kChilds.item(l).getAttributes()
+					    org.w3c.dom.Node itemL = kChilds.item(l);
+						if ("specification".equals(itemL.getNodeName())) {
+							operand.setGuard(itemL.getAttributes()
 									.getNamedItem("value").getTextContent());
 
 							break;
@@ -266,11 +270,12 @@ public class SDReader {
 
 			for (int j = 0; j < fChilds.getLength(); j++) {
 				NamedNodeMap jAttrs = fChilds.item(j).getAttributes();
-				if (fChilds.item(j).getNodeName().equals("covered")) {
+				org.w3c.dom.Node item = fChilds.item(j);
+				if ("covered".equals(item.getNodeName())) {
 					fragment.addLifeline(this.lifelinesByID.get(jAttrs.getNamedItem("xmi:idref").getTextContent()));
-				} else if (fChilds.item(j).getNodeName().equals("operand")) {
+				} else if ("operand".equals(item.getNodeName())) {
 					Operand newOperand = new Operand(jAttrs.getNamedItem("xmi:id").getTextContent());
-					traceOperand(newOperand, fChilds.item(j));
+					traceOperand(newOperand, item);
 					fragment.addNode(newOperand);
 				}
 
@@ -285,7 +290,7 @@ public class SDReader {
 		 * @throws InvalidTagException
 		 */
 		private Float parseTag(String tagValue, String tagName) throws InvalidTagException {
-			if (tagValue == "") {
+			if ("".equals(tagValue)) {
 				throw new InvalidTagException("Tag " + tagName + " is missing!", tagName);
 			}
 			Float parsedValue;

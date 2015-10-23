@@ -21,16 +21,16 @@ public class Activity {
 		this.incoming = new ArrayList<Edge>();
 		this.outgoing = new ArrayList<Edge>();
 		this.ordered = false;
-		if (type.equals("uml:InitialNode")) {
-			this.type = ActivityType.initialNode;
-		} else if (type.equals("uml:ActivityFinalNode")) {
-			this.type = ActivityType.finalNode;
-		} else if (type.equals("uml:CallBehaviorAction")) {
-			this.type = ActivityType.call;
-		} else if (type.equals("uml:DecisionNode")) {
-			this.type = ActivityType.decision;
-		} else if (type.equals("uml:MergeNode")) {
-			this.type = ActivityType.merge;
+		if ("uml:InitialNode".equals(type)) {
+			this.type = ActivityType.INITIAL_NODE;
+		} else if ("uml:ActivityFinalNode".equals(type)) {
+			this.type = ActivityType.FINAL_NODE;
+		} else if ("uml:CallBehaviorAction".equals(type)) {
+			this.type = ActivityType.CALL;
+		} else if ("uml:DecisionNode".equals(type)) {
+			this.type = ActivityType.DECISION;
+		} else if ("uml:MergeNode".equals(type)) {
+			this.type = ActivityType.MERGE;
 		}
 	}
 

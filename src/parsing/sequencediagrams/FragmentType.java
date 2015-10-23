@@ -3,8 +3,11 @@ package parsing.sequencediagrams;
 import parsing.exceptions.UnsupportedFragmentTypeException;
 
 public enum FragmentType {
-	loop, alternative, optional, parallel;
-	
+	LOOP,
+	ALTERNATIVE,
+	OPTIONAL,
+	PARALLEL;
+
 	/**
 	 * gets the Fragment Type from the typeName
 	 * @param typeName
@@ -12,14 +15,14 @@ public enum FragmentType {
 	 * @throws UnsupportedFragmentTypeException
 	 */
 	public static FragmentType getType(String typeName) throws UnsupportedFragmentTypeException {
-		if (typeName.equals("opt")) {
-			return optional;
-		} else if (typeName.equals("alt")) {
-			return alternative;
-		} else if (typeName.equals("loop")) {
-			return loop;
-		} else if (typeName.equals("par")) {
-			return parallel;
+		if ("opt".equals(typeName)) {
+			return OPTIONAL;
+		} else if ("alt".equals(typeName)) {
+			return ALTERNATIVE;
+		} else if ("loop".equals(typeName)) {
+			return LOOP;
+		} else if ("par".equals(typeName)) {
+			return PARALLEL;
 		} else {
 			throw new UnsupportedFragmentTypeException("Fragment of type " + typeName + " is not supported!");
 		}
