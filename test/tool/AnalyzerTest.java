@@ -11,6 +11,7 @@ import org.junit.Test;
 import expressionsolver.ExpressionSolver;
 
 public class AnalyzerTest {
+    private static final String PARAM_PATH = "/opt/param-2-3-64";
 
     String fmBSN = "Root  &&  (!Root  ||  Monitoring)  &&  (!Root  ||  Storage)  &&  (!Monitoring  ||  Root)  &&  (!Storage  ||  Root)  &&  (!Monitoring  ||  SensorInformation)  &&  (!Monitoring  ||  Sensor)  &&  (!SensorInformation  ||  Monitoring)  &&  (!Sensor  ||  Monitoring)  &&  (!SensorInformation  ||  Oxygenation  ||  PulseRate  ||  Temperature  ||  Position  ||  Fall)  &&  (!Oxygenation  ||  SensorInformation)  &&  (!PulseRate  ||  SensorInformation)  &&  (!Temperature  ||  SensorInformation)  &&  (!Position  ||  SensorInformation)  &&  (!Fall  ||  SensorInformation)  &&  (!Sensor  ||  SPO2  ||  ECG  ||  TEMP  ||  ACC)  &&  (!SPO2  ||  Sensor)  &&  (!ECG  ||  Sensor)  &&  (!TEMP  ||  Sensor)  &&  (!ACC  ||  Sensor)  &&  (!Storage  ||  SQLite  ||  Memory  ||  File)  &&  (!SQLite  ||  Storage)  &&  (!Memory  ||  Storage)  &&  (!File  ||  Storage)  &&  (!SQLite  ||  !Memory)  &&  (!SQLite  ||  !File)  &&  (!Memory  ||  !File)  &&  (!Oxygenation  ||  SPO2)  &&  (!PulseRate  ||  SPO2  ||  ECG)  &&  (!Fall  ||  ACC)  &&  (!Position  ||  ACC)  &&  (!Temperature  ||  TEMP)  &&  True  &&  !False  &&  (PulseRate  ||  ACC  ||  Memory  ||  Temperature  ||  Position  ||  Storage  ||  SensorInformation  ||  Sensor  ||  TEMP  ||  Monitoring  ||  Oxygenation  ||  File  ||  SQLite  ||  ECG  ||  Fall  ||  SPO2  ||  True)";
     JADD jadd;
@@ -21,11 +22,11 @@ public class AnalyzerTest {
     public void setUp() throws Exception {
         jadd = new JADD();
         solver = new ExpressionSolver(jadd);
-        analyzer = new Analyzer(jadd, fmBSN);
+        analyzer = new Analyzer(jadd, fmBSN, PARAM_PATH);
     }
 
     @Test
-    public void testEvaluateReliabilitySQLite() {
+    public void testEvaluateReliabilitySQLite() throws CyclicRdgException {
         RDGNode sqlite = BSNNodes.getSQLiteRDGNode();
         ADD reliability = analyzer.evaluateReliability(sqlite);
 
@@ -37,7 +38,7 @@ public class AnalyzerTest {
     }
 
     @Test
-    public void testEvaluateReliabilityOxygenation() throws UnrecognizedVariableException {
+    public void testEvaluateReliabilityOxygenation() throws UnrecognizedVariableException, CyclicRdgException {
         RDGNode node = BSNNodes.getOxygenationRDGNode();
         ADD reliability = analyzer.evaluateReliability(node);
 

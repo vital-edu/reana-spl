@@ -10,13 +10,14 @@ import fdtmc.State;
 import paramwrapper.ParamWrapper;
 
 public class ReliabilityFormulaTest {
+    private static final String PARAM_PATH = "/opt/param-2-3-64";
 
 	ParamWrapper paramWrapper;
 	FDTMC fdtmc;
 
 	@Before
 	public void setUp() throws Exception {
-		paramWrapper = new ParamWrapper();
+		paramWrapper = new ParamWrapper(PARAM_PATH);
 		fdtmc = new FDTMC();
 		fdtmc.setVariableName("s");
 	}

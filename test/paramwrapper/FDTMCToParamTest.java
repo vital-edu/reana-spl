@@ -10,12 +10,13 @@ import fdtmc.State;
 import paramwrapper.ParamWrapper;
 
 public class FDTMCToParamTest {
+    private static final String PARAM_PATH = "/opt/param-2-3-64";
 
 	ParamWrapper paramWrapper;
 
 	@Before
 	public void setUp() throws Exception {
-		paramWrapper = new ParamWrapper();
+		paramWrapper = new ParamWrapper(PARAM_PATH);
 	}
 
 	@Test
