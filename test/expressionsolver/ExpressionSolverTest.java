@@ -38,8 +38,8 @@ public class ExpressionSolverTest {
         interpretations.put("rMemory",
                             jadd.makeConstant(0.2));
 
-        ADD result = solver.solveExpression("0.99*rSqlite - 0.5*rMemory",
-                                            interpretations);
+        ADD result = solver.solveExpressionAsFunction("0.99*rSqlite - 0.5*rMemory",
+                                                      interpretations);
 
         ADD expected = jadd.makeConstant(0.99).times(
                             presenceCondition.ifThenElse(jadd.makeConstant(0.5),
@@ -57,35 +57,35 @@ public class ExpressionSolverTest {
 
     @Test
     public void testSum() {
-        ADD result = solver.solveExpression("0.42 + 0.53");
+        ADD result = solver.solveExpressionAsFunction("0.42 + 0.53");
         assertEquals("Sum of constants should yield an ADD for the result",
                 jadd.makeConstant(0.95), result);
     }
 
     @Test
     public void testProduct() {
-        ADD result = solver.solveExpression("0.42 * 0.5");
+        ADD result = solver.solveExpressionAsFunction("0.42 * 0.5");
         assertEquals("Product of constants should yield an ADD for the result",
                 jadd.makeConstant(0.21), result);
     }
 
     @Test
     public void testSubtraction() {
-        ADD result = solver.solveExpression("0.4 - 0.8");
+        ADD result = solver.solveExpressionAsFunction("0.4 - 0.8");
         assertEquals("Subtraction of constants should yield an ADD for the result",
                 jadd.makeConstant(-0.4), result);
     }
 
     @Test
     public void testDivision() {
-        ADD result = solver.solveExpression("0.4 / 0.2");
+        ADD result = solver.solveExpressionAsFunction("0.4 / 0.2");
         assertEquals("Division of constants should yield an ADD for the result",
                 jadd.makeConstant(2), result);
     }
 
     @Test
     public void testUnaryMinus() {
-        ADD result = solver.solveExpression("-0.4");
+        ADD result = solver.solveExpressionAsFunction("-0.4");
         assertEquals("Negated constants should yield an ADD for the result",
                 jadd.makeConstant(-0.4), result);
     }
@@ -156,7 +156,7 @@ public class ExpressionSolverTest {
 
     @Test
     public void testExpressionWithVariablesWithoutInterpretation() {
-        ADD result = solver.solveExpression("0.99*rSqlite - 0.5*rMemory");
+        ADD result = solver.solveExpressionAsFunction("0.99*rSqlite - 0.5*rMemory");
 
         assertNull("Expressions with variables must have interpretations for them",
                     result);
@@ -167,8 +167,8 @@ public class ExpressionSolverTest {
         HashMap<String, ADD> interpretations = new HashMap<String, ADD>();
         interpretations.put("rSqlite", jadd.makeConstant(0.5));
         interpretations.put("rMemory", jadd.makeConstant(0.2));
-        ADD result = solver.solveExpression("0.99*rSqlite - 0.5*rMemory",
-                                            interpretations);
+        ADD result = solver.solveExpressionAsFunction("0.99*rSqlite - 0.5*rMemory",
+                                                      interpretations);
 
         assertEquals("Expression evaluation must honor provided interpretations",
                 jadd.makeConstant(0.395), result);
@@ -182,8 +182,8 @@ public class ExpressionSolverTest {
         interpretations.put("rSqlite", dummyVar.times(jadd.makeConstant(0.5)));
         interpretations.put("rMemory", jadd.makeConstant(0.2));
 
-        ADD result = solver.solveExpression("0.99*rSqlite - 0.5*rMemory",
-                                            interpretations);
+        ADD result = solver.solveExpressionAsFunction("0.99*rSqlite - 0.5*rMemory",
+                                                      interpretations);
 
         ADD expected = jadd.makeConstant(0.99).times(dummyVar.times(jadd.makeConstant(0.5)))
                         .minus(jadd.makeConstant(0.5).times(jadd.makeConstant(0.2)));

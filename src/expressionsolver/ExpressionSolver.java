@@ -47,34 +47,35 @@ public class ExpressionSolver {
      * @return a (possibly constant) function (ADD) representing all possible results
      *      according to the ADDs involved.
      */
-    public ADD solveExpression(String expression, Map<String, ADD> interpretation) {
-        JEP parser = makeParser(jadd);
-        parser.parseExpression(expression);
-        if (parser.hasError()) {
-            LOGGER.warning("Parser error: " + parser.getErrorInfo());
-            return null;
-        }
-
-        SymbolTable symbolTable = parser.getSymbolTable();
-        for (Object var: symbolTable.keySet()) {
-            String varName = (String)var;
-            if (interpretation.containsKey(varName)) {
-                parser.addVariableAsObject(varName, interpretation.get(varName));
-            } else {
-                LOGGER.warning("No interpretation for variable <"+varName+"> was provided");
-            }
-        }
-        return (ADD)parser.getValueAsObject();
-
+    public ADD solveExpressionAsFunction(String expression, Map<String, ADD> interpretation) {
+        JEP parser = makeADDParser(jadd);
+        Object result = solveExpression(expression, parser, interpretation);
+        return (ADD)result;
     }
 
     /**
      * Useful shortcut for expressions with no variables involved.
+     *
      * @param expression
      * @return
      */
-    public ADD solveExpression(String expression) {
-        return solveExpression(expression, new HashMap<String, ADD>());
+    public ADD solveExpressionAsFunction(String expression) {
+        return solveExpressionAsFunction(expression, new HashMap<String, ADD>());
+    }
+
+    /**
+     * Solves an expression with respect to the given interpretation of variables.
+     * Here, variables are interpreted in the algebraic sense.
+     *
+     * @param expression
+     * @param interpretation A map from variable names to the respective values
+     *          to be considered during evaluation.
+     * @return a floating-point result for the evaluated expression.
+     */
+    public Double solveExpression(String expression, Map<String, Double> interpretation) {
+        JEP parser = makeFloatingPointParser();
+        Object result = solveExpression(expression, parser, interpretation);
+        return (Double)result;
     }
 
     /**
@@ -91,7 +92,7 @@ public class ExpressionSolver {
      * @return
      */
     public ADD encodeFormula(String formula) {
-        JEP parser = makeParser(jadd);
+        JEP parser = makeADDParser(jadd);
         parser.parseExpression(formula);
         if (parser.hasError()) {
             LOGGER.warning("Parser error: " + parser.getErrorInfo());
@@ -119,9 +120,39 @@ public class ExpressionSolver {
     }
 
     /**
+     * Solves an expression with respect to the given interpretation of variables.
+     * Here, variables are interpreted in the algebraic sense, not as boolean ADD-variables.
+     * @param <T>
+     *
+     * @param expression
+     * @param interpretation A map from variable names to the respective values
+     *          to be considered during evaluation.
+     * @return a (possibly constant) function (ADD) representing all possible results
+     *      according to the ADDs involved.
+     */
+    private <T> Object solveExpression(String expression, JEP parser, Map<String, T> interpretation) {
+        parser.parseExpression(expression);
+        if (parser.hasError()) {
+            LOGGER.warning("Parser error: " + parser.getErrorInfo());
+            return null;
+        }
+
+        SymbolTable symbolTable = parser.getSymbolTable();
+        for (Object var: symbolTable.keySet()) {
+            String varName = (String)var;
+            if (interpretation.containsKey(varName)) {
+                parser.addVariableAsObject(varName, interpretation.get(varName));
+            } else {
+                LOGGER.warning("No interpretation for variable <"+varName+"> was provided");
+            }
+        }
+        return parser.getValueAsObject();
+    }
+
+    /**
      * @param jadd
      */
-    private JEP makeParser(JADD jadd) {
+    private JEP makeADDParser(JADD jadd) {
         JEP parser = new JEP(false,
                 true,
                 false,
@@ -135,6 +166,15 @@ public class ExpressionSolver {
         parser.addFunction("\"&&\"", new LogicalAnd());
         parser.addFunction("\"||\"", new LogicalOr());
         parser.addFunction("\"!\"", new LogicalNot());
+        return parser;
+    }
+
+    /**
+     * Makes a standard floating-point-based parser.
+     */
+    private JEP makeFloatingPointParser() {
+        JEP parser = new JEP();
+        parser.setAllowUndeclared(true);
         return parser;
     }
 

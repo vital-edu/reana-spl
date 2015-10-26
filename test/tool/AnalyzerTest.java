@@ -1,5 +1,7 @@
 package tool;
 
+import java.util.Arrays;
+
 import jadd.ADD;
 import jadd.JADD;
 import jadd.UnrecognizedVariableException;
@@ -28,7 +30,7 @@ public class AnalyzerTest {
     @Test
     public void testEvaluateReliabilitySQLite() throws CyclicRdgException {
         RDGNode sqlite = BSNNodes.getSQLiteRDGNode();
-        ADD reliability = analyzer.evaluateReliability(sqlite);
+        ADD reliability = analyzer.evaluateFeatureFamilyBasedReliability(sqlite);
 
         analyzer.generateDotFile(reliability, "test/sqlite.dot");
 
@@ -40,7 +42,7 @@ public class AnalyzerTest {
     @Test
     public void testEvaluateReliabilityOxygenation() throws UnrecognizedVariableException, CyclicRdgException {
         RDGNode node = BSNNodes.getOxygenationRDGNode();
-        ADD reliability = analyzer.evaluateReliability(node);
+        ADD reliability = analyzer.evaluateFeatureFamilyBasedReliability(node);
 
         String[] sqliteConfig = new String[]{
                 "Root",
@@ -88,6 +90,63 @@ public class AnalyzerTest {
                 "SPO2"};
         Assert.assertEquals("Invalid configuration",
                 0, reliability.eval(noneConfig), 1E-14);
+    }
+
+
+    @Test
+    public void testEvaluateFeatureProductReliabilityOxygenation() throws UnrecognizedVariableException, CyclicRdgException {
+        RDGNode node = BSNNodes.getOxygenationRDGNode();
+
+        String[] sqliteConfig = new String[]{
+                "Root",
+                "Monitoring",
+                "Storage",
+                "SensorInformation",
+                "Sensor",
+                "Oxygenation",
+                "SPO2",
+                "SQLite"};
+        double reliability = analyzer.evaluateFeatureProductBasedReliability(node, Arrays.asList(sqliteConfig));
+        Assert.assertEquals("Configuration with SQLite",
+                0.9920279440699441, reliability, 1E-14);
+
+        String[] memoryConfig = new String[]{
+                "Root",
+                "Monitoring",
+                "Storage",
+                "SensorInformation",
+                "Sensor",
+                "Oxygenation",
+                "SPO2",
+                "Memory"};
+        reliability = analyzer.evaluateFeatureProductBasedReliability(node, Arrays.asList(memoryConfig));
+        Assert.assertEquals("Configuration with Memory",
+                0.9920279440699441, reliability, 1E-14);
+
+        String[] fileConfig = new String[]{
+                "Root",
+                "Monitoring",
+                "Storage",
+                "SensorInformation",
+                "Sensor",
+                "Oxygenation",
+                "SPO2",
+                "File"};
+        reliability = analyzer.evaluateFeatureProductBasedReliability(node, Arrays.asList(fileConfig));
+        Assert.assertEquals("Configuration without SQLite or Memory",
+                0.994014980014994001, reliability, 1E-14);
+
+        String[] noneConfig = new String[]{
+                "Root",
+                "Monitoring",
+                "Storage",
+                "SensorInformation",
+                "Sensor",
+                "Oxygenation",
+                "SPO2"};
+        reliability = analyzer.evaluateFeatureProductBasedReliability(node, Arrays.asList(noneConfig));
+        Assert.assertEquals("Invalid configuration",
+                0, reliability, 1E-14);
     }
 
 }

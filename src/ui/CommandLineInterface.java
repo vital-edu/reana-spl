@@ -86,7 +86,7 @@ public class CommandLineInterface {
         memoryCollector.takeSnapshot("before evaluation");
         ADD familyReliability = null;
         try {
-            familyReliability = analyzer.evaluateReliability(rdgRoot);
+            familyReliability = analyzer.evaluateFeatureFamilyBasedReliability(rdgRoot);
         } catch (CyclicRdgException e) {
             LOGGER.severe("Cyclic dependency detected in RDG.");
             LOGGER.log(Level.SEVERE, e.toString(), e);
@@ -145,6 +145,7 @@ public class CommandLineInterface {
     }
 
     private static void printAllConfigurationsValues(ADD familyReliability) {
+        // TODO Get valid configurations from Feature Model.
         Map<List<String>, Double> configurations = familyReliability.getValidConfigurations();
         for (Map.Entry<List<String>, Double> entry: configurations.entrySet()) {
             printSingleConfiguration(entry.getKey().toString(),

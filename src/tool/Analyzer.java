@@ -5,6 +5,7 @@ package tool;
 
 import jadd.ADD;
 import jadd.JADD;
+import jadd.UnrecognizedVariableException;
 
 import java.io.File;
 import java.io.IOException;
@@ -123,7 +124,7 @@ public class Analyzer {
     }
 
     /**
-     * Evaluates the family-based reliability function of an RDG node, based
+     * Evaluates the feature-family-based reliability function of an RDG node, based
      * on the reliabilities of the nodes on which it depends.
      *
      * A reliability function is a boolean function from the set of features
@@ -133,10 +134,13 @@ public class Analyzer {
      * @return
      * @throws CyclicRdgException
      */
-    public ADD evaluateReliability(RDGNode node) throws CyclicRdgException {
+    public ADD evaluateFeatureFamilyBasedReliability(RDGNode node) throws CyclicRdgException {
         List<RDGNode> dependencies = node.getDependenciesTransitiveClosure();
         LinkedHashMap<RDGNode, String> expressionsByNode = getReliabilityExpressions(dependencies);
+
+        timeCollector.startFamilyBasedTimer();
         Map<RDGNode, ADD> reliabilities = evaluateReliabilities(expressionsByNode);
+        timeCollector.stopFamilyBasedTimer();
         ADD reliability = reliabilities.get(node);
 
         timeCollector.startFamilyBasedTimer();
@@ -150,11 +154,35 @@ public class Analyzer {
     }
 
     /**
+     * Evaluates the feature-product-based reliability value of an RDG node, based
+     * on the reliabilities of the nodes on which it depends.
+     *
+     * @param node RDG node whose reliability is to be evaluated.
+     * @return
+     * @throws CyclicRdgException
+     * @throws UnrecognizedVariableException
+     */
+    public Double evaluateFeatureProductBasedReliability(RDGNode node, List<String> configuration) throws CyclicRdgException, UnrecognizedVariableException {
+        double validity = featureModel.eval(configuration.toArray(new String[configuration.size()]));
+        if (Double.doubleToRawLongBits(validity) == 0) {
+            return 0.0;
+        }
+        List<RDGNode> dependencies = node.getDependenciesTransitiveClosure();
+        LinkedHashMap<RDGNode, String> expressionsByNode = getReliabilityExpressions(dependencies);
+
+        // TODO Use parameterized time collector for getting x-based timers.
+        timeCollector.startFamilyBasedTimer();
+        Map<RDGNode, Double> reliabilities = evaluateReliabilities(expressionsByNode, configuration);
+        timeCollector.stopFamilyBasedTimer();
+        return reliabilities.get(node);
+    }
+
+    /**
      * Dumps the computed family reliability function to the output file
      * in the specified path.
      *
      * @param familyReliability Reliability function computed by a call to the
-     *          {@link #evaluateReliability(RDGNode)} method.
+     *          {@link #evaluateFeatureFamilyBasedReliability(RDGNode)} method.
      * @param outputFile Path to the .dot file to be generated.
      */
     public void generateDotFile(ADD familyReliability, String outputFile) {
@@ -203,7 +231,7 @@ public class Analyzer {
      * A reliability function is a boolean function from the set of features
      * to Real values.
      *
-     * This function implements the family-based part of the analysis.
+     * This function implements the family-based part of a feature-family-based analysis.
      *
      * @param node RDG node whose reliability is to be evaluated.
      * @return
@@ -215,16 +243,49 @@ public class Analyzer {
             RDGNode node = entry.getKey();
             String reliabilityExpression = entry.getValue();
 
-            timeCollector.startFamilyBasedTimer();
-            ADD reliability = evaluateNodeReliability(node,
-                                                      reliabilityExpression,
-                                                      reliabilities);
-            timeCollector.stopFamilyBasedTimer();
+            // This must work without checking, since we expect the expressionsByNode
+            // map to be topologically sorted, i.e., dependencies will have already
+            // been evaluated.
+            ADD reliability = evaluateNodeReliabilityFunction(node,
+                                                              reliabilityExpression,
+                                                              reliabilities);
 
             reliabilities.put(node, reliability);
-            jadd.dumpDot(reliabilityExpression,
-                         reliability,
-                         "result-"+node.getId()+".dot");
+//            jadd.dumpDot(reliabilityExpression,
+//                         reliability,
+//                         "result-"+node.getId()+".dot");
+        }
+
+        return reliabilities;
+    }
+
+
+    /**
+     * Evaluates the reliability values of the RDG nodes according to the
+     * correspondent pre-computed reliability expressions.
+     *
+     * This function implements the product-based part of a feature-product-based analysis.
+     *
+     * @param node RDG node whose reliability is to be evaluated.
+     * @return
+     * @throws UnrecognizedVariableException
+     */
+    private Map<RDGNode, Double> evaluateReliabilities(LinkedHashMap<RDGNode, String> expressionsByNode, List<String> configuration) throws UnrecognizedVariableException {
+        Map<RDGNode, Double> reliabilities = new HashMap<RDGNode, Double>();
+
+        for (SortedMap.Entry<RDGNode, String> entry: expressionsByNode.entrySet()) {
+            RDGNode node = entry.getKey();
+            String reliabilityExpression = entry.getValue();
+
+            // This must work without checking, since we expect the expressionsByNode
+            // map to be topologically sorted, i.e., dependencies will have already
+            // been evaluated.
+            Double reliability = evaluateNodeReliability(node,
+                                                         reliabilityExpression,
+                                                         configuration,
+                                                         reliabilities);
+
+            reliabilities.put(node, reliability);
         }
 
         return reliabilities;
@@ -235,17 +296,16 @@ public class Analyzer {
      * correspondent pre-computed reliability expression and the given cache of
      * previously evaluated reliabilities.
      *
+     * Assumes all dependencies have already been evaluated.
+     *
      * @param node
      * @param reliabilityExpression
      * @param reliabilityCache
      * @return
      */
-    private ADD evaluateNodeReliability(RDGNode node, String reliabilityExpression, Map<RDGNode, ADD> reliabilityCache) {
+    private ADD evaluateNodeReliabilityFunction(RDGNode node, String reliabilityExpression, Map<RDGNode, ADD> reliabilityCache) {
         Map<String, ADD> childrenReliabilities = new HashMap<String, ADD>();
         for (RDGNode child: node.getDependencies()) {
-            // This must work without checking, since we expect the expressionsByNode
-            // map to be topologically sorted, i.e., dependencies will have already
-            // been evaluated.
             ADD childReliability = reliabilityCache.get(child);
             ADD presenceCondition = expressionSolver.encodeFormula(child.getPresenceCondition());
             ADD phi = presenceCondition.ifThenElse(childReliability, 1);
@@ -253,11 +313,41 @@ public class Analyzer {
                                       phi);
         }
 
-        ADD reliability = expressionSolver.solveExpression(reliabilityExpression,
-                                                           childrenReliabilities);
+        ADD reliability = expressionSolver.solveExpressionAsFunction(reliabilityExpression,
+                                                                     childrenReliabilities);
         reliability = pruningStrategy.pruneInvalidConfigurations(node,
-                reliability,
-                featureModel);
+                                                                 reliability,
+                                                                 featureModel);
+        return reliability;
+    }
+
+    /**
+     * Evaluates the reliability function of a single RDG node according to the
+     * correspondent pre-computed reliability expression and the given cache of
+     * previously evaluated reliabilities.
+     *
+     * Assumes all dependencies have already been evaluated.
+     *
+     * @param node
+     * @param reliabilityExpression
+     * @param reliabilityCache
+     * @return
+     * @throws UnrecognizedVariableException
+     */
+    private Double evaluateNodeReliability(RDGNode node, String reliabilityExpression, List<String> configuration, Map<RDGNode, Double> reliabilityCache) throws UnrecognizedVariableException {
+        Map<String, Double> childrenReliabilities = new HashMap<String, Double>();
+        for (RDGNode child: node.getDependencies()) {
+            Double childReliability = reliabilityCache.get(child);
+            ADD presenceCondition = expressionSolver.encodeFormula(child.getPresenceCondition());
+            Double presenceValue = presenceCondition.eval(configuration.toArray(new String[configuration.size()]));
+            boolean present = presenceValue.compareTo(1.0) == 0;
+
+            childrenReliabilities.put(child.getId(),
+                                      present ? childReliability : 1);
+        }
+
+        Double reliability = expressionSolver.solveExpression(reliabilityExpression,
+                                                           childrenReliabilities);
         return reliability;
     }
 
