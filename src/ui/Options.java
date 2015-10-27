@@ -5,6 +5,7 @@ import java.io.IOException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
+import tool.AnalysisStrategy;
 import tool.PruningStrategy;
 
 
@@ -22,6 +23,7 @@ class Options {
     private boolean printAllConfigurations;
     private boolean statsEnabled;
     private PruningStrategy pruningStrategy;
+    private AnalysisStrategy analysisStrategy;
 
     static Options parseOptions(String[] args) throws IOException {
         OptionParser optionParser = new OptionParser();
@@ -64,6 +66,15 @@ class Options {
                 .defaultsTo(PruningStrategy.FM)
                 .describedAs("FM | NONE");
 
+        OptionSpec<AnalysisStrategy> analysisStrategyOption = optionParser
+                .accepts("analysis-strategy",
+                         "The strategy that should be used for analysis. Can be one of: "
+                         + "FEATURE_FAMILY (feature-family-based); FEATURE_PRODUCT (feature-product-based)")
+                .withRequiredArg()
+                .ofType(AnalysisStrategy.class)
+                .defaultsTo(AnalysisStrategy.FEATURE_FAMILY)
+                .describedAs("FEATURE_FAMILY | FEATURE_PRODUCT");
+
         OptionSpec<Void> helpOption = optionParser
                 .accepts("help")
                 .forHelp();
@@ -83,6 +94,7 @@ class Options {
         result.printAllConfigurations = options.has(allConfigurationsOption);
         result.statsEnabled = options.has(statsEnabledOption);
         result.pruningStrategy = options.valueOf(pruningStrategyOption);
+        result.analysisStrategy = options.valueOf(analysisStrategyOption);
 
         return result;
     }
@@ -117,6 +129,10 @@ class Options {
 
     public PruningStrategy getPruningStrategy() {
         return pruningStrategy;
+    }
+
+    public AnalysisStrategy getAnalysisStrategy() {
+        return analysisStrategy;
     }
 
 }

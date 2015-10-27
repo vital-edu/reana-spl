@@ -154,20 +154,44 @@ public class Analyzer {
      * @param node RDG node whose reliability is to be evaluated.
      * @return
      * @throws CyclicRdgException
-     * @throws UnrecognizedVariableException
+     * @throws UnknownFeatureException
      */
-    public Double evaluateFeatureProductBasedReliability(RDGNode node, List<String> configuration) throws CyclicRdgException, UnrecognizedVariableException {
-        double validity = featureModel.eval(configuration.toArray(new String[configuration.size()]));
-        if (Double.doubleToRawLongBits(validity) == 0) {
-            return 0.0;
-        }
+    public IReliabilityAnalysisResults evaluateFeatureProductBasedReliability(RDGNode node, Set<List<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
         List<RDGNode> dependencies = node.getDependenciesTransitiveClosure();
         LinkedHashMap<RDGNode, String> expressionsByNode = getReliabilityExpressions(dependencies);
 
+        MapBasedReliabilityResults results = new MapBasedReliabilityResults();
+        for (List<String> configuration: configurations) {
+            Double result = evaluateFeatureProductBasedReliabilityForSingleConfiguration(node,
+                                                                                         configuration,
+                                                                                         expressionsByNode);
+            results.putResult(configuration, result);
+        }
+        return results;
+    }
+
+    /**
+     * @param node
+     * @param configuration
+     * @param expressionsByNode
+     * @return
+     * @throws UnknownFeatureException
+     */
+    private Double evaluateFeatureProductBasedReliabilityForSingleConfiguration(RDGNode node, List<String> configuration, LinkedHashMap<RDGNode, String> expressionsByNode) throws UnknownFeatureException {
+        double validity;
+        try {
+            validity = featureModel.eval(configuration.toArray(new String[configuration.size()]));
+        } catch (UnrecognizedVariableException e) {
+            throw new UnknownFeatureException(e.getVariableName());
+        }
+        if (Double.doubleToRawLongBits(validity) == 0) {
+            return 0.0;
+        }
+
         // TODO Use parameterized time collector for getting x-based timers.
-        timeCollector.startTimer(CollectibleTimers.FAMILY_BASED_TIME);
+        timeCollector.startTimer(CollectibleTimers.PRODUCT_BASED_TIME);
         Map<RDGNode, Double> reliabilities = evaluateReliabilities(expressionsByNode, configuration);
-        timeCollector.stopTimer(CollectibleTimers.FAMILY_BASED_TIME);
+        timeCollector.stopTimer(CollectibleTimers.PRODUCT_BASED_TIME);
         return reliabilities.get(node);
     }
 
@@ -262,9 +286,9 @@ public class Analyzer {
      *
      * @param node RDG node whose reliability is to be evaluated.
      * @return
-     * @throws UnrecognizedVariableException
+     * @throws UnknownFeatureException
      */
-    private Map<RDGNode, Double> evaluateReliabilities(LinkedHashMap<RDGNode, String> expressionsByNode, List<String> configuration) throws UnrecognizedVariableException {
+    private Map<RDGNode, Double> evaluateReliabilities(LinkedHashMap<RDGNode, String> expressionsByNode, List<String> configuration) throws UnknownFeatureException {
         Map<RDGNode, Double> reliabilities = new HashMap<RDGNode, Double>();
 
         for (SortedMap.Entry<RDGNode, String> entry: expressionsByNode.entrySet()) {
@@ -326,14 +350,19 @@ public class Analyzer {
      * @param reliabilityExpression
      * @param reliabilityCache
      * @return
-     * @throws UnrecognizedVariableException
+     * @throws UnknownFeatureException
      */
-    private Double evaluateNodeReliability(RDGNode node, String reliabilityExpression, List<String> configuration, Map<RDGNode, Double> reliabilityCache) throws UnrecognizedVariableException {
+    private Double evaluateNodeReliability(RDGNode node, String reliabilityExpression, List<String> configuration, Map<RDGNode, Double> reliabilityCache) throws UnknownFeatureException {
         Map<String, Double> childrenReliabilities = new HashMap<String, Double>();
         for (RDGNode child: node.getDependencies()) {
             Double childReliability = reliabilityCache.get(child);
             ADD presenceCondition = expressionSolver.encodeFormula(child.getPresenceCondition());
-            Double presenceValue = presenceCondition.eval(configuration.toArray(new String[configuration.size()]));
+            Double presenceValue;
+            try {
+                presenceValue = presenceCondition.eval(configuration.toArray(new String[configuration.size()]));
+            } catch (UnrecognizedVariableException e) {
+                throw new UnknownFeatureException(e.getVariableName());
+            }
             boolean present = presenceValue.compareTo(1.0) == 0;
 
             childrenReliabilities.put(child.getId(),

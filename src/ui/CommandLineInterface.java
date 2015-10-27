@@ -94,20 +94,57 @@ public class CommandLineInterface {
      * @return
      */
     private static IReliabilityAnalysisResults evaluateReliability(Analyzer analyzer, RDGNode rdgRoot, Set<List<String>> configurations, Options options) {
-        // TODO Family-based-specific
-        IReliabilityAnalysisResults familyReliability = null;
+        IReliabilityAnalysisResults results = null;
+        switch (options.getAnalysisStrategy()) {
+        case FEATURE_PRODUCT:
+            results = evaluateFeatureProductBasedReliability(analyzer,
+                                                             rdgRoot,
+                                                             configurations);
+            break;
+        case FEATURE_FAMILY:
+        default:
+            results = evaluateFeatureFamilyBasedReliability(analyzer,
+                                                            rdgRoot,
+                                                            options);
+        }
+        return results;
+    }
+
+    private static IReliabilityAnalysisResults evaluateFeatureProductBasedReliability(Analyzer analyzer, RDGNode rdgRoot, Set<List<String>> configurations) {
+        IReliabilityAnalysisResults results = null;
+        try {
+            results = analyzer.evaluateFeatureProductBasedReliability(rdgRoot, configurations);
+        } catch (CyclicRdgException e) {
+            LOGGER.severe("Cyclic dependency detected in RDG.");
+            LOGGER.log(Level.SEVERE, e.toString(), e);
+            System.exit(2);
+        } catch (UnknownFeatureException e) {
+            LOGGER.severe("Unrecognized feature: " + e.getFeatureName());
+            LOGGER.log(Level.SEVERE, e.toString(), e);
+        }
+        return results;
+    }
+
+    /**
+     * @param analyzer
+     * @param rdgRoot
+     * @param options
+     * @param results
+     * @return
+     */
+    private static IReliabilityAnalysisResults evaluateFeatureFamilyBasedReliability(Analyzer analyzer, RDGNode rdgRoot, Options options) {
+        IReliabilityAnalysisResults results = null;
         String dotOutput = "family-reliability.dot";
         try {
             analyzer.setPruningStrategy(PruningStrategyFactory.createPruningStrategy(options.getPruningStrategy()));
-            familyReliability = analyzer.evaluateFeatureFamilyBasedReliability(rdgRoot, dotOutput);
+            results = analyzer.evaluateFeatureFamilyBasedReliability(rdgRoot, dotOutput);
         } catch (CyclicRdgException e) {
             LOGGER.severe("Cyclic dependency detected in RDG.");
             LOGGER.log(Level.SEVERE, e.toString(), e);
             System.exit(2);
         }
-        // TODO Family-based-specific
         OUTPUT.println("Family-wide reliability decision diagram dumped at " + dotOutput);
-        return familyReliability;
+        return results;
     }
 
     /**
