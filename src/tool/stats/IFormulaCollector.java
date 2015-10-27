@@ -2,6 +2,8 @@ package tool.stats;
 
 import java.io.PrintStream;
 
+import tool.RDGNode;
+
 /**
  * Collects formulas in order to generate stats.
  * @author thiago
@@ -9,7 +11,7 @@ import java.io.PrintStream;
  */
 public interface IFormulaCollector {
 
-    public void collectFormula(String formula);
+    public void collectFormula(RDGNode node, String formula);
     public long getMinFormulaSize();
     public long getMaxFormulaSize();
     public long getSizesSum();

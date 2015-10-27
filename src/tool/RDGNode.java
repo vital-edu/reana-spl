@@ -25,6 +25,10 @@ public class RDGNode {
 	private String presenceCondition;
 	// Nodes on which this one depends
 	private Collection<RDGNode> dependencies;
+	/**
+	 * Height of the RDGNode.
+	 */
+	private int height;
 
 
 	/**
@@ -42,6 +46,7 @@ public class RDGNode {
 	    this.presenceCondition = presenceCondition;
 	    this.fdtmc = fdtmc;
 		this.dependencies = new HashSet<RDGNode>();
+		this.height = 0;
 
 		rdgNodes.put(id, this);
 	}
@@ -52,6 +57,7 @@ public class RDGNode {
 
     public void addDependency(RDGNode child) {
         this.dependencies.add(child);
+        height = Math.max(height, child.height + 1);
     }
 
     public Collection<RDGNode> getDependencies() {
@@ -64,6 +70,15 @@ public class RDGNode {
 
     public String getId() {
         return id;
+    }
+
+    /**
+     * Height of the RDGNode. This metric is defined in the same way as
+     * the height of a tree node, i.e., the maximum number of nodes in a path
+     * from this one to a leaf (node with no dependencies).
+     */
+    public int getHeight() {
+        return height;
     }
 
     public static RDGNode getById(String id) {
