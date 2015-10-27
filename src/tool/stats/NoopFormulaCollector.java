@@ -2,10 +2,12 @@ package tool.stats;
 
 import java.io.PrintStream;
 
+import tool.RDGNode;
+
 public class NoopFormulaCollector implements IFormulaCollector {
 
     @Override
-    public void collectFormula(String formula) {
+    public void collectFormula(RDGNode node, String formula) {
         // No-op
     }
 
