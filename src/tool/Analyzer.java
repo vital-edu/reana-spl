@@ -109,10 +109,11 @@ public class Analyzer {
      * to Real values, where the reliability of any invalid configuration is 0.
      *
      * @param node RDG node whose reliability is to be evaluated.
+     * @param dotOutput path at where to dump the resulting ADD as a dot file.
      * @return
      * @throws CyclicRdgException
      */
-    public ADD evaluateFeatureFamilyBasedReliability(RDGNode node) throws CyclicRdgException {
+    public IReliabilityAnalysisResults evaluateFeatureFamilyBasedReliability(RDGNode node, String dotOutput) throws CyclicRdgException {
         List<RDGNode> dependencies = node.getDependenciesTransitiveClosure();
         LinkedHashMap<RDGNode, String> expressionsByNode = getReliabilityExpressions(dependencies);
 
@@ -128,7 +129,22 @@ public class Analyzer {
         // value for invalid configurations.
         ADD result = featureModel.times(reliability);
         timeCollector.stopTimer(CollectibleTimers.FAMILY_BASED_TIME);
-        return result;
+
+        if (dotOutput != null) {
+            generateDotFile(result, dotOutput);
+        }
+
+        return new ADDReliabilityResults(result);
+    }
+    /**
+     * Evaluates the feature-family-based reliability function of an RDG node, based
+     * on the reliabilities of the nodes on which it depends, but does not dump the
+     * resulting ADD.
+     *
+     * @see {@link Analyzer.evaluateFeatureFamilyBasedReliability(RDGNode, String)}
+     */
+    public IReliabilityAnalysisResults evaluateFeatureFamilyBasedReliability(RDGNode node) throws CyclicRdgException {
+        return evaluateFeatureFamilyBasedReliability(node, null);
     }
 
     /**

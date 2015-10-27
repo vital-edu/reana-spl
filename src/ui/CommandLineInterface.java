@@ -3,9 +3,6 @@
  */
 package ui;
 
-import jadd.ADD;
-import jadd.UnrecognizedVariableException;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -18,7 +15,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -35,8 +31,10 @@ import parsing.exceptions.InvalidTagException;
 import parsing.exceptions.UnsupportedFragmentTypeException;
 import tool.Analyzer;
 import tool.CyclicRdgException;
+import tool.IReliabilityAnalysisResults;
 import tool.PruningStrategyFactory;
 import tool.RDGNode;
+import tool.UnknownFeatureException;
 import tool.stats.CollectibleTimers;
 import tool.stats.IFormulaCollector;
 import tool.stats.IMemoryCollector;
@@ -75,20 +73,12 @@ public class CommandLineInterface {
 
         Analyzer analyzer = makeAnalyzer(options);
         Set<List<String>> targetConfigurations = getTargetConfigurations(options, analyzer);
-        System.out.println(targetConfigurations);
+
         memoryCollector.takeSnapshot("before evaluation");
-        ADD familyReliability = evaluateReliability(analyzer, rdgRoot, targetConfigurations, options);
+        IReliabilityAnalysisResults familyReliability = evaluateReliability(analyzer, rdgRoot, targetConfigurations, options);
         memoryCollector.takeSnapshot("after evaluation");
 
-        OUTPUT.println("Configurations:");
-        OUTPUT.println("=========================================");
-        try {
-            printConfigurationsValues(targetConfigurations, familyReliability);
-        } catch (UnrecognizedVariableException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        OUTPUT.println("=========================================");
+        printAnalysisResults(targetConfigurations, familyReliability);
 
         if (options.hasStatsEnabled()) {
             printStats(OUTPUT);
@@ -103,20 +93,20 @@ public class CommandLineInterface {
      * @param options
      * @return
      */
-    private static ADD evaluateReliability(Analyzer analyzer, RDGNode rdgRoot, Set<List<String>> configurations, Options options) {
+    private static IReliabilityAnalysisResults evaluateReliability(Analyzer analyzer, RDGNode rdgRoot, Set<List<String>> configurations, Options options) {
         // TODO Family-based-specific
-        ADD familyReliability = null;
+        IReliabilityAnalysisResults familyReliability = null;
+        String dotOutput = "family-reliability.dot";
         try {
             analyzer.setPruningStrategy(PruningStrategyFactory.createPruningStrategy(options.getPruningStrategy()));
-            familyReliability = analyzer.evaluateFeatureFamilyBasedReliability(rdgRoot);
+            familyReliability = analyzer.evaluateFeatureFamilyBasedReliability(rdgRoot, dotOutput);
         } catch (CyclicRdgException e) {
             LOGGER.severe("Cyclic dependency detected in RDG.");
             LOGGER.log(Level.SEVERE, e.toString(), e);
             System.exit(2);
         }
         // TODO Family-based-specific
-        analyzer.generateDotFile(familyReliability, "family-reliability.dot");
-        OUTPUT.println("Family-wide reliability decision diagram dumped at ./family-reliability.dot");
+        OUTPUT.println("Family-wide reliability decision diagram dumped at " + dotOutput);
         return familyReliability;
     }
 
@@ -174,11 +164,19 @@ public class CommandLineInterface {
         }
     }
 
-    private static void printConfigurationsValues(Set<List<String>> configurations, ADD results) throws UnrecognizedVariableException {
-        for (List<String>configuration: configurations) {
-            String[] configurationAsArray = configuration.toArray(new String[configuration.size()]);
-            printSingleConfiguration(configuration.toString(),
-                                     results.eval(configurationAsArray));
+    private static void printAnalysisResults(Set<List<String>> configurations, IReliabilityAnalysisResults familyReliability) {
+        OUTPUT.println("Configurations:");
+        OUTPUT.println("=========================================");
+
+        for (List<String> configuration: configurations) {
+            try {
+                String[] configurationAsArray = configuration.toArray(new String[configuration.size()]);
+                printSingleConfiguration(configuration.toString(),
+                                         familyReliability.getResult(configurationAsArray));
+            } catch (UnknownFeatureException e) {
+                LOGGER.severe("Unrecognized feature: " + e.getFeatureName());
+                LOGGER.log(Level.SEVERE, e.toString(), e);
+            }
         }
 
         int count = 0;
@@ -191,6 +189,8 @@ public class CommandLineInterface {
             }
             count += tmpCount;
         }
+
+        OUTPUT.println("=========================================");
         OUTPUT.println(">>>> Total configurations: " + count);
     }
 
