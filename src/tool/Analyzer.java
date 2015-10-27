@@ -28,6 +28,7 @@ import parsing.exceptions.InvalidNodeType;
 import parsing.exceptions.InvalidNumberOfOperandsException;
 import parsing.exceptions.InvalidTagException;
 import parsing.exceptions.UnsupportedFragmentTypeException;
+import tool.stats.CollectibleTimers;
 import tool.stats.IFormulaCollector;
 import tool.stats.ITimeCollector;
 import tool.stats.NoopFormulaCollector;
@@ -114,12 +115,12 @@ public class Analyzer {
      * @throws InvalidNumberOfOperandsException
      */
     public RDGNode model(File umlModels) throws UnsupportedFragmentTypeException, InvalidTagException, InvalidNumberOfOperandsException, InvalidNodeClassException, InvalidNodeType {
-        timeCollector.startParsingTimer();
+        timeCollector.startTimer(CollectibleTimers.PARSING_TIME);
 
         DiagramAPI modeler = new DiagramAPI(umlModels);
         RDGNode result = modeler.transform();
 
-        timeCollector.stopParsingTimer();
+        timeCollector.stopTimer(CollectibleTimers.PARSING_TIME);
         return result;
     }
 
@@ -138,18 +139,18 @@ public class Analyzer {
         List<RDGNode> dependencies = node.getDependenciesTransitiveClosure();
         LinkedHashMap<RDGNode, String> expressionsByNode = getReliabilityExpressions(dependencies);
 
-        timeCollector.startFamilyBasedTimer();
+        timeCollector.startTimer(CollectibleTimers.FAMILY_BASED_TIME);
         Map<RDGNode, ADD> reliabilities = evaluateReliabilities(expressionsByNode);
-        timeCollector.stopFamilyBasedTimer();
+        timeCollector.stopTimer(CollectibleTimers.FAMILY_BASED_TIME);
         ADD reliability = reliabilities.get(node);
 
-        timeCollector.startFamilyBasedTimer();
+        timeCollector.startTimer(CollectibleTimers.FAMILY_BASED_TIME);
         // After evaluating the expression, constant terms alter the {0,1} nature
         // of the reliability ADD. Thus, we must multiply the result by the
         // {0,1} representation of the feature model in order to retain 0 as the
         // value for invalid configurations.
         ADD result = featureModel.times(reliability);
-        timeCollector.stopFamilyBasedTimer();
+        timeCollector.stopTimer(CollectibleTimers.FAMILY_BASED_TIME);
         return result;
     }
 
@@ -171,9 +172,9 @@ public class Analyzer {
         LinkedHashMap<RDGNode, String> expressionsByNode = getReliabilityExpressions(dependencies);
 
         // TODO Use parameterized time collector for getting x-based timers.
-        timeCollector.startFamilyBasedTimer();
+        timeCollector.startTimer(CollectibleTimers.FAMILY_BASED_TIME);
         Map<RDGNode, Double> reliabilities = evaluateReliabilities(expressionsByNode, configuration);
-        timeCollector.stopFamilyBasedTimer();
+        timeCollector.stopTimer(CollectibleTimers.FAMILY_BASED_TIME);
         return reliabilities.get(node);
     }
 
@@ -214,9 +215,9 @@ public class Analyzer {
     private LinkedHashMap<RDGNode, String> getReliabilityExpressions(List<RDGNode> nodes) {
         LinkedHashMap<RDGNode, String> reliabilityExpressions = new LinkedHashMap<RDGNode, String>();
         for (RDGNode node: nodes) {
-            timeCollector.startFeatureBasedTimer();
+            timeCollector.startTimer(CollectibleTimers.FEATURE_BASED_TIME);
             String reliabilityExpression = getReliabilityExpression(node);
-            timeCollector.stopFeatureBasedTimer();
+            timeCollector.stopTimer(CollectibleTimers.FEATURE_BASED_TIME);
 
             reliabilityExpressions.put(node, reliabilityExpression);
             formulaCollector.collectFormula(reliabilityExpression);
