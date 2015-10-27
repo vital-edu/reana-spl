@@ -14,12 +14,17 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+
+import modeling.DiagramAPI;
 
 import org.w3c.dom.DOMException;
 
@@ -32,7 +37,10 @@ import tool.Analyzer;
 import tool.CyclicRdgException;
 import tool.PruningStrategyFactory;
 import tool.RDGNode;
+import tool.stats.CollectibleTimers;
+import tool.stats.IFormulaCollector;
 import tool.stats.IMemoryCollector;
+import tool.stats.ITimeCollector;
 import ui.stats.StatsCollectorFactory;
 
 /**
@@ -45,115 +53,136 @@ public class CommandLineInterface {
     private static final Logger LOGGER = Logger.getLogger(CommandLineInterface.class.getName());
     private static final PrintStream OUTPUT = System.out;
 
+    private static IMemoryCollector memoryCollector;
+    private static ITimeCollector timeCollector;
+    private static IFormulaCollector formulaCollector;
+
     private CommandLineInterface() {
         // NO-OP
     }
 
     public static void main(String[] args) throws IOException {
+        long startTime = System.currentTimeMillis();
+
         Options options = Options.parseOptions(args);
         LogManager logManager = LogManager.getLogManager();
         logManager.readConfiguration(new FileInputStream("logging.properties"));
+        initializeStatsCollectors(options);
 
-        long startTime = System.currentTimeMillis();
-
-        File featureModelFile = new File(options.getFeatureModelFilePath());
-        File umlModels = new File(options.getUmlModelsFilePath());
-
-        String featureModel = readFeatureModel(featureModelFile);
-        StatsCollectorFactory statsCollectorFactory = new StatsCollectorFactory(options.hasStatsEnabled());
-        IMemoryCollector memoryCollector = statsCollectorFactory.createMemoryCollector();
-
-        String paramPath = options.getParamPath();
-        Analyzer analyzer = new Analyzer(featureModel,
-                                         paramPath,
-                                         statsCollectorFactory.createTimeCollector(),
-                                         statsCollectorFactory.createFormulaCollector());
-        analyzer.setPruningStrategy(PruningStrategyFactory.createPruningStrategy(options.getPruningStrategy()));
-
-        RDGNode rdgRoot = null;
         memoryCollector.takeSnapshot("before model parsing");
-        try {
-            rdgRoot = analyzer.model(umlModels);
-        } catch (DOMException | UnsupportedFragmentTypeException
-                | InvalidTagException | InvalidNumberOfOperandsException
-                | InvalidNodeClassException | InvalidNodeType e) {
-            LOGGER.severe("Error reading the provided UML Models.");
-            LOGGER.log(Level.SEVERE, e.toString(), e);
-            System.exit(1);
-        }
+        RDGNode rdgRoot = buildRDG(options);
         memoryCollector.takeSnapshot("after model parsing");
 
+        Analyzer analyzer = makeAnalyzer(options);
+        Set<List<String>> targetConfigurations = getTargetConfigurations(options, analyzer);
+        System.out.println(targetConfigurations);
         memoryCollector.takeSnapshot("before evaluation");
-        ADD familyReliability = null;
-        try {
-            familyReliability = analyzer.evaluateFeatureFamilyBasedReliability(rdgRoot);
-        } catch (CyclicRdgException e) {
-            LOGGER.severe("Cyclic dependency detected in RDG.");
-            LOGGER.log(Level.SEVERE, e.toString(), e);
-            System.exit(2);
-        }
+        ADD familyReliability = evaluateReliability(analyzer, rdgRoot, targetConfigurations, options);
         memoryCollector.takeSnapshot("after evaluation");
 
         OUTPUT.println("Configurations:");
         OUTPUT.println("=========================================");
-        if (options.hasPrintAllConfigurations()) {
-            printAllConfigurationsValues(familyReliability);
-        } else {
-            printConfigurationsValues(options, familyReliability);
+        try {
+            printConfigurationsValues(targetConfigurations, familyReliability);
+        } catch (UnrecognizedVariableException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
         OUTPUT.println("=========================================");
 
-        analyzer.generateDotFile(familyReliability, "family-reliability.dot");
-        OUTPUT.println("Family-wide reliability decision diagram dumped at ./family-reliability.dot");
-
         if (options.hasStatsEnabled()) {
-            analyzer.printStats(OUTPUT);
-            memoryCollector.printStats(OUTPUT);
+            printStats(OUTPUT);
         }
         long totalRunningTime = System.currentTimeMillis() - startTime;
         OUTPUT.println("Total running time: " +  totalRunningTime + " ms");
     }
 
     /**
+     * @param analyzer
+     * @param rdgRoot
      * @param options
-     * @param familyReliability
+     * @return
      */
-    private static void printConfigurationsValues(Options options, ADD familyReliability) {
-        List<String> configurations = new LinkedList<String>();
-        if (options.getConfiguration() != null) {
-            configurations.add(options.getConfiguration());
-        } else {
-            Path configurationsFilePath = Paths.get(options.getConfigurationsFilePath());
-            try {
-                configurations.addAll(Files.readAllLines(configurationsFilePath, Charset.forName("UTF-8")));
-            } catch (IOException e) {
-                LOGGER.severe("Error reading the provided configurations file.");
-                LOGGER.log(Level.SEVERE, e.toString(), e);
-            }
+    private static ADD evaluateReliability(Analyzer analyzer, RDGNode rdgRoot, Set<List<String>> configurations, Options options) {
+        // TODO Family-based-specific
+        ADD familyReliability = null;
+        try {
+            analyzer.setPruningStrategy(PruningStrategyFactory.createPruningStrategy(options.getPruningStrategy()));
+            familyReliability = analyzer.evaluateFeatureFamilyBasedReliability(rdgRoot);
+        } catch (CyclicRdgException e) {
+            LOGGER.severe("Cyclic dependency detected in RDG.");
+            LOGGER.log(Level.SEVERE, e.toString(), e);
+            System.exit(2);
         }
+        // TODO Family-based-specific
+        analyzer.generateDotFile(familyReliability, "family-reliability.dot");
+        OUTPUT.println("Family-wide reliability decision diagram dumped at ./family-reliability.dot");
+        return familyReliability;
+    }
 
-        for (String configuration: configurations) {
-            String[] variables = configuration.split(",");
-            try {
-                double reliability = familyReliability.eval(variables);
-                printSingleConfiguration(configuration, reliability);
-            } catch (UnrecognizedVariableException e) {
-                LOGGER.severe("Unrecognized variable: " + e.getVariableName());
-                LOGGER.log(Level.SEVERE, e.toString(), e);
+    /**
+     * @param options
+     * @return
+     */
+    private static Analyzer makeAnalyzer(Options options) {
+        File featureModelFile = new File(options.getFeatureModelFilePath());
+        String featureModel = readFeatureModel(featureModelFile);
+
+        String paramPath = options.getParamPath();
+        Analyzer analyzer = new Analyzer(featureModel,
+                                         paramPath,
+                                         timeCollector,
+                                         formulaCollector);
+        return analyzer;
+    }
+
+    /**
+     * @param options
+     */
+    private static void initializeStatsCollectors(Options options) {
+        StatsCollectorFactory statsCollectorFactory = new StatsCollectorFactory(options.hasStatsEnabled());
+        memoryCollector = statsCollectorFactory.createMemoryCollector();
+        timeCollector = statsCollectorFactory.createTimeCollector();
+        formulaCollector = statsCollectorFactory.createFormulaCollector();
+    }
+
+    private static Set<List<String>> getTargetConfigurations(Options options, Analyzer analyzer) {
+        if (options.hasPrintAllConfigurations()) {
+            return analyzer.getValidConfigurations();
+        } else {
+            Set<List<String>> configurations = new HashSet<List<String>>();
+
+            List<String> rawConfigurations = new LinkedList<String>();
+            if (options.getConfiguration() != null) {
+                rawConfigurations.add(options.getConfiguration());
+            } else {
+                Path configurationsFilePath = Paths.get(options.getConfigurationsFilePath());
+                try {
+                    rawConfigurations.addAll(Files.readAllLines(configurationsFilePath, Charset.forName("UTF-8")));
+                } catch (IOException e) {
+                    LOGGER.severe("Error reading the provided configurations file.");
+                    LOGGER.log(Level.SEVERE, e.toString(), e);
+                }
             }
+
+            for (String rawConfiguration: rawConfigurations) {
+                String[] variables = rawConfiguration.split(",");
+                configurations.add(Arrays.asList(variables));
+            }
+
+            return configurations;
         }
     }
 
-    private static void printAllConfigurationsValues(ADD familyReliability) {
-        // TODO Get valid configurations from Feature Model.
-        Map<List<String>, Double> configurations = familyReliability.getValidConfigurations();
-        for (Map.Entry<List<String>, Double> entry: configurations.entrySet()) {
-            printSingleConfiguration(entry.getKey().toString(),
-                                     entry.getValue());
+    private static void printConfigurationsValues(Set<List<String>> configurations, ADD results) throws UnrecognizedVariableException {
+        for (List<String>configuration: configurations) {
+            String[] configurationAsArray = configuration.toArray(new String[configuration.size()]);
+            printSingleConfiguration(configuration.toString(),
+                                     results.eval(configurationAsArray));
         }
 
         int count = 0;
-        for (List<String> config: configurations.keySet()) {
+        for (List<String> config: configurations) {
             int tmpCount = 1;
             for (String feature: config) {
                 if (feature.startsWith("(")) {
@@ -174,6 +203,15 @@ public class CommandLineInterface {
         }
     }
 
+    private static void printStats(PrintStream out) {
+        out.println("-----------------------------");
+        out.println("Stats:");
+        out.println("------");
+        timeCollector.printStats(out);
+        formulaCollector.printStats(out);
+        memoryCollector.printStats(OUTPUT);
+    }
+
     /**
      * @param featureModelFile
      * @return
@@ -189,6 +227,47 @@ public class CommandLineInterface {
             System.exit(1);
         }
         return featureModel;
+    }
+
+    /**
+     * @param options
+     * @return
+     */
+    private static RDGNode buildRDG(Options options) {
+        File umlModels = new File(options.getUmlModelsFilePath());
+        RDGNode rdgRoot = null;
+        try {
+            rdgRoot = model(umlModels, timeCollector);
+        } catch (DOMException | UnsupportedFragmentTypeException
+                | InvalidTagException | InvalidNumberOfOperandsException
+                | InvalidNodeClassException | InvalidNodeType e) {
+            LOGGER.severe("Error reading the provided UML Models.");
+            LOGGER.log(Level.SEVERE, e.toString(), e);
+            System.exit(1);
+        }
+        return rdgRoot;
+    }
+
+    /**
+     * Abstracts UML to RDG transformation.
+     *
+     * @param umlModels
+     * @return
+     * @throws InvalidTagException
+     * @throws UnsupportedFragmentTypeException
+     * @throws DOMException
+     * @throws InvalidNodeType
+     * @throws InvalidNodeClassException
+     * @throws InvalidNumberOfOperandsException
+     */
+    private static RDGNode model(File umlModels, ITimeCollector timeCollector) throws UnsupportedFragmentTypeException, InvalidTagException, InvalidNumberOfOperandsException, InvalidNodeClassException, InvalidNodeType {
+        timeCollector.startTimer(CollectibleTimers.PARSING_TIME);
+
+        DiagramAPI modeler = new DiagramAPI(umlModels);
+        RDGNode result = modeler.transform();
+
+        timeCollector.stopTimer(CollectibleTimers.PARSING_TIME);
+        return result;
     }
 
 }

@@ -7,27 +7,17 @@ import jadd.ADD;
 import jadd.JADD;
 import jadd.UnrecognizedVariableException;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.logging.Logger;
 
-import modeling.DiagramAPI;
-
-import org.w3c.dom.DOMException;
-
 import paramwrapper.ParamWrapper;
 import paramwrapper.ParametricModelChecker;
-import parsing.exceptions.InvalidNodeClassException;
-import parsing.exceptions.InvalidNodeType;
-import parsing.exceptions.InvalidNumberOfOperandsException;
-import parsing.exceptions.InvalidTagException;
-import parsing.exceptions.UnsupportedFragmentTypeException;
 import tool.stats.CollectibleTimers;
 import tool.stats.IFormulaCollector;
 import tool.stats.ITimeCollector;
@@ -89,6 +79,15 @@ public class Analyzer {
     }
 
     /**
+     * Returns the set of all valid configurations according to the feature model.
+     * @return
+     */
+    public Set<List<String>> getValidConfigurations() {
+        // TODO Expand "don't care" variables.
+        return featureModel.getValidConfigurations().keySet();
+    }
+
+    /**
      * Sets the pruning strategy to be used for preventing calculation
      * of reliability values for invalid configurations.
      *
@@ -100,28 +99,6 @@ public class Analyzer {
      */
     public void setPruningStrategy(IPruningStrategy pruningStrategy) {
         this.pruningStrategy = pruningStrategy;
-    }
-
-    /**
-     * Abstracts UML to RDG transformation.
-     *
-     * @param umlModels
-     * @return
-     * @throws InvalidTagException
-     * @throws UnsupportedFragmentTypeException
-     * @throws DOMException
-     * @throws InvalidNodeType
-     * @throws InvalidNodeClassException
-     * @throws InvalidNumberOfOperandsException
-     */
-    public RDGNode model(File umlModels) throws UnsupportedFragmentTypeException, InvalidTagException, InvalidNumberOfOperandsException, InvalidNodeClassException, InvalidNodeType {
-        timeCollector.startTimer(CollectibleTimers.PARSING_TIME);
-
-        DiagramAPI modeler = new DiagramAPI(umlModels);
-        RDGNode result = modeler.transform();
-
-        timeCollector.stopTimer(CollectibleTimers.PARSING_TIME);
-        return result;
     }
 
     /**
@@ -350,14 +327,6 @@ public class Analyzer {
         Double reliability = expressionSolver.solveExpression(reliabilityExpression,
                                                            childrenReliabilities);
         return reliability;
-    }
-
-    public void printStats(PrintStream out) {
-        out.println("-----------------------------");
-        out.println("Stats:");
-        out.println("------");
-        timeCollector.printStats(out);
-        formulaCollector.printStats(out);
     }
 
 }
