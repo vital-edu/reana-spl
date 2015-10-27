@@ -1,7 +1,10 @@
 package ui.stats;
 
 import java.io.PrintStream;
+import java.util.HashMap;
+import java.util.Map;
 
+import tool.RDGNode;
 import tool.stats.IFormulaCollector;
 
 public class FormulaCollector implements IFormulaCollector {
@@ -10,14 +13,16 @@ public class FormulaCollector implements IFormulaCollector {
     private long minSize = Long.MAX_VALUE;
     private long maxSize = 0;
     private long sizesSum = 0;
+    private Map<RDGNode, String> formulae = new HashMap<RDGNode, String>();
 
     @Override
-    public void collectFormula(String formula) {
+    public void collectFormula(RDGNode node, String formula) {
         count++;
         long formulaSize = formula.length();
         minSize = Math.min(minSize, formulaSize);
         maxSize = Math.max(maxSize, formulaSize);
         sizesSum += formulaSize;
+        formulae.put(node, formula);
     }
 
     @Override
@@ -41,6 +46,16 @@ public class FormulaCollector implements IFormulaCollector {
         out.println("Minimum formula size: " + minSize);
         out.println("Sum of formulae sizes: " + sizesSum);
         out.println("Number of formulae: " + count);
+        for (Map.Entry<RDGNode, String> entry: formulae.entrySet()) {
+            RDGNode node = entry.getKey();
+            int numChildren = node.getDependencies().size();
+            int height = node.getHeight();
+            String formula = entry.getValue();
+            int formulaSize = formula.length();
+            out.println("    " + node.getId() + ": "
+                        + numChildren + " children | height " + height + " | "
+                        + formulaSize + " bytes | " + formula);
+        }
     }
 
 }

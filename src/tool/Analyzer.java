@@ -191,7 +191,7 @@ public class Analyzer {
             timeCollector.stopFeatureBasedTimer();
 
             reliabilityExpressions.put(node, reliabilityExpression);
-            formulaCollector.collectFormula(reliabilityExpression);
+            formulaCollector.collectFormula(node, reliabilityExpression);
             LOGGER.fine("Reliability expression for "+ node.getId() + " -> " + reliabilityExpression);
         }
         return reliabilityExpressions;
