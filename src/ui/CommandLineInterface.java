@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -247,6 +248,25 @@ public class CommandLineInterface {
         timeCollector.printStats(out);
         formulaCollector.printStats(out);
         memoryCollector.printStats(OUTPUT);
+        printEvaluationReuse();
+    }
+
+    private static void printEvaluationReuse() {
+        try {
+            Map<RDGNode, Integer> numberOfPaths = RDGNode.getNumberOfPaths();
+            int nodes = 0;
+            int totalPaths = 0;
+            for (Map.Entry<RDGNode, Integer> entry: numberOfPaths.entrySet()) {
+                nodes++;
+                totalPaths += entry.getValue();
+                OUTPUT.println(entry.getKey().getId() + ": " + entry.getValue() + " paths");
+            }
+            OUTPUT.println("Evaluation economy because of cache: " + 100*(totalPaths-nodes)/(float)totalPaths + "%");
+        } catch (CyclicRdgException e) {
+            LOGGER.severe("Cyclic dependency detected in RDG.");
+            LOGGER.log(Level.SEVERE, e.toString(), e);
+            System.exit(2);
+        }
     }
 
     /**
