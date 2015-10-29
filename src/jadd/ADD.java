@@ -1,7 +1,10 @@
 package jadd;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -149,7 +152,7 @@ public class ADD {
     /**
      * Returns all valid configurations and respective values.
      *
-     * Variables which may or may not be present are represented parenthesized.
+     * Variables which may or may not be present ("don't care") are parenthesized.
      * @return
      */
     public Map<List<String>, Double> getValidConfigurations() {
@@ -185,6 +188,68 @@ public class ADD {
         BigcuddLibrary.Cudd_GenFree(generator);
 
         return configurationsAndValues;
+    }
+
+    /**
+     * Returns all valid (non-zero) configurations for this ADD, but expands
+     * "don't care" variables into possible concrete configurations.
+     *
+     * For instance, the configuration ["A", "(B)", "C"] would be returned as
+     * two different configurations: ["A", "B", "C"] and ["A", "C"].
+     * @return
+     */
+    public Collection<List<String>> getExpandedConfigurations() {
+        Map<List<String>, Double> configurationsAndValues = getValidConfigurations();
+        Set<List<String>> configsWithDontCares = configurationsAndValues.keySet();
+        Set<List<String>> configsWithoutDontCares = new HashSet<List<String>>();
+        for (List<String> config: configsWithDontCares) {
+            configsWithoutDontCares.addAll(expandDontCares(config.iterator()));
+        }
+        return configsWithoutDontCares;
+    }
+
+    static Collection<List<String>> expandDontCares(List<String> config) {
+        return expandDontCares(config.iterator());
+    }
+
+    /**
+     * Iterates {@code cursor} expanding "don't care" variables, i.e.,
+     * doubling the configurations for each one encountered.
+     *
+     * It expands "don't care" variables in linear time.
+     * @param cursor
+     * @return
+     */
+    static Collection<List<String>> expandDontCares(Iterator<String> cursor) {
+        Set<List<String>> expanded = new HashSet<List<String>>();
+        List<String> prefix = new LinkedList<String>();
+        while (cursor.hasNext()) {
+            String variable = cursor.next();
+            if (variable.startsWith("(")) {
+                // We must generate two alternative prefixes: one with the
+                // variable in positive form and another with it in negative
+                // form (i.e., omitted).
+                List<String> complementedPrefix = new LinkedList<String>(prefix);
+                String deparenthesized = variable.substring(1, variable.length()-1);
+                prefix.add(deparenthesized);
+                // Then we must expand the rest of the configuration and append
+                // each of the expanded sub-configurations to the alternative prefixes.
+                Collection<List<String>> expandedTail = expandDontCares(cursor);
+                for (List<String> expandedSubconfig : expandedTail) {
+                    List<String> positive = new LinkedList<String>(prefix);
+                    List<String> complemented = new LinkedList<String>(complementedPrefix);
+                    positive.addAll(expandedSubconfig);
+                    complemented.addAll(expandedSubconfig);
+                    expanded.add(positive);
+                    expanded.add(complemented);
+                }
+                return expanded;
+            } else {
+                prefix.add(variable);
+            }
+        }
+        expanded.add(prefix);
+        return expanded;
     }
 
     /* (non-Javadoc)

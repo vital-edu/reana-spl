@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -73,7 +74,7 @@ public class CommandLineInterface {
         memoryCollector.takeSnapshot("after model parsing");
 
         Analyzer analyzer = makeAnalyzer(options);
-        Set<List<String>> targetConfigurations = getTargetConfigurations(options, analyzer);
+        Collection<List<String>> targetConfigurations = getTargetConfigurations(options, analyzer);
 
         memoryCollector.takeSnapshot("before evaluation");
         IReliabilityAnalysisResults familyReliability = evaluateReliability(analyzer, rdgRoot, targetConfigurations, options);
@@ -94,7 +95,7 @@ public class CommandLineInterface {
      * @param options
      * @return
      */
-    private static IReliabilityAnalysisResults evaluateReliability(Analyzer analyzer, RDGNode rdgRoot, Set<List<String>> configurations, Options options) {
+    private static IReliabilityAnalysisResults evaluateReliability(Analyzer analyzer, RDGNode rdgRoot, Collection<List<String>> configurations, Options options) {
         IReliabilityAnalysisResults results = null;
         switch (options.getAnalysisStrategy()) {
         case FEATURE_PRODUCT:
@@ -111,7 +112,7 @@ public class CommandLineInterface {
         return results;
     }
 
-    private static IReliabilityAnalysisResults evaluateFeatureProductBasedReliability(Analyzer analyzer, RDGNode rdgRoot, Set<List<String>> configurations) {
+    private static IReliabilityAnalysisResults evaluateFeatureProductBasedReliability(Analyzer analyzer, RDGNode rdgRoot, Collection<List<String>> configurations) {
         IReliabilityAnalysisResults results = null;
         try {
             results = analyzer.evaluateFeatureProductBasedReliability(rdgRoot, configurations);
@@ -174,7 +175,7 @@ public class CommandLineInterface {
         formulaCollector = statsCollectorFactory.createFormulaCollector();
     }
 
-    private static Set<List<String>> getTargetConfigurations(Options options, Analyzer analyzer) {
+    private static Collection<List<String>> getTargetConfigurations(Options options, Analyzer analyzer) {
         if (options.hasPrintAllConfigurations()) {
             return analyzer.getValidConfigurations();
         } else {
@@ -202,7 +203,7 @@ public class CommandLineInterface {
         }
     }
 
-    private static void printAnalysisResults(Set<List<String>> configurations, IReliabilityAnalysisResults familyReliability) {
+    private static void printAnalysisResults(Collection<List<String>> configurations, IReliabilityAnalysisResults familyReliability) {
         OUTPUT.println("Configurations:");
         OUTPUT.println("=========================================");
 

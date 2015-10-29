@@ -8,11 +8,11 @@ import jadd.JADD;
 import jadd.UnrecognizedVariableException;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.logging.Logger;
 
@@ -82,9 +82,8 @@ public class Analyzer {
      * Returns the set of all valid configurations according to the feature model.
      * @return
      */
-    public Set<List<String>> getValidConfigurations() {
-        // TODO Expand "don't care" variables.
-        return featureModel.getValidConfigurations().keySet();
+    public Collection<List<String>> getValidConfigurations() {
+        return featureModel.getExpandedConfigurations();
     }
 
     /**
@@ -156,7 +155,7 @@ public class Analyzer {
      * @throws CyclicRdgException
      * @throws UnknownFeatureException
      */
-    public IReliabilityAnalysisResults evaluateFeatureProductBasedReliability(RDGNode node, Set<List<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
+    public IReliabilityAnalysisResults evaluateFeatureProductBasedReliability(RDGNode node, Collection<List<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
         List<RDGNode> dependencies = node.getDependenciesTransitiveClosure();
         LinkedHashMap<RDGNode, String> expressionsByNode = getReliabilityExpressions(dependencies);
 
