@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import fdtmc.FDTMC;
 
@@ -13,6 +14,10 @@ public class RDGNode {
 
 	//This reference is used to store all the RDGnodes created during the evaluation
 	private static Map<String, RDGNode> rdgNodes = new HashMap<String, RDGNode>();
+    /**
+     * Nodes on which no other node depends (in-degree zero).
+     */
+    private static Set<RDGNode> sourceNodes = new HashSet<RDGNode>();
 
 	// Node identifier
 	private String id;
@@ -49,6 +54,8 @@ public class RDGNode {
 		this.height = 0;
 
 		rdgNodes.put(id, this);
+		// Every node is a source unless it is added as a dependency for some other node.
+		sourceNodes.add(this);
 	}
 
     public FDTMC getFDTMC() {
@@ -58,6 +65,9 @@ public class RDGNode {
     public void addDependency(RDGNode child) {
         this.dependencies.add(child);
         height = Math.max(height, child.height + 1);
+
+        // Now it is impossible for child to be a source.
+        sourceNodes.remove(child);
     }
 
     public Collection<RDGNode> getDependencies() {
@@ -135,6 +145,71 @@ public class RDGNode {
             marks.put(node, true);
             sorted.add(node);
         }
+    }
+
+    /**
+     * Computes the number of paths from source nodes to every known node.
+     * @return A map associating an RDGNode to the corresponding number
+     *      of paths from a source node which lead to it.
+     * @throws CyclicRdgException
+     */
+    public static Map<RDGNode, Integer> getNumberOfPaths() throws CyclicRdgException {
+        Map<RDGNode, Integer> numberOfPaths = new HashMap<RDGNode, Integer>();
+
+        Map<RDGNode, Boolean> marks = new HashMap<RDGNode, Boolean>();
+        Map<RDGNode, Map<RDGNode, Integer>> cache = new HashMap<RDGNode, Map<RDGNode,Integer>>();
+        for (RDGNode source: sourceNodes) {
+            Map<RDGNode, Integer> tmpNumberOfPaths = numPathsVisit(source, marks, cache);
+            numberOfPaths = sumPaths(numberOfPaths, tmpNumberOfPaths);
+        }
+
+        return numberOfPaths;
+    }
+
+    // TODO Parameterize topological sort of RDG.
+    private static Map<RDGNode, Integer> numPathsVisit(RDGNode node, Map<RDGNode, Boolean> marks, Map<RDGNode, Map<RDGNode, Integer>> cache) throws CyclicRdgException {
+        if (marks.containsKey(node) && marks.get(node) == false) {
+            // Visiting temporarily marked node -- this means a cyclic dependency!
+            throw new CyclicRdgException();
+        } else if (!marks.containsKey(node)) {
+            // Mark node temporarily (cycle detection)
+            marks.put(node, false);
+
+            Map<RDGNode, Integer> numberOfPaths = new HashMap<RDGNode, Integer>();
+            // A node always has a path to itself.
+            numberOfPaths.put(node, 1);
+            // The number of paths from a node X to a node Y is equal to the
+            // sum of the numbers of paths from each of its descendants to Y.
+            for (RDGNode child: node.getDependencies()) {
+                Map<RDGNode, Integer> tmpNumberOfPaths = numPathsVisit(child, marks, cache);
+                numberOfPaths = sumPaths(numberOfPaths, tmpNumberOfPaths);
+            }
+            // Mark node permanently (finished sorting branch)
+            marks.put(node, true);
+            cache.put(node, numberOfPaths);
+            return numberOfPaths;
+        }
+        // Otherwise, the node has already been visited.
+        return cache.get(node);
+    }
+
+    /**
+     * Sums two paths-counting maps
+     * @param pathsCountA
+     * @param pathsCountB
+     * @return
+     */
+    private static Map<RDGNode, Integer> sumPaths(Map<RDGNode, Integer> pathsCountA, Map<RDGNode, Integer> pathsCountB) {
+        Map<RDGNode, Integer> numberOfPaths = new HashMap<RDGNode, Integer>(pathsCountA);
+        for (Map.Entry<RDGNode, Integer> entry: pathsCountB.entrySet()) {
+            RDGNode node = entry.getKey();
+            Integer count = entry.getValue();
+            if (numberOfPaths.containsKey(node)) {
+                count += numberOfPaths.get(node);
+            }
+            numberOfPaths.put(node, count);
+        }
+        return numberOfPaths;
     }
 
 }

@@ -109,9 +109,28 @@ public class CommandLineInterface {
         if (options.hasStatsEnabled()) {
             analyzer.printStats(OUTPUT);
             memoryCollector.printStats(OUTPUT);
+            printEvaluationReuse();
         }
         long totalRunningTime = System.currentTimeMillis() - startTime;
         OUTPUT.println("Total running time: " +  totalRunningTime + " ms");
+    }
+
+    private static void printEvaluationReuse() {
+        try {
+            Map<RDGNode, Integer> numberOfPaths = RDGNode.getNumberOfPaths();
+            int nodes = 0;
+            int totalPaths = 0;
+            for (Map.Entry<RDGNode, Integer> entry: numberOfPaths.entrySet()) {
+                nodes++;
+                totalPaths += entry.getValue();
+                OUTPUT.println(entry.getKey().getId() + ": " + entry.getValue() + " paths");
+            }
+            OUTPUT.println("Evaluation economy because of cache: " + 100*(totalPaths-nodes)/(float)totalPaths + "%");
+        } catch (CyclicRdgException e) {
+            LOGGER.severe("Cyclic dependency detected in RDG.");
+            LOGGER.log(Level.SEVERE, e.toString(), e);
+            System.exit(2);
+        }
     }
 
     /**

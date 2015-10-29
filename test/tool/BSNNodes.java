@@ -11,46 +11,70 @@ import fdtmc.FDTMC;
 public class BSNNodes {
 
     public static RDGNode getSQLiteRDGNode() {
-        FDTMC fdtmc = FDTMCStub.createSqliteFDTMC();
-        RDGNode node = new RDGNode("sqlite", "SQLite", fdtmc);
+        String id = "sqlite";
+        RDGNode node = RDGNode.getById(id);
+        if (node == null) {
+            FDTMC fdtmc = FDTMCStub.createSqliteFDTMC();
+            node = new RDGNode("sqlite", "SQLite", fdtmc);
+        }
         return node;
     }
 
     public static RDGNode getFileRDGNode() {
-        FDTMC fdtmc = FDTMCStub.createFileFDTMC();
-        RDGNode node = new RDGNode("file", "File", fdtmc);
+        String id = "file";
+        RDGNode node = RDGNode.getById(id);
+        if (node == null) {
+            FDTMC fdtmc = FDTMCStub.createFileFDTMC();
+            node = new RDGNode("file", "File", fdtmc);
+        }
         return node;
     }
 
     public static RDGNode getMemoryRDGNode() {
-        FDTMC fdtmc = FDTMCStub.createMemoryFDTMC();
-        RDGNode node = new RDGNode("memory", "Memory", fdtmc);
+        String id = "memory";
+        RDGNode node = RDGNode.getById(id);
+        if (node == null) {
+            FDTMC fdtmc = FDTMCStub.createMemoryFDTMC();
+            node = new RDGNode("memory", "Memory", fdtmc);
+        }
         return node;
     }
 
     public static RDGNode getOxygenationRDGNode() {
-        FDTMC fdtmc = FDTMCStub.createOxygenationFDTMC();
-        RDGNode node = new RDGNode("oxygenation", "Oxygenation", fdtmc);
-        node.addDependency(getSQLiteRDGNode());
-        node.addDependency(getFileRDGNode());
-        node.addDependency(getMemoryRDGNode());
+        String id = "oxygenation";
+        RDGNode node = RDGNode.getById(id);
+        if (node == null) {
+            FDTMC fdtmc = FDTMCStub.createOxygenationFDTMC();
+            node = new RDGNode("oxygenation", "Oxygenation", fdtmc);
+            node.addDependency(getSQLiteRDGNode());
+            node.addDependency(getFileRDGNode());
+            node.addDependency(getMemoryRDGNode());
+        }
         return node;
     }
 
     public static RDGNode getPulseRateRDGNode() {
-        FDTMC fdtmc = FDTMCStub.createPulseRateFDTMC();
-        RDGNode node = new RDGNode("pulseRate", "PulseRate", fdtmc);
-        node.addDependency(getSQLiteRDGNode());
-        node.addDependency(getFileRDGNode());
-        node.addDependency(getMemoryRDGNode());
+        String id = "pulseRate";
+        RDGNode node = RDGNode.getById(id);
+        if (node == null) {
+            FDTMC fdtmc = FDTMCStub.createPulseRateFDTMC();
+            node = new RDGNode("pulseRate", "PulseRate", fdtmc);
+            node.addDependency(getSQLiteRDGNode());
+            node.addDependency(getFileRDGNode());
+            node.addDependency(getMemoryRDGNode());
+        }
         return node;
     }
 
     public static RDGNode getSituationRDGNode() {
-        FDTMC fdtmc = FDTMCStub.createPulseRateFDTMC();
-        RDGNode node = new RDGNode("situation", "true", fdtmc);
-        node.addDependency(getOxygenationRDGNode());
-        node.addDependency(getPulseRateRDGNode());
+        String id = "situation";
+        RDGNode node = RDGNode.getById(id);
+        if (node == null) {
+            FDTMC fdtmc = FDTMCStub.createPulseRateFDTMC();
+            node = new RDGNode("situation", "true", fdtmc);
+            node.addDependency(getOxygenationRDGNode());
+            node.addDependency(getPulseRateRDGNode());
+        }
         return node;
     }
 
