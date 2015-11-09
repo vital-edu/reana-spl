@@ -208,6 +208,14 @@ public class ADD {
         return configsWithoutDontCares;
     }
 
+    /**
+    * Returns the number of internal nodes in this ADD.
+    * @return
+    */
+    public int getNodeCount() {
+        return BigcuddLibrary.Cudd_DagSize(function);
+    }
+
     static Collection<List<String>> expandDontCares(List<String> config) {
         return expandDontCares(config.iterator());
     }
