@@ -80,6 +80,9 @@ public class Analyzer {
         this.jadd = jadd;
         this.expressionSolver = new ExpressionSolver(jadd);
         this.featureModel = expressionSolver.encodeFormula(featureModel);
+        // The feature model contains all used variables, so we expect to
+        // be able to generate an optimal ordering right after parsing it.
+        jadd.reorderVariables();
 
         this.timeCollector = new NoopTimeCollector();
         this.formulaCollector = new NoopFormulaCollector();

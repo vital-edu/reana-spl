@@ -2,9 +2,11 @@ package jadd;
 
 import java.util.Map;
 
+import org.bridj.IntValuedEnum;
 import org.bridj.Pointer;
 
 import bigcudd.BigcuddLibrary;
+import bigcudd.BigcuddLibrary.Cudd_ReorderingType;
 import bigcudd.DdNode;
 
 /**
@@ -24,6 +26,8 @@ public class JADD {
                                       BigcuddLibrary.CUDD_UNIQUE_SLOTS,
                                       BigcuddLibrary.CUDD_CACHE_SLOTS,
                                       0);
+        IntValuedEnum<Cudd_ReorderingType> method = Cudd_ReorderingType.CUDD_REORDER_SYMM_SIFT;
+        BigcuddLibrary.Cudd_AutodynEnable(dd, method);
     }
 
     public ADD makeConstant(double constant) {
@@ -41,6 +45,15 @@ public class JADD {
             variableStore.put(var.get().index(), varName, varADD);
             return varADD;
         }
+    }
+
+    /**
+    * Performs an optimal reordering of the variables for the managed ADDs
+    * based on the sifting heuristic.
+    */
+    public void reorderVariables() {
+        IntValuedEnum<Cudd_ReorderingType> heuristic = Cudd_ReorderingType.CUDD_REORDER_SYMM_SIFT;
+        BigcuddLibrary.Cudd_ReduceHeap(dd, heuristic, 1);
     }
 
     public void dumpDot(String[] functionNames, ADD[] functions, String fileName) {

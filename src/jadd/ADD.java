@@ -187,6 +187,14 @@ public class ADD {
         return configurationsAndValues;
     }
 
+    /**
+    * Returns the number of internal nodes in this ADD.
+    * @return
+    */
+    public int getNodeCount() {
+        return BigcuddLibrary.Cudd_DagSize(function);
+    }
+
     /* (non-Javadoc)
      * @see java.lang.Object#equals(java.lang.Object)
      */
