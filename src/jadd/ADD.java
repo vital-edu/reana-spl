@@ -211,6 +211,30 @@ public class ADD {
                                                      ADD.FLOATING_POINT_PRECISION,
                                                      1) == 1);
     }
+    
+    public int getDeadNodesCount() {
+    	return BigcuddLibrary.Cudd_ReadDead(dd);
+    }
+    
+    public int getTerminalsDifferentThanZeroCount() {
+    	return BigcuddLibrary.Cudd_CountLeaves(function) - 1;
+    }
+    
+    public double getPathsToNonZeroTerminalsCount() {
+    	return BigcuddLibrary.Cudd_CountPathsToNonZero(function);
+    }
+    
+    public double getPathsToZeroTerminalCount() {
+    	return BigcuddLibrary.Cudd_CountPath(function) - getPathsToNonZeroTerminalsCount();
+    }
+    
+    public int getReorderingsCount() {
+    	return BigcuddLibrary.Cudd_ReadReorderings(dd);
+    }
+    
+    public int getGarbageCollectionsCount() {
+    	return BigcuddLibrary.Cudd_ReadGarbageCollections(dd);
+    }
 
     @Override
     public int hashCode() {

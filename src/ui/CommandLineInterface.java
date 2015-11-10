@@ -4,6 +4,7 @@
 package ui;
 
 import jadd.ADD;
+import jadd.JADD;
 import jadd.UnrecognizedVariableException;
 
 import java.io.File;
@@ -110,12 +111,42 @@ public class CommandLineInterface {
             analyzer.printStats(OUTPUT);
             memoryCollector.printStats(OUTPUT);
             printEvaluationReuse();
+            printAddSizeMetrics(familyReliability); 
         }
         long totalRunningTime = System.currentTimeMillis() - startTime;
         OUTPUT.println("Total running time: " +  totalRunningTime + " ms");
     }
 
-    private static void printEvaluationReuse() {
+    private static void printAddSizeMetrics(ADD familyReliability) {
+		int numVariables; 
+		int numNodes; 
+		int numDeadNodes; 
+		int numTerminalsNonZero;
+		double numPathsToNonZeroTerminals; 
+		double numPathsToZeroTerminal;
+		int numReorderings; 
+		int numGarbageCollections; 
+		
+		numVariables = familyReliability.getVariables().size();
+		numNodes = familyReliability.getNodeCount();
+		numDeadNodes = familyReliability.getDeadNodesCount();
+		numTerminalsNonZero = familyReliability.getTerminalsDifferentThanZeroCount();
+		numPathsToNonZeroTerminals = familyReliability.getPathsToNonZeroTerminalsCount();
+		numPathsToZeroTerminal = familyReliability.getPathsToZeroTerminalCount();
+		numReorderings = familyReliability.getReorderingsCount(); 
+		numGarbageCollections = familyReliability.getGarbageCollectionsCount();
+		
+		OUTPUT.println("# variables: " + numVariables);
+		OUTPUT.println("# internal nodes: " + numNodes);
+		OUTPUT.println("# dead nodes: " + numDeadNodes);
+		OUTPUT.println("# terminals different than zero: " + numTerminalsNonZero);
+		OUTPUT.println("# paths to non-zero terminals: " + numPathsToNonZeroTerminals);
+		OUTPUT.println("# paths to zero terminal: " + numPathsToZeroTerminal);
+		OUTPUT.println("# reorderings: " + numReorderings);
+		OUTPUT.println("# garbage collections: " + numGarbageCollections);
+	}
+
+	private static void printEvaluationReuse() {
         try {
             Map<RDGNode, Integer> numberOfPaths = RDGNode.getNumberOfPaths();
             int nodes = 0;
