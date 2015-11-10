@@ -56,6 +56,17 @@ public class JADD {
         BigcuddLibrary.Cudd_ReduceHeap(dd, heuristic, 1);
     }
 
+    /**
+     * Manually adjusts variables ordering to mimic that of the
+     * {@code orderedVariables} array.
+     * @param orderedVariables
+     * @throws UnrecognizedVariableException
+     */
+    public void setVariableOrder(String[] orderedVariables) throws UnrecognizedVariableException {
+        int[] permutationVector = variableStore.toPermutationVector(orderedVariables);
+        BigcuddLibrary.Cudd_ShuffleHeap(dd, Pointer.pointerToInts(permutationVector));
+    }
+
     public void dumpDot(String[] functionNames, ADD[] functions, String fileName) {
         Pointer<?> output = CUtils.fopen(fileName, CUtils.ACCESS_WRITE);
 
