@@ -235,6 +235,10 @@ public class ADD {
     public int getGarbageCollectionsCount() {
     	return BigcuddLibrary.Cudd_ReadGarbageCollections(dd);
     }
+    
+    public long getAddSizeInBytes() {
+    	return BigcuddLibrary.Cudd_ReadMemoryInUse(dd); 
+    }
 
     @Override
     public int hashCode() {

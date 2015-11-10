@@ -126,6 +126,7 @@ public class CommandLineInterface {
 		double numPathsToZeroTerminal;
 		int numReorderings; 
 		int numGarbageCollections; 
+		long numBytesADD; 
 		
 		numVariables = familyReliability.getVariables().size();
 		numNodes = familyReliability.getNodeCount();
@@ -135,6 +136,7 @@ public class CommandLineInterface {
 		numPathsToZeroTerminal = familyReliability.getPathsToZeroTerminalCount();
 		numReorderings = familyReliability.getReorderingsCount(); 
 		numGarbageCollections = familyReliability.getGarbageCollectionsCount();
+		numBytesADD = familyReliability.getAddSizeInBytes(); 
 		
 		OUTPUT.println("# variables: " + numVariables);
 		OUTPUT.println("# internal nodes: " + numNodes);
@@ -144,6 +146,7 @@ public class CommandLineInterface {
 		OUTPUT.println("# paths to zero terminal: " + numPathsToZeroTerminal);
 		OUTPUT.println("# reorderings: " + numReorderings);
 		OUTPUT.println("# garbage collections: " + numGarbageCollections);
+		OUTPUT.println("ADD's size in # of bytes: " + numBytesADD);
 	}
 
 	private static void printEvaluationReuse() {
