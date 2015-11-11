@@ -86,4 +86,28 @@ public class VariableStore {
         }
         return varNames;
     }
+
+    /**
+     * Returns a permutation vector.
+     * The i-th entry of the permutation array contains the index of the
+     * variable that should be brought to the i-th level.
+     * @param variables Names of the variables in the new order.
+     * @return an array with the current index of each variable in the order
+     *      specified by {@code variables}.
+     */
+    public int[] toPermutationVector(String[] variables) throws UnrecognizedVariableException {
+        int[] permutationVector = new int[variableIndices.size()];
+        int i = 0;
+        for (String var: variables) {
+            if (variableIndices.containsKey(var)) {
+                int index = variableIndices.get(var);
+                permutationVector[i] = index;
+            } else {
+                throw new UnrecognizedVariableException(var);
+            }
+            i++;
+        }
+        return permutationVector;
+    }
+
 }

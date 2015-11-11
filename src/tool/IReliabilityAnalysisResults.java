@@ -1,5 +1,7 @@
 package tool;
 
+import java.io.PrintStream;
+
 
 public interface IReliabilityAnalysisResults {
 
@@ -13,5 +15,7 @@ public interface IReliabilityAnalysisResults {
      *      unknown feature.
      */
     public Double getResult(String[] configuration) throws UnknownFeatureException;
+
+    public void printStats(PrintStream output);
 
 }

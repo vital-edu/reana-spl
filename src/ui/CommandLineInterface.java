@@ -83,7 +83,7 @@ public class CommandLineInterface {
         printAnalysisResults(targetConfigurations, familyReliability);
 
         if (options.hasStatsEnabled()) {
-            printStats(OUTPUT);
+            printStats(OUTPUT, familyReliability);
         }
         long totalRunningTime = System.currentTimeMillis() - startTime;
         OUTPUT.println("Total running time: " +  totalRunningTime + " ms");
@@ -242,14 +242,15 @@ public class CommandLineInterface {
         }
     }
 
-    private static void printStats(PrintStream out) {
+    private static void printStats(PrintStream out, IReliabilityAnalysisResults familyReliability) {
         out.println("-----------------------------");
         out.println("Stats:");
         out.println("------");
         timeCollector.printStats(out);
         formulaCollector.printStats(out);
-        memoryCollector.printStats(OUTPUT);
+        memoryCollector.printStats(out);
         printEvaluationReuse();
+        familyReliability.printStats(out);
     }
 
     private static void printEvaluationReuse() {

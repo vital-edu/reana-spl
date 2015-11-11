@@ -1,5 +1,6 @@
 package tool;
 
+import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,6 +34,23 @@ public class MapBasedReliabilityResults implements IReliabilityAnalysisResults {
         results.put(configurationAsSet, value);
         features.addAll(configurationAsSet);
 
+    }
+
+    /**
+     * Prints the size of the reliability mapping, but not taking
+     * into account the inner structures used by java.util.HashMap
+     * and java.util.HashSet.
+     */
+    @Override
+    public void printStats(PrintStream output) {
+        long size = 0;
+        for (Set<String> result: results.keySet()) {
+            for (String feature: result) {
+                size += feature.length();
+            }
+            size += 8;  // reliability's size (double)
+        }
+        output.println("Result's size in bytes: " + size);
     }
 
     private boolean hasUnknownFeature(Set<String> configuration) {
