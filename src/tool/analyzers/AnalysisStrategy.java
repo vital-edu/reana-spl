@@ -1,4 +1,4 @@
-package tool;
+package tool.analyzers;
 
 public enum AnalysisStrategy {
     FEATURE_FAMILY,

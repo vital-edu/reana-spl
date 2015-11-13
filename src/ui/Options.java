@@ -5,8 +5,8 @@ import java.io.IOException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
-import tool.AnalysisStrategy;
 import tool.PruningStrategy;
+import tool.analyzers.AnalysisStrategy;
 
 
 /**
