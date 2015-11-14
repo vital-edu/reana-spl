@@ -1,6 +1,8 @@
-package tool;
+package tool.analyzers;
 
 import java.io.PrintStream;
+
+import tool.UnknownFeatureException;
 
 
 public interface IReliabilityAnalysisResults {

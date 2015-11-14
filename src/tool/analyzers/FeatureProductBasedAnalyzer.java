@@ -13,8 +13,6 @@ import java.util.SortedMap;
 
 import paramwrapper.ParametricModelChecker;
 import tool.CyclicRdgException;
-import tool.IReliabilityAnalysisResults;
-import tool.MapBasedReliabilityResults;
 import tool.RDGNode;
 import tool.UnknownFeatureException;
 import tool.analyzers.strategies.FeatureBasedPreAnalysisStrategy;
@@ -23,6 +21,11 @@ import tool.stats.IFormulaCollector;
 import tool.stats.ITimeCollector;
 import expressionsolver.ExpressionSolver;
 
+/**
+ * Orchestrator of feature-product-based analyses.
+ *
+ * @author thiago
+ */
 public class FeatureProductBasedAnalyzer {
 
     private ADD featureModel;
@@ -60,12 +63,14 @@ public class FeatureProductBasedAnalyzer {
         LinkedHashMap<RDGNode, String> expressionsByNode = featureBasedPreAnalysisStrategy.getReliabilityExpressions(dependencies);
 
         MapBasedReliabilityResults results = new MapBasedReliabilityResults();
+        timeCollector.startTimer(CollectibleTimers.PRODUCT_BASED_TIME);
         for (List<String> configuration: configurations) {
             Double result = evaluateReliabilityForSingleConfiguration(node,
                                                                       configuration,
                                                                       expressionsByNode);
             results.putResult(configuration, result);
         }
+        timeCollector.stopTimer(CollectibleTimers.PRODUCT_BASED_TIME);
         return results;
     }
 
@@ -77,20 +82,10 @@ public class FeatureProductBasedAnalyzer {
      * @throws UnknownFeatureException
      */
     private Double evaluateReliabilityForSingleConfiguration(RDGNode node, List<String> configuration, LinkedHashMap<RDGNode, String> expressionsByNode) throws UnknownFeatureException {
-        double validity;
-        try {
-            validity = featureModel.eval(configuration.toArray(new String[configuration.size()]));
-        } catch (UnrecognizedVariableException e) {
-            throw new UnknownFeatureException(e.getVariableName());
-        }
-        if (Double.doubleToRawLongBits(validity) == 0) {
+        if (!isValidConfiguration(configuration)) {
             return 0.0;
         }
-
-        // TODO Use parameterized time collector for getting x-based timers.
-        timeCollector.startTimer(CollectibleTimers.PRODUCT_BASED_TIME);
         Map<RDGNode, Double> reliabilities = evaluateReliabilities(expressionsByNode, configuration);
-        timeCollector.stopTimer(CollectibleTimers.PRODUCT_BASED_TIME);
         return reliabilities.get(node);
     }
 
@@ -158,6 +153,23 @@ public class FeatureProductBasedAnalyzer {
         Double reliability = expressionSolver.solveExpression(reliabilityExpression,
                                                               childrenReliabilities);
         return reliability;
+    }
+
+    /**
+     * Checks if a configuration is valid.
+     * @param configuration
+     * @return
+     * @throws UnknownFeatureException
+     */
+    private boolean isValidConfiguration(List<String> configuration)
+            throws UnknownFeatureException {
+        double validity;
+        try {
+            validity = featureModel.eval(configuration.toArray(new String[configuration.size()]));
+        } catch (UnrecognizedVariableException e) {
+            throw new UnknownFeatureException(e.getVariableName());
+        }
+        return Double.doubleToRawLongBits(validity) != 0;
     }
 
 }

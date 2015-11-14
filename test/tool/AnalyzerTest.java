@@ -12,6 +12,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import tool.analyzers.IReliabilityAnalysisResults;
 import expressionsolver.ExpressionSolver;
 
 public class AnalyzerTest {

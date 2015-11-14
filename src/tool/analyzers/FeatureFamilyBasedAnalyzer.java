@@ -10,11 +10,7 @@ import java.util.Map;
 import java.util.SortedMap;
 
 import paramwrapper.ParametricModelChecker;
-import tool.ADDReliabilityResults;
 import tool.CyclicRdgException;
-import tool.IPruningStrategy;
-import tool.IReliabilityAnalysisResults;
-import tool.NoPruningStrategy;
 import tool.RDGNode;
 import tool.analyzers.strategies.FeatureBasedPreAnalysisStrategy;
 import tool.stats.CollectibleTimers;
@@ -143,9 +139,6 @@ public class FeatureFamilyBasedAnalyzer {
                                                               reliabilities);
 
             reliabilities.put(node, reliability);
-//            jadd.dumpDot(reliabilityExpression,
-//                         reliability,
-//                         "result-"+node.getId()+".dot");
         }
 
         return reliabilities;

@@ -1,5 +1,6 @@
-package tool;
+package tool.analyzers;
 
+import tool.RDGNode;
 import jadd.ADD;
 
 /**

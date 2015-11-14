@@ -1,5 +1,9 @@
 package tool;
 
+import tool.analyzers.FeatureModelPruningStrategy;
+import tool.analyzers.IPruningStrategy;
+import tool.analyzers.NoPruningStrategy;
+
 public class PruningStrategyFactory {
 
     private PruningStrategyFactory() {

@@ -14,6 +14,8 @@ import paramwrapper.ParamWrapper;
 import paramwrapper.ParametricModelChecker;
 import tool.analyzers.FeatureFamilyBasedAnalyzer;
 import tool.analyzers.FeatureProductBasedAnalyzer;
+import tool.analyzers.IPruningStrategy;
+import tool.analyzers.IReliabilityAnalysisResults;
 import tool.stats.IFormulaCollector;
 import tool.stats.ITimeCollector;
 import tool.stats.NoopFormulaCollector;

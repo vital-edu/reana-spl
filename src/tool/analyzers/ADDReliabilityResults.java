@@ -1,7 +1,8 @@
-package tool;
+package tool.analyzers;
 
 import java.io.PrintStream;
 
+import tool.UnknownFeatureException;
 import jadd.ADD;
 import jadd.UnrecognizedVariableException;
 
