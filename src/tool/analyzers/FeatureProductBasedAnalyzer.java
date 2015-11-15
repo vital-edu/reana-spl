@@ -64,12 +64,14 @@ public class FeatureProductBasedAnalyzer {
 
         MapBasedReliabilityResults results = new MapBasedReliabilityResults();
         timeCollector.startTimer(CollectibleTimers.PRODUCT_BASED_TIME);
-        for (List<String> configuration: configurations) {
+
+        configurations.parallelStream().forEach(configuration -> {
             Double result = evaluateReliabilityForSingleConfiguration(node,
                                                                       configuration,
                                                                       expressionsByNode);
             results.putResult(configuration, result);
-        }
+        });
+
         timeCollector.stopTimer(CollectibleTimers.PRODUCT_BASED_TIME);
         return results;
     }
@@ -101,7 +103,6 @@ public class FeatureProductBasedAnalyzer {
      */
     private Map<RDGNode, Double> evaluateReliabilities(LinkedHashMap<RDGNode, String> expressionsByNode, List<String> configuration) throws UnknownFeatureException {
         Map<RDGNode, Double> reliabilities = new HashMap<RDGNode, Double>();
-
         for (SortedMap.Entry<RDGNode, String> entry: expressionsByNode.entrySet()) {
             RDGNode node = entry.getKey();
             String reliabilityExpression = entry.getValue();

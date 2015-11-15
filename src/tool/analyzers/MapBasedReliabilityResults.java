@@ -31,7 +31,7 @@ public class MapBasedReliabilityResults implements IReliabilityAnalysisResults {
         return 0.0;
     }
 
-    public void putResult(List<String> configuration, Double value) {
+    public synchronized void putResult(List<String> configuration, Double value) {
         Set<String> configurationAsSet = new HashSet<String>(configuration);
         results.put(configurationAsSet, value);
         features.addAll(configurationAsSet);
