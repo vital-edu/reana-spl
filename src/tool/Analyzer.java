@@ -16,6 +16,7 @@ import tool.analyzers.FeatureFamilyBasedAnalyzer;
 import tool.analyzers.FeatureProductBasedAnalyzer;
 import tool.analyzers.IPruningStrategy;
 import tool.analyzers.IReliabilityAnalysisResults;
+import tool.analyzers.ProductBasedAnalyzer;
 import tool.stats.IFormulaCollector;
 import tool.stats.ITimeCollector;
 import tool.stats.NoopFormulaCollector;
@@ -42,6 +43,7 @@ public class Analyzer {
 
     FeatureFamilyBasedAnalyzer featureFamilyBasedAnalyzerImpl;
     FeatureProductBasedAnalyzer featureProductBasedAnalyzerImpl;
+    ProductBasedAnalyzer productBasedAnalyzerImpl;
 
     /**
      * Creates an Analyzer which will follow the logical rules
@@ -93,6 +95,11 @@ public class Analyzer {
                                                                                this.modelChecker,
                                                                                this.timeCollector,
                                                                                this.formulaCollector);
+        this.productBasedAnalyzerImpl = new ProductBasedAnalyzer(this.jadd,
+                                                                 this.featureModel,
+                                                                 this.modelChecker,
+                                                                 this.timeCollector,
+                                                                 this.formulaCollector);
     }
 
     /**
@@ -154,6 +161,19 @@ public class Analyzer {
      */
     public IReliabilityAnalysisResults evaluateFeatureProductBasedReliability(RDGNode node, Collection<List<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
         return featureProductBasedAnalyzerImpl.evaluateReliability(node, configurations);
+    }
+
+    /**
+     * Evaluates the product-based reliability value of an RDG node, based
+     * on the derived model for the given configuration.
+     *
+     * @param node RDG node whose reliability is to be evaluated.
+     * @return
+     * @throws CyclicRdgException
+     * @throws UnknownFeatureException
+     */
+    public IReliabilityAnalysisResults evaluateProductBasedReliability(RDGNode node, Collection<List<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
+        return productBasedAnalyzerImpl.evaluateReliability(node, configurations);
     }
 
     /**

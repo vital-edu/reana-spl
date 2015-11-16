@@ -1,6 +1,6 @@
 package tool;
 
-public class CyclicRdgException extends Exception {
+public class CyclicRdgException extends RuntimeException {
 
     /**
      *

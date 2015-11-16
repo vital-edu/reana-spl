@@ -18,6 +18,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -99,9 +101,14 @@ public class CommandLineInterface {
         IReliabilityAnalysisResults results = null;
         switch (options.getAnalysisStrategy()) {
         case FEATURE_PRODUCT:
-            results = evaluateFeatureProductBasedReliability(analyzer,
-                                                             rdgRoot,
-                                                             configurations);
+            results = evaluateReliability(analyzer::evaluateFeatureProductBasedReliability,
+                                          rdgRoot,
+                                          configurations);
+            break;
+        case PRODUCT:
+            results = evaluateReliability(analyzer::evaluateProductBasedReliability,
+                                          rdgRoot,
+                                          configurations);
             break;
         case FEATURE_FAMILY:
         default:
@@ -112,28 +119,6 @@ public class CommandLineInterface {
         return results;
     }
 
-    private static IReliabilityAnalysisResults evaluateFeatureProductBasedReliability(Analyzer analyzer, RDGNode rdgRoot, Collection<List<String>> configurations) {
-        IReliabilityAnalysisResults results = null;
-        try {
-            results = analyzer.evaluateFeatureProductBasedReliability(rdgRoot, configurations);
-        } catch (CyclicRdgException e) {
-            LOGGER.severe("Cyclic dependency detected in RDG.");
-            LOGGER.log(Level.SEVERE, e.toString(), e);
-            System.exit(2);
-        } catch (UnknownFeatureException e) {
-            LOGGER.severe("Unrecognized feature: " + e.getFeatureName());
-            LOGGER.log(Level.SEVERE, e.toString(), e);
-        }
-        return results;
-    }
-
-    /**
-     * @param analyzer
-     * @param rdgRoot
-     * @param options
-     * @param results
-     * @return
-     */
     private static IReliabilityAnalysisResults evaluateFeatureFamilyBasedReliability(Analyzer analyzer, RDGNode rdgRoot, Options options) {
         IReliabilityAnalysisResults results = null;
         String dotOutput = "family-reliability.dot";
@@ -146,6 +131,23 @@ public class CommandLineInterface {
             System.exit(2);
         }
         OUTPUT.println("Family-wide reliability decision diagram dumped at " + dotOutput);
+        return results;
+    }
+
+    private static IReliabilityAnalysisResults evaluateReliability(BiFunction<RDGNode, Collection<List<String>>, IReliabilityAnalysisResults> analyzer,
+                                                                   RDGNode rdgRoot,
+                                                                   Collection<List<String>> configurations) {
+        IReliabilityAnalysisResults results = null;
+        try {
+            results = analyzer.apply(rdgRoot, configurations);
+        } catch (CyclicRdgException e) {
+            LOGGER.severe("Cyclic dependency detected in RDG.");
+            LOGGER.log(Level.SEVERE, e.toString(), e);
+            System.exit(2);
+        } catch (UnknownFeatureException e) {
+            LOGGER.severe("Unrecognized feature: " + e.getFeatureName());
+            LOGGER.log(Level.SEVERE, e.toString(), e);
+        }
         return results;
     }
 
