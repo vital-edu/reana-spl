@@ -79,6 +79,16 @@ public class ExpressionSolver {
     }
 
     /**
+     * Useful shortcut for expressions with no variables involved.
+     *
+     * @param expression
+     * @return
+     */
+    public Double solveExpression(String expression) {
+        return solveExpression(expression, new HashMap<String, Double>());
+    }
+
+    /**
      * Encodes a propositional logic formula as a 0,1-ADD, which is roughly
      * equivalent to a BDD, but better suited to representing boolean
      * functions which interact with Real ADDs.
