@@ -11,6 +11,7 @@ import java.util.Set;
 
 import org.bridj.Pointer;
 
+import tool.UnknownFeatureException;
 import bigcudd.BigcuddLibrary;
 import bigcudd.BigcuddLibrary.Cudd_addApply_arg1_callback;
 import bigcudd.BigcuddLibrary.DdGen;
@@ -150,6 +151,22 @@ public class ADD {
     }
 
     /**
+     * Checks if a configuration is valid (non-zero).
+     * @param configuration
+     * @return
+     * @throws UnknownFeatureException
+     */
+    public boolean isValidConfiguration(List<String> configuration) throws UnknownFeatureException {
+        double validity;
+        try {
+            validity = eval(configuration.toArray(new String[configuration.size()]));
+        } catch (UnrecognizedVariableException e) {
+            throw new UnknownFeatureException(e.getVariableName());
+        }
+        return Double.doubleToRawLongBits(validity) != 0;
+    }
+
+    /**
      * Returns all valid configurations and respective values.
      *
      * Variables which may or may not be present ("don't care") are parenthesized.
@@ -276,33 +293,33 @@ public class ADD {
                                                      ADD.FLOATING_POINT_PRECISION,
                                                      1) == 1);
     }
-    
+
     public int getDeadNodesCount() {
     	return BigcuddLibrary.Cudd_ReadDead(dd);
     }
-    
+
     public int getTerminalsDifferentThanZeroCount() {
     	return BigcuddLibrary.Cudd_CountLeaves(function) - 1;
     }
-    
+
     public double getPathsToNonZeroTerminalsCount() {
     	return BigcuddLibrary.Cudd_CountPathsToNonZero(function);
     }
-    
+
     public double getPathsToZeroTerminalCount() {
     	return BigcuddLibrary.Cudd_CountPath(function) - getPathsToNonZeroTerminalsCount();
     }
-    
+
     public int getReorderingsCount() {
     	return BigcuddLibrary.Cudd_ReadReorderings(dd);
     }
-    
+
     public int getGarbageCollectionsCount() {
     	return BigcuddLibrary.Cudd_ReadGarbageCollections(dd);
     }
-    
+
     public long getAddSizeInBytes() {
-    	return BigcuddLibrary.Cudd_ReadMemoryInUse(dd); 
+    	return BigcuddLibrary.Cudd_ReadMemoryInUse(dd);
     }
 
     @Override

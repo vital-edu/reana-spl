@@ -84,7 +84,7 @@ public class FeatureProductBasedAnalyzer {
      * @throws UnknownFeatureException
      */
     private Double evaluateReliabilityForSingleConfiguration(RDGNode node, List<String> configuration, LinkedHashMap<RDGNode, String> expressionsByNode) throws UnknownFeatureException {
-        if (!isValidConfiguration(configuration)) {
+        if (!featureModel.isValidConfiguration(configuration)) {
             return 0.0;
         }
         Map<RDGNode, Double> reliabilities = evaluateReliabilities(expressionsByNode, configuration);
@@ -154,23 +154,6 @@ public class FeatureProductBasedAnalyzer {
         Double reliability = expressionSolver.solveExpression(reliabilityExpression,
                                                               childrenReliabilities);
         return reliability;
-    }
-
-    /**
-     * Checks if a configuration is valid.
-     * @param configuration
-     * @return
-     * @throws UnknownFeatureException
-     */
-    private boolean isValidConfiguration(List<String> configuration)
-            throws UnknownFeatureException {
-        double validity;
-        try {
-            validity = featureModel.eval(configuration.toArray(new String[configuration.size()]));
-        } catch (UnrecognizedVariableException e) {
-            throw new UnknownFeatureException(e.getVariableName());
-        }
-        return Double.doubleToRawLongBits(validity) != 0;
     }
 
 }
