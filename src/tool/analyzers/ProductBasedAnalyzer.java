@@ -2,11 +2,13 @@ package tool.analyzers;
 
 import jadd.ADD;
 import jadd.JADD;
+import jadd.UnrecognizedVariableException;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import paramwrapper.ParametricModelChecker;
 import tool.CyclicRdgException;
@@ -17,6 +19,7 @@ import tool.stats.IFormulaCollector;
 import tool.stats.ITimeCollector;
 import expressionsolver.ExpressionSolver;
 import fdtmc.FDTMC;
+import fdtmc.State;
 
 /**
  * Orchestrator of product-based analyses.
@@ -81,15 +84,37 @@ public class ProductBasedAnalyzer {
     private Map<RDGNode, FDTMC> deriveModels(List<RDGNode> dependencies, List<String> configuration) {
         Map<RDGNode, FDTMC> derivedModels = new HashMap<RDGNode, FDTMC>();
         for (RDGNode node: dependencies) {
-            derivedModels.put(node,
-                              deriveModel(node,
-                                          derivedModels));
+            ADD presenceCondition = expressionSolver.encodeFormula(node.getPresenceCondition());
+            Double presenceValue;
+            try {
+                presenceValue = presenceCondition.eval(configuration.toArray(new String[configuration.size()]));
+            } catch (UnrecognizedVariableException e) {
+                throw new UnknownFeatureException(e.getVariableName());
+            }
+            boolean present = presenceValue.compareTo(1.0) == 0;
+
+            FDTMC derivedModel = present ? deriveModel(node, derivedModels) : trivialFdtmc(node);
+            derivedModels.put(node, derivedModel);
         }
         return derivedModels;
     }
 
-    private FDTMC deriveModel(RDGNode node, Map<RDGNode, FDTMC> derivedModels) {
-        return null;
+    private FDTMC deriveModel(RDGNode node, final Map<RDGNode, FDTMC> derivedModels) {
+        FDTMC currentModel = node.getFDTMC();
+        Map<String, FDTMC> indexedModels = derivedModels.entrySet().stream()
+                .collect(Collectors.toMap(entry -> entry.getKey().getId(),
+                                          entry -> entry.getValue()));
+        return currentModel.inline(indexedModels);
+    }
+
+    private FDTMC trivialFdtmc(RDGNode node) {
+        FDTMC trivial = new FDTMC();
+        trivial.setVariableName(node.getId());
+
+        State initial = trivial.createInitialState();
+        State success = trivial.createSuccessState();
+        trivial.createTransition(initial, success, "", "1.0");
+        return trivial;
     }
 
 }
