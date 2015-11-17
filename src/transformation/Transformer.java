@@ -55,8 +55,8 @@ public class Transformer {
 		nCallsByName.put(adParser.getName(), 1);
 
 		stateByActID = new HashMap<String, State>();
-		State init = fdtmc.createState("initial");
-        State error = fdtmc.createState("error");
+		State init = fdtmc.createInitialState();
+        State error = fdtmc.createErrorState();
 
 		transformPath(fdtmc, init, error, adParser.getActivities().get(0).getOutgoing().get(0));
 		LOGGER.finer(fdtmc.toString());
@@ -94,8 +94,8 @@ public class Transformer {
 			fdtmc.setVariableName("s" + ((Operand)fragment.getNodes().get(0)).getGuard());
 			fdtmcByName.put(((Operand)fragment.getNodes().get(0)).getGuard(), fdtmc);
 		}
-		init = fdtmc.createState("initial");
-		error = fdtmc.createState("error");
+		init = fdtmc.createInitialState();
+		error = fdtmc.createErrorState();
 		source = init;
 
 		RDGNode rdgNode = new RDGNode(fragment.getName(), "true", fdtmc);
@@ -110,7 +110,7 @@ public class Transformer {
 		State currentSource = source;
 		for (Node n : list) {
 			if (i++ >= list.size()) {
-				State success = fdtmc.createState("success");
+				State success = fdtmc.createSuccessState();
 				if (n.getClass().equals(Message.class)) {
 					transformMessage(fdtmc, (Message)n, currentSource, success, error);
 				} else if (n.getClass().equals(Fragment.class)) {
@@ -264,8 +264,7 @@ public class Transformer {
 				fdtmc.createTransition(source, opStart, guard, "1 - " + opElse);
 			}
 
-			fdtmc.createTransition(opStart, opEnd, "", name); // interface transitions
-			fdtmc.createTransition(opStart, opError, "", "1 - "+name); // interface transitions
+			fdtmc.createInterface(name, opStart, opEnd, opError);
 			fdtmc.createTransition(opEnd, target, "", "1.0"); // leaving operand
 
 //			creates FDTMC for loop content
@@ -300,8 +299,7 @@ public class Transformer {
 
         fdtmc.createTransition(source, featureStart, name, "1.0"); // into Feature
         // When the feature is not present, its reliability will be taken as 1.
-		fdtmc.createTransition(featureStart, featureEnd, "", name); // interface transitions
-		fdtmc.createTransition(featureStart, featureError, "", "1 - "+name); // interface transitions
+        fdtmc.createInterface(name, featureStart, featureEnd, featureError);
 		fdtmc.createTransition(featureEnd, target, "", "1.0"); // leaving Feature
 
 //		creates FDTMC for opt content
@@ -340,8 +338,7 @@ public class Transformer {
 			State opError = fdtmc.createState("error" + opName);
 
 			fdtmc.createTransition(source, opStart, "", Float.toString(val)); // entering operand
-			fdtmc.createTransition(opStart, opEnd, "", opName); // interface transitions
-			fdtmc.createTransition(opStart, opError, "", "1 - "+opName); // interface transitions
+			fdtmc.createInterface(opName, opStart, opEnd, opError);
 			fdtmc.createTransition(opEnd, target, "", "1.0"); // leaving operand
 
 //			creates FDTMC for loop content
@@ -365,8 +362,8 @@ public class Transformer {
 		fdtmc.setVariableName("s" + name);
 		fdtmcByName.put(name, fdtmc);
 
-		State init = fdtmc.createState("initial");
-		State error = fdtmc.createState("error");
+		State init = fdtmc.createInitialState();
+		State error = fdtmc.createErrorState();
 		State source = init;
 
 		RDGNode rdgNode = new RDGNode(name, presenceCondition, fdtmc);
@@ -405,22 +402,20 @@ public class Transformer {
 
 			if (targetState == null) { // atividade target nao foi criada
 				if (targetAct.getType().equals(ActivityType.FINAL_NODE)) {
-					targetState = fdtmc.createState("success");
+					targetState = fdtmc.createSuccessState();
 					stateByActID.put(targetAct.getId(), targetState);
 					fdtmc.createTransition(targetState, targetState, "", "1.0");
 				}
 				else targetState = fdtmc.createState();
 
-                fdtmc.createTransition(sourceState, targetState, sourceAct.getName(), sourceActivitySD);
-                fdtmc.createTransition(sourceState, errorState, "!"+sourceAct.getName(), "1 - "+sourceActivitySD);
+                fdtmc.createInterface(sourceActivitySD, sourceState, targetState, errorState);
 
 				/* continue path */
 				for (Edge e : targetAct.getOutgoing()) {
 					transformPath(fdtmc, targetState, errorState, e);
 				}
 			} else { // atividade target ja foi criada
-				fdtmc.createTransition(sourceState, targetState, sourceAct.getName(), sourceActivitySD);
-                fdtmc.createTransition(sourceState, errorState, "!"+sourceAct.getName(), "1 - "+sourceActivitySD);
+			    fdtmc.createInterface(sourceActivitySD, sourceState, targetState, errorState);
 				/* end path */
 			}
 		} else if (sourceAct.getType().equals(ActivityType.DECISION)) {
@@ -429,7 +424,7 @@ public class Transformer {
 
 			if (targetState == null) { // atividade target nao foi criada
 				if (targetAct.getType().equals(ActivityType.FINAL_NODE)) {
-					targetState = fdtmc.createState("success");
+					targetState = fdtmc.createSuccessState();
 					stateByActID.put(targetAct.getId(), targetState);
 					fdtmc.createTransition(targetState, targetState, "", "1.0");
 				}
@@ -454,7 +449,7 @@ public class Transformer {
 
 			if (targetState == null) { // atividade target nao foi criada
 				if (targetAct.getType().equals(ActivityType.FINAL_NODE)) {
-					targetState = fdtmc.createState("final");
+					targetState = fdtmc.createSuccessState();
 					stateByActID.put(targetAct.getId(), targetState);
 					fdtmc.createTransition(targetState, targetState, "", "1.0");
 				}

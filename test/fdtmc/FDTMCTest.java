@@ -19,7 +19,6 @@ public class FDTMCTest {
 	public void testEmptyFDTMC() {
 		Assert.assertTrue(fdtmc1.getStates().isEmpty());
 		Assert.assertNull(fdtmc1.getInitialState());
-		Assert.assertTrue(fdtmc1.getLabels().isEmpty());
 		Assert.assertEquals(0, fdtmc1.getVariableIndex());
 	}
 
@@ -112,8 +111,8 @@ public class FDTMCTest {
 		s1 = fdtmc1.createState("success");
 		s2 = fdtmc1.createState("error");
 
-		Assert.assertTrue(fdtmc1.createTransition(s0, s1, "alpha", Double.toString(0.95)));
-		Assert.assertTrue(fdtmc1.createTransition(s0, s2, "alpha", Double.toString(0.05)));
+		Assert.assertNotNull(fdtmc1.createTransition(s0, s1, "alpha", Double.toString(0.95)));
+		Assert.assertNotNull(fdtmc1.createTransition(s0, s2, "alpha", Double.toString(0.05)));
 	}
 
 
@@ -128,8 +127,8 @@ public class FDTMCTest {
 		s1 = fdtmc1.createState("success");
 		s2 = fdtmc1.createState("error");
 
-		Assert.assertTrue(fdtmc1.createTransition(s0, s1, "alpha", "rAlpha"));
-		Assert.assertTrue(fdtmc1.createTransition(s0, s2, "alpha", "1-rAlpha"));
+		Assert.assertNotNull(fdtmc1.createTransition(s0, s1, "alpha", "rAlpha"));
+		Assert.assertNotNull(fdtmc1.createTransition(s0, s2, "alpha", "1-rAlpha"));
 	}
 
 
@@ -165,8 +164,8 @@ public class FDTMCTest {
 		s1 = fdtmc1.createState("sucess");
 		s2 = fdtmc1.createState("error");
 
-		Assert.assertTrue(fdtmc1.createTransition(s0, s1, "alpha", "rAlpha"));
-		Assert.assertTrue(fdtmc1.createTransition(s0, s2, "alpha_error", "1-rAlpha"));
+		Assert.assertNotNull(fdtmc1.createTransition(s0, s1, "alpha", "rAlpha"));
+		Assert.assertNotNull(fdtmc1.createTransition(s0, s2, "alpha_error", "1-rAlpha"));
 
 		Transition t1, t2;
 		t1 = fdtmc1.getTransitionByActionName("alpha");
@@ -203,16 +202,16 @@ public class FDTMCTest {
 
 		source = init;
 		target = fdtmc.createState();
-		Assert.assertTrue(fdtmc.createTransition(source, target, "persist", "0.999"));
-		Assert.assertTrue(fdtmc.createTransition(source, error, "persist", "0.001"));
+		Assert.assertNotNull(fdtmc.createTransition(source, target, "persist", "0.999"));
+		Assert.assertNotNull(fdtmc.createTransition(source, error, "persist", "0.001"));
 
 		source = target;
 		target = success;
-		Assert.assertTrue(fdtmc.createTransition(source, target, "persist_return", "0.999"));
-		Assert.assertTrue(fdtmc.createTransition(source, target, "persist_return", "0.001"));
+		Assert.assertNotNull(fdtmc.createTransition(source, target, "persist_return", "0.999"));
+		Assert.assertNotNull(fdtmc.createTransition(source, target, "persist_return", "0.001"));
 
-		Assert.assertTrue(fdtmc.createTransition(success, success, "", "1.0"));
-		Assert.assertTrue(fdtmc.createTransition(error, error, "", "1.0"));
+		Assert.assertNotNull(fdtmc.createTransition(success, success, "", "1.0"));
+		Assert.assertNotNull(fdtmc.createTransition(error, error, "", "1.0"));
 
 
 		String expectedAnswer = "sSqlite=0(init) --- persist / 0.999 ---> sSqlite=3" + '\n'
