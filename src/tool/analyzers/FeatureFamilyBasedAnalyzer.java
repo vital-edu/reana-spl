@@ -83,10 +83,8 @@ public class FeatureFamilyBasedAnalyzer {
 
         timeCollector.startTimer(CollectibleTimers.FAMILY_BASED_TIME);
         Map<RDGNode, ADD> reliabilities = evaluateReliabilities(expressionsByNode);
-        timeCollector.stopTimer(CollectibleTimers.FAMILY_BASED_TIME);
         ADD reliability = reliabilities.get(node);
 
-        timeCollector.startTimer(CollectibleTimers.FAMILY_BASED_TIME);
         // After evaluating the expression, constant terms alter the {0,1} nature
         // of the reliability ADD. Thus, we must multiply the result by the
         // {0,1} representation of the feature model in order to retain 0 as the
