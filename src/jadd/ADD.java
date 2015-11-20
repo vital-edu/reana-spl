@@ -233,6 +233,14 @@ public class ADD {
         return BigcuddLibrary.Cudd_DagSize(function);
     }
 
+    /**
+     * Returns true if this ADD is a constant one.
+     * @return
+     */
+    public boolean isConstant() {
+        return 1 != BigcuddLibrary.Cudd_IsNonConstant(function);
+    }
+
     static Collection<List<String>> expandDontCares(List<String> config) {
         return expandDontCares(config.iterator());
     }

@@ -15,6 +15,7 @@ import org.nfunk.jep.SymbolTable;
 import expressionsolver.functions.ADDAdd;
 import expressionsolver.functions.ADDDivide;
 import expressionsolver.functions.ADDMultiply;
+import expressionsolver.functions.ADDPower;
 import expressionsolver.functions.ADDSubtract;
 import expressionsolver.functions.LogicalAnd;
 import expressionsolver.functions.LogicalNot;
@@ -171,6 +172,7 @@ public class ExpressionSolver {
         parser.addFunction("\"-\":2", new ADDSubtract());
         parser.addFunction("\"-\":1", new UnaryMinus());
         parser.addFunction("\"*\"", new ADDMultiply());
+        parser.addFunction("\"^\"", new ADDPower(jadd));
         parser.addFunction("\"/\"", new ADDDivide());
 
         parser.addFunction("\"&&\"", new LogicalAnd());
