@@ -146,7 +146,8 @@ public class FDTMC {
 	public Interface createInterface(String id, State initial, State success, State error) {
 	    Transition successTransition = createTransition(initial, success, "", id);
 	    Transition errorTransition = createTransition(initial, error, "", "1 - " + id);
-	    Interface newInterface = new Interface(initial,
+	    Interface newInterface = new Interface(id,
+	                                           initial,
 	                                           success,
 	                                           error,
 	                                           successTransition,
@@ -241,14 +242,7 @@ public class FDTMC {
 	 */
     public FDTMC inline(Map<String, FDTMC> indexedModels) {
         FDTMC inlined = new FDTMC();
-        inlined.variableName = this.getVariableName();
-
-        Map<State, State> statesMapping = inlined.inlineStates(this);
-        inlined.setInitialState(statesMapping.get(this.getInitialState()));
-        inlined.setSuccessState(statesMapping.get(this.getSuccessState()));
-        inlined.setErrorState(statesMapping.get(this.getErrorState()));
-
-        inlined.inlineTransitions(this, statesMapping);
+        Map<State, State> statesMapping = copyForInlining(inlined);
 
         for (Map.Entry<String, List<Interface>> entry: interfaces.entrySet()) {
             String dependencyId = entry.getKey();
@@ -262,6 +256,54 @@ public class FDTMC {
             }
         }
         return inlined;
+    }
+
+    /**
+     * Inlines the given FDTMCs whenever there is an interface corresponding
+     * to the string in the respective index.
+     *
+     * This method maintains the variability notion by using the same abstraction
+     * id of the interface as an encoding of presence (i.e., a "switch" on whether
+     * or not to take the transitions of the inlined model).
+     *
+     * @param indexedModels
+     * @return a new FDTMC which represents this one with the ones specified
+     *         in {@code indexedModels} inlined.
+     */
+    public FDTMC inlineWithVariability(Map<String, FDTMC> indexedModels) {
+        FDTMC inlined = new FDTMC();
+        Map<State, State> statesMapping = copyForInlining(inlined);
+
+        for (Map.Entry<String, List<Interface>> entry: interfaces.entrySet()) {
+            String dependencyId = entry.getKey();
+            if (indexedModels.containsKey(dependencyId)) {
+                FDTMC fragment = indexedModels.get(dependencyId);
+                for (Interface iface: entry.getValue()) {
+                    inlined.inlineInterfaceWithVariability(iface,
+                                                           fragment,
+                                                           statesMapping);
+                }
+            }
+        }
+        return inlined;
+    }
+
+    /**
+     * Prepares {@code destination} FDTMC to be an inlined version of this one.
+     * @param destination
+     * @return a mapping from states in this FDTMC to the corresponding states
+     *      in the copied one ({@code destination}).
+     */
+    private Map<State, State> copyForInlining(FDTMC destination) {
+        destination.variableName = this.getVariableName();
+
+        Map<State, State> statesMapping = destination.inlineStates(this);
+        destination.setInitialState(statesMapping.get(this.getInitialState()));
+        destination.setSuccessState(statesMapping.get(this.getSuccessState()));
+        destination.setErrorState(statesMapping.get(this.getErrorState()));
+
+        destination.inlineTransitions(this, statesMapping);
+        return statesMapping;
     }
 
     /**
@@ -329,6 +371,37 @@ public class FDTMC {
         }
     }
 
+    private void inlineInterfaceWithVariability(Interface iface, FDTMC fragment, Map<State, State> statesMapping) {
+        Map<State, State> fragmentStatesMapping = this.inlineStates(fragment);
+        this.inlineTransitions(fragment, fragmentStatesMapping);
+
+        State initialInlined = iface.getInitial();
+        State initialFragment = fragment.getInitialState();
+        State successInlined = iface.getSuccess();
+        State successFragment = fragment.getSuccessState();
+        State errorInlined = iface.getError();
+        State errorFragment = fragment.getErrorState();
+
+        this.createTransition(statesMapping.get(initialInlined),
+                              fragmentStatesMapping.get(initialFragment),
+                              "",
+                              iface.getAbstractedId());
+        this.createTransition(statesMapping.get(initialInlined),
+                              statesMapping.get(successInlined),
+                              "",
+                              "1 - " + iface.getAbstractedId());
+        this.createTransition(fragmentStatesMapping.get(successFragment),
+                              statesMapping.get(successInlined),
+                              "",
+                              "1");
+        if (errorFragment != null) {
+            this.createTransition(fragmentStatesMapping.get(errorFragment),
+                                  statesMapping.get(errorInlined),
+                                  "",
+                                  "1");
+        }
+    }
+
     private Set<Transition> getInterfaceTransitions() {
         Set<Transition> transitions = new HashSet<Transition>();
         interfaces.values().stream()
@@ -339,4 +412,5 @@ public class FDTMC {
                 });
         return transitions;
     }
+
 }

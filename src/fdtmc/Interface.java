@@ -6,13 +6,15 @@ package fdtmc;
  * @author thiago
  */
 public class Interface {
+    private String abstractedId;
     private State initial;
     private State success;
     private State error;
     private Transition successTransition;
     private Transition errorTransition;
 
-    public Interface(State initial, State success, State error, Transition successTransition, Transition errorTransition) {
+    public Interface(String abstractedId, State initial, State success, State error, Transition successTransition, Transition errorTransition) {
+        this.abstractedId = abstractedId;
         this.initial = initial;
         this.success = success;
         this.error = error;
@@ -38,6 +40,10 @@ public class Interface {
 
     public Transition getErrorTransition() {
         return errorTransition;
+    }
+
+    public String getAbstractedId() {
+        return abstractedId;
     }
 
 }
