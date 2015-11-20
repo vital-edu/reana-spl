@@ -12,6 +12,7 @@ import java.util.List;
 
 import paramwrapper.ParamWrapper;
 import paramwrapper.ParametricModelChecker;
+import tool.analyzers.FamilyBasedAnalyzer;
 import tool.analyzers.FeatureFamilyBasedAnalyzer;
 import tool.analyzers.FeatureProductBasedAnalyzer;
 import tool.analyzers.IPruningStrategy;
@@ -44,6 +45,7 @@ public class Analyzer {
     FeatureFamilyBasedAnalyzer featureFamilyBasedAnalyzerImpl;
     FeatureProductBasedAnalyzer featureProductBasedAnalyzerImpl;
     ProductBasedAnalyzer productBasedAnalyzerImpl;
+    FamilyBasedAnalyzer familyBasedAnalyzerImpl;
 
     /**
      * Creates an Analyzer which will follow the logical rules
@@ -100,6 +102,11 @@ public class Analyzer {
                                                                  this.modelChecker,
                                                                  this.timeCollector,
                                                                  this.formulaCollector);
+        this.familyBasedAnalyzerImpl = new FamilyBasedAnalyzer(this.jadd,
+                                                               this.featureModel,
+                                                               this.modelChecker,
+                                                               this.timeCollector,
+                                                               this.formulaCollector);
     }
 
     /**
@@ -174,6 +181,19 @@ public class Analyzer {
      */
     public IReliabilityAnalysisResults evaluateProductBasedReliability(RDGNode node, Collection<List<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
         return productBasedAnalyzerImpl.evaluateReliability(node, configurations);
+    }
+
+    /**
+     * Evaluates the family-based reliability value of an RDG node, based
+     * on the derived 150% model.
+     *
+     * @param node RDG node whose reliability is to be evaluated.
+     * @return
+     * @throws CyclicRdgException
+     * @throws UnknownFeatureException
+     */
+    public IReliabilityAnalysisResults evaluateFamilyBasedReliability(RDGNode node, Collection<List<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
+        return familyBasedAnalyzerImpl.evaluateReliability(node, configurations);
     }
 
     /**

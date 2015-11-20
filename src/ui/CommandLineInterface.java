@@ -109,6 +109,11 @@ public class CommandLineInterface {
                                           rdgRoot,
                                           configurations);
             break;
+        case FAMILY:
+            results = evaluateReliability(analyzer::evaluateFamilyBasedReliability,
+                                          rdgRoot,
+                                          configurations);
+            break;
         case FEATURE_FAMILY:
         default:
             results = evaluateFeatureFamilyBasedReliability(analyzer,
