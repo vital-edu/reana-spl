@@ -52,9 +52,12 @@ public class FormulaCollector implements IFormulaCollector {
             int height = node.getHeight();
             String formula = entry.getValue();
             int formulaSize = formula.length();
+            String formattedFormula = formulaSize < 1000 ?
+                    "| " + formula
+                    : "";
             out.println("    " + node.getId() + ": "
                         + numChildren + " children | height " + height + " | "
-                        + formulaSize + " bytes | " + formula);
+                        + formulaSize + " bytes " + formattedFormula);
         }
     }
 
