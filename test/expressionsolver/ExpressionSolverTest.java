@@ -208,4 +208,23 @@ public class ExpressionSolverTest {
                      product.getVariables());
     }
 
+    @Test
+    public void testLowLevelAPI() {
+        Expression<Double> expression = solver.parseExpression("a + b * c");
+        HashMap<String, Double> interpretation = new HashMap<String, Double>();
+        interpretation.put("a", 3.0);
+        interpretation.put("b", 4.0);
+        interpretation.put("c", 4.0);
+
+        Double result = expression.solve(interpretation);
+        assertEquals(19.0, result, 1E+10);
+
+        interpretation.put("a", 3.0);
+        interpretation.put("b", 3.0);
+        interpretation.put("c", 7.0);
+
+        result = expression.solve(interpretation);
+        assertEquals(24.0, result, 1E+10);
+    }
+
 }

@@ -49,9 +49,11 @@ public class ExpressionSolver {
      *      according to the ADDs involved.
      */
     public ADD solveExpressionAsFunction(String expression, Map<String, ADD> interpretation) {
-        JEP parser = makeADDParser(jadd);
-        Object result = solveExpression(expression, parser, interpretation);
-        return (ADD)result;
+        Expression<ADD> parsedExpression = parseExpressionForFunctions(expression);
+        if (parsedExpression == null) {
+            return null;
+        }
+        return parsedExpression.solve(interpretation);
     }
 
     /**
@@ -74,9 +76,11 @@ public class ExpressionSolver {
      * @return a floating-point result for the evaluated expression.
      */
     public Double solveExpression(String expression, Map<String, Double> interpretation) {
-        JEP parser = makeFloatingPointParser();
-        Object result = solveExpression(expression, parser, interpretation);
-        return (Double)result;
+        Expression<Double> parsedExpression = parseExpression(expression);
+        if (parsedExpression == null) {
+            return null;
+        }
+        return parsedExpression.solve(interpretation);
     }
 
     /**
@@ -131,33 +135,42 @@ public class ExpressionSolver {
     }
 
     /**
-     * Solves an expression with respect to the given interpretation of variables.
-     * Here, variables are interpreted in the algebraic sense, not as boolean ADD-variables.
-     * @param <T>
+     * Lower level alternative for {@link solveExpression(String)}.
+     *
+     * It returns a handle to an already parsed expression, in case it
+     * must be evaluated more than once.
      *
      * @param expression
-     * @param interpretation A map from variable names to the respective values
-     *          to be considered during evaluation.
-     * @return a (possibly constant) function (ADD) representing all possible results
-     *      according to the ADDs involved.
+     * @return A handle to the parsed expression or {@code null} if there
+     *      is a parsing error.
      */
-    private <T> Object solveExpression(String expression, JEP parser, Map<String, T> interpretation) {
+    public Expression<Double> parseExpression(String expression) {
+        JEP parser = makeFloatingPointParser();
         parser.parseExpression(expression);
         if (parser.hasError()) {
             LOGGER.warning("Parser error: " + parser.getErrorInfo());
             return null;
         }
+        return new Expression<Double>(parser, Double.class);
+    }
 
-        SymbolTable symbolTable = parser.getSymbolTable();
-        for (Object var: symbolTable.keySet()) {
-            String varName = (String)var;
-            if (interpretation.containsKey(varName)) {
-                parser.addVariableAsObject(varName, interpretation.get(varName));
-            } else {
-                LOGGER.warning("No interpretation for variable <"+varName+"> was provided");
-            }
+    /**
+     * Lower level alternative for {@link solveExpressionAsFunction(String)}.
+     *
+     * @see {@link parseExpression(String)}
+     *
+     * @param expression
+     * @return A handle to the parsed expression or {@code null} if there
+     *      is a parsing error.
+     */
+    public Expression<ADD> parseExpressionForFunctions(String expression) {
+        JEP parser = makeADDParser(jadd);
+        parser.parseExpression(expression);
+        if (parser.hasError()) {
+            LOGGER.warning("Parser error: " + parser.getErrorInfo());
+            return null;
         }
-        return parser.getValueAsObject();
+        return new Expression<ADD>(parser, ADD.class);
     }
 
     /**
