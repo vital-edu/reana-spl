@@ -39,14 +39,16 @@ public class ExpressionSolver {
     }
 
     /**
-     * Solves an expression with respect to the given interpretation of variables.
-     * Here, variables are interpreted in the algebraic sense, not as boolean ADD-variables.
+     * Solves an expression with respect to the given interpretation of
+     * variables. Here, variables are interpreted in the algebraic sense, not as
+     * boolean ADD-variables.
      *
      * @param expression
-     * @param interpretation A map from variable names to the respective values
-     *          to be considered during evaluation.
-     * @return a (possibly constant) function (ADD) representing all possible results
-     *      according to the ADDs involved.
+     * @param interpretation
+     *            A map from variable names to the respective values to be
+     *            considered during evaluation.
+     * @return a (possibly constant) function (ADD) representing all possible
+     *         results according to the ADDs involved.
      */
     public ADD solveExpressionAsFunction(String expression, Map<String, ADD> interpretation) {
         Expression<ADD> parsedExpression = parseExpressionForFunctions(expression);
@@ -67,12 +69,13 @@ public class ExpressionSolver {
     }
 
     /**
-     * Solves an expression with respect to the given interpretation of variables.
-     * Here, variables are interpreted in the algebraic sense.
+     * Solves an expression with respect to the given interpretation of
+     * variables. Here, variables are interpreted in the algebraic sense.
      *
      * @param expression
-     * @param interpretation A map from variable names to the respective values
-     *          to be considered during evaluation.
+     * @param interpretation
+     *            A map from variable names to the respective values to be
+     *            considered during evaluation.
      * @return a floating-point result for the evaluated expression.
      */
     public Double solveExpression(String expression, Map<String, Double> interpretation) {
@@ -95,15 +98,16 @@ public class ExpressionSolver {
 
     /**
      * Encodes a propositional logic formula as a 0,1-ADD, which is roughly
-     * equivalent to a BDD, but better suited to representing boolean
-     * functions which interact with Real ADDs.
+     * equivalent to a BDD, but better suited to representing boolean functions
+     * which interact with Real ADDs.
      *
-     * If there are variables in the formula, they are interpreted as ADD variables.
-     * These are internally indexed by name, so that multiple references in
-     * (possibly multiple) expressions are taken to be the same.
+     * If there are variables in the formula, they are interpreted as ADD
+     * variables. These are internally indexed by name, so that multiple
+     * references in (possibly multiple) expressions are taken to be the same.
      *
-     * @param formula Propositional logic formula to be encoded. The valid
-     *  boolean operators are && (AND), || (OR) and !(NOT).
+     * @param formula
+     *            Propositional logic formula to be encoded. The valid boolean
+     *            operators are && (AND), || (OR) and !(NOT).
      * @return
      */
     public ADD encodeFormula(String formula) {
@@ -126,12 +130,12 @@ public class ExpressionSolver {
         variables.remove("false");
         variables.remove("False");
 
-        for (Object var: variables) {
-            String varName = (String)var;
+        for (Object var : variables) {
+            String varName = (String) var;
             ADD variable = jadd.getVariable(varName);
             parser.addVariableAsObject(varName, variable);
         }
-        return (ADD)parser.getValueAsObject();
+        return (ADD) parser.getValueAsObject();
     }
 
     /**
@@ -177,10 +181,7 @@ public class ExpressionSolver {
      * @param jadd
      */
     private JEP makeADDParser(JADD jadd) {
-        JEP parser = new JEP(false,
-                true,
-                false,
-                new ADDNumberFactory(jadd));
+        JEP parser = new JEP(false, true, false, new ADDNumberFactory(jadd));
         parser.addFunction("\"+\"", new ADDAdd());
         parser.addFunction("\"-\":2", new ADDSubtract());
         parser.addFunction("\"-\":1", new UnaryMinus());
