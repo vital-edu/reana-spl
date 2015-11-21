@@ -18,6 +18,7 @@ import tool.analyzers.strategies.FamilyBasedPreAnalysisStrategy;
 import tool.stats.CollectibleTimers;
 import tool.stats.IFormulaCollector;
 import tool.stats.ITimeCollector;
+import expressionsolver.Expression;
 import expressionsolver.ExpressionSolver;
 
 /**
@@ -62,11 +63,14 @@ public class FamilyProductBasedAnalyzer {
         String expression = familyBasedPreAnalysisStrategy.getReliabilityExpression(node,
                                                                                     dependencies);
         LOGGER.info("Parametric model-checking ok...");
+
+        Expression<Double> parsedExpression = expressionSolver.parseExpression(expression);
+
         MapBasedReliabilityResults results = new MapBasedReliabilityResults();
         timeCollector.startTimer(CollectibleTimers.PRODUCT_BASED_TIME);
 
-        configurations.parallelStream().forEach(configuration -> {
-            Double result = evaluateReliabilityForSingleConfiguration(expression,
+        configurations.stream().forEach(configuration -> {
+            Double result = evaluateReliabilityForSingleConfiguration(parsedExpression,
                                                                       configuration,
                                                                       dependencies);
             results.putResult(configuration, result);
@@ -78,7 +82,7 @@ public class FamilyProductBasedAnalyzer {
         return results;
     }
 
-    private Double evaluateReliabilityForSingleConfiguration(String reliabilityExpression, List<String> configuration, List<RDGNode> dependencies) throws UnknownFeatureException {
+    private Double evaluateReliabilityForSingleConfiguration(Expression<Double> parsedExpression, List<String> configuration, List<RDGNode> dependencies) throws UnknownFeatureException {
         if (!featureModel.isValidConfiguration(configuration)) {
             return 0.0;
         }
@@ -97,9 +101,7 @@ public class FamilyProductBasedAnalyzer {
                               presenceValue);
         }
 
-        Double reliability = expressionSolver.solveExpression(reliabilityExpression,
-                                                              nodesPresence);
-        return reliability;
+        return parsedExpression.solve(nodesPresence);
     }
 
 }
