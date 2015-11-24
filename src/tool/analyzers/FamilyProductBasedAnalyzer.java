@@ -74,7 +74,6 @@ public class FamilyProductBasedAnalyzer {
                                                                       configuration,
                                                                       dependencies);
             results.putResult(configuration, result);
-            LOGGER.info("Completed: " + configuration + " -> " + result);
         });
         timeCollector.stopTimer(CollectibleTimers.PRODUCT_BASED_TIME);
         LOGGER.info("Formulae evaluation ok...");
