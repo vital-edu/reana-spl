@@ -33,6 +33,7 @@ public class ProductBasedAnalyzer {
     ParametricModelChecker modelChecker;
 
     private ITimeCollector timeCollector;
+    private IFormulaCollector formulaCollector;
 
     public ProductBasedAnalyzer(JADD jadd,
                                 ADD featureModel,
@@ -44,6 +45,7 @@ public class ProductBasedAnalyzer {
         this.modelChecker = modelChecker;
 
         this.timeCollector = timeCollector;
+        this.formulaCollector = formulaCollector;
     }
 
     /**
@@ -77,6 +79,7 @@ public class ProductBasedAnalyzer {
         Map<RDGNode, FDTMC> derivedModels = deriveModels(dependencies, configuration);
         FDTMC rootModel = derivedModels.get(node);
         String reliabilityExpression = modelChecker.getReliability(rootModel);
+        formulaCollector.collectFormula(node, reliabilityExpression);
 
         return expressionSolver.solveExpression(reliabilityExpression);
     }
