@@ -49,7 +49,7 @@ public class ADD {
      */
     @Override
     protected void finalize() throws Throwable {
-        BigcuddLibrary.Cudd_RecursiveDeref(dd, function);
+//        BigcuddLibrary.Cudd_Deref(function);
         super.finalize();
     }
 
