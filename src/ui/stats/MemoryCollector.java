@@ -9,6 +9,7 @@ import tool.stats.IMemoryCollector;
 public class MemoryCollector implements IMemoryCollector {
 
     private Map<String, Long> snapshots;
+    private long maxMemory = 0;
 
     public MemoryCollector() {
         // LinkedHashMap provides for ordered iteration of the snapshots.
@@ -20,6 +21,7 @@ public class MemoryCollector implements IMemoryCollector {
         Runtime runtime = Runtime.getRuntime();
         long snapshot = runtime.totalMemory() - runtime.freeMemory();
         snapshots.put(name, snapshot);
+        maxMemory = Math.max(maxMemory, snapshot);
     }
 
     @Override
@@ -28,6 +30,8 @@ public class MemoryCollector implements IMemoryCollector {
             double valueInMegabytes = snapshot.getValue()/(1024.0*1024.0);
             out.println("Memory used "+snapshot.getKey()+": "+valueInMegabytes+" MB");
         }
+        double maxMemoryInMegabytes = maxMemory/(1024.0*1024.0);
+        out.println("Maximum memory used: "+maxMemoryInMegabytes+" MB");
     }
 
 }
