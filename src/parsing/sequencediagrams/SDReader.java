@@ -76,8 +76,8 @@ public class SDReader {
 			retrieveMessages(n);
 
 			this.sd = new Fragment(
-							nAttrs.getNamedItem("xmi:id").getTextContent(),
-							(nAttrs.getNamedItem("name") != null)?nAttrs.getNamedItem("name").getTextContent() : ""
+							extractId(nAttrs),
+							extractName(nAttrs)
 					  );
 
 			this.sd.setLifelines(this.lifelines);
@@ -100,9 +100,9 @@ public class SDReader {
 						NamedNodeMap cAttrs = child.getAttributes();
 						Fragment newFragment =
 								new Fragment(
-										cAttrs.getNamedItem("xmi:id").getTextContent(),
+										extractId(cAttrs),
 										cAttrs.getNamedItem("interactionOperator").getTextContent(),
-										(cAttrs.getNamedItem("name") != null) ? cAttrs.getNamedItem("name").getTextContent() : ""
+										extractName(cAttrs)
 								);
 						retrieveProbEnergyTime(newFragment);
 						this.sd.addNode(newFragment);
@@ -112,6 +112,18 @@ public class SDReader {
 				}
 			}
 		}
+
+        private String extractId(NamedNodeMap nAttrs) {
+            return nAttrs.getNamedItem("xmi:id").getTextContent();
+        }
+
+        private String extractName(NamedNodeMap nAttrs) {
+            if (nAttrs.getNamedItem("name") != null) {
+                return nAttrs.getNamedItem("name").getTextContent();
+            } else {
+                return "";
+            }
+        }
 
 	// Private relevant methods
 
@@ -128,7 +140,7 @@ public class SDReader {
 				if (elements.item(s).getNodeName().equals("lifeline")) {
 					NamedNodeMap sAttrs = elements.item(s).getAttributes();
 					NodeList sChilds = elements.item(s).getChildNodes();
-					Lifeline tmp = new Lifeline(sAttrs.getNamedItem("xmi:id").getTextContent());
+					Lifeline tmp = new Lifeline(extractId(sAttrs));
 					List<String> coveredBy = new ArrayList<String>();
 
 					tmp.setLink(sAttrs.getNamedItem("represents").getTextContent());
@@ -171,7 +183,7 @@ public class SDReader {
 			for (int s = 0; s < elements.getLength(); s++) {
 				if ((elements.item(s).getNodeValue() == null) && (elements.item(s).getNodeName() == "message")) {
 					NamedNodeMap sAttrs = elements.item(s).getAttributes();
-					Message message = new Message(sAttrs.getNamedItem("xmi:id").getTextContent());
+					Message message = new Message(extractId(sAttrs));
 
 					if (sAttrs.getNamedItem("name") != null) {
 						message.setName(sAttrs.getNamedItem("name").getTextContent().replace("\n", " "));
@@ -232,9 +244,9 @@ public class SDReader {
 
 						Fragment innerFragment =
 									new Fragment(
-										kAttrs.getNamedItem("xmi:id").getTextContent(),
+										extractId(kAttrs),
 										kAttrs.getNamedItem("interactionOperator").getTextContent(),
-										(kAttrs.getNamedItem("name") != null) ? kAttrs.getNamedItem("name").getTextContent() : ""
+										extractName(kAttrs)
 									);
 
 						retrieveProbEnergyTime(innerFragment);
@@ -274,7 +286,7 @@ public class SDReader {
 				if ("covered".equals(item.getNodeName())) {
 					fragment.addLifeline(this.lifelinesByID.get(jAttrs.getNamedItem("xmi:idref").getTextContent()));
 				} else if ("operand".equals(item.getNodeName())) {
-					Operand newOperand = new Operand(jAttrs.getNamedItem("xmi:id").getTextContent());
+					Operand newOperand = new Operand(extractId(jAttrs));
 					traceOperand(newOperand, item);
 					fragment.addNode(newOperand);
 				}
