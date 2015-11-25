@@ -91,8 +91,8 @@ public class Transformer {
 			fdtmc.setVariableName("s" + fragment.getName());
 			fdtmcByName.put(fragment.getName(), fdtmc);
 		} else {
-			fdtmc.setVariableName("s" + ((Operand)fragment.getNodes().get(0)).getGuard());
-			fdtmcByName.put(((Operand)fragment.getNodes().get(0)).getGuard(), fdtmc);
+			fdtmc.setVariableName("s" + fragment.getId());
+			fdtmcByName.put(fragment.getId(), fdtmc);
 		}
 		init = fdtmc.createInitialState();
 		error = fdtmc.createErrorState();
@@ -291,7 +291,10 @@ public class Transformer {
 		}
 
 		Operand operand = (Operand)fragment.getNodes().get(0);
-		String name = operand.getGuard();
+		String name = fragment.getName();
+		if (name.isEmpty()) {
+		    name = fragment.getId();
+		}
 		String guard = operand.getGuard();
 		State featureStart = fdtmc.createState("initial" + name);
 		State featureEnd = fdtmc.createState("end" + name);

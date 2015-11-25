@@ -108,6 +108,11 @@ public class RDGNode {
         return id.hashCode();
     }
 
+    @Override
+    public String toString() {
+        return getId() + " (" + getPresenceCondition() + ")";
+    }
+
     /**
      * Retrieves the transitive closure of the RDGNode dependency relation.
      * The node itself is part of the returned list.
