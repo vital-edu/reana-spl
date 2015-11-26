@@ -59,7 +59,7 @@ public class FormulaCollector implements IFormulaCollector {
             String formattedFormula = formulaSize < 1000 ?
                     "| " + formula
                     : "";
-            out.println("    " + node.getId() + ": "
+            out.println("    " + node + ": "
                         + numChildren + " children | height " + height + " | "
                         + formulaSize + " bytes " + formattedFormula);
         }

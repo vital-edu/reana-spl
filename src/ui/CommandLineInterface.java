@@ -272,7 +272,7 @@ public class CommandLineInterface {
             for (Map.Entry<RDGNode, Integer> entry: numberOfPaths.entrySet()) {
                 nodes++;
                 totalPaths += entry.getValue();
-                OUTPUT.println(entry.getKey().getId() + ": " + entry.getValue() + " paths");
+                OUTPUT.println(entry.getKey() + ": " + entry.getValue() + " paths");
             }
             OUTPUT.println("Evaluation economy because of cache: " + 100*(totalPaths-nodes)/(float)totalPaths + "%");
         } catch (CyclicRdgException e) {
