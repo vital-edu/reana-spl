@@ -78,7 +78,9 @@ public class CommandLineInterface {
         Collection<List<String>> targetConfigurations = getTargetConfigurations(options, analyzer);
 
         memoryCollector.takeSnapshot("before evaluation");
+        long analysisStartTime = System.currentTimeMillis();
         IReliabilityAnalysisResults familyReliability = evaluateReliability(analyzer, rdgRoot, targetConfigurations, options);
+        long totalAnalysisTime = System.currentTimeMillis() - analysisStartTime;
         memoryCollector.takeSnapshot("after evaluation");
 
         printAnalysisResults(targetConfigurations, familyReliability);
@@ -87,6 +89,7 @@ public class CommandLineInterface {
             printStats(OUTPUT, familyReliability, rdgRoot);
         }
         long totalRunningTime = System.currentTimeMillis() - startTime;
+        OUTPUT.println("Total analysis time: " +  totalAnalysisTime + " ms");
         OUTPUT.println("Total running time: " +  totalRunningTime + " ms");
     }
 
