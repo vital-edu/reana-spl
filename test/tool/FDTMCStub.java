@@ -10,9 +10,9 @@ public class FDTMCStub {
 		fdtmcOxygenation.setVariableName("sOxygenation");
 
 		//States Creation
-		State	init = fdtmcOxygenation.createState("initial"),
-				success = fdtmcOxygenation.createState("success"),
-				fail = fdtmcOxygenation.createState("fail"),
+		State	init = fdtmcOxygenation.createInitialState(),
+				success = fdtmcOxygenation.createSuccessState(),
+				fail = fdtmcOxygenation.createErrorState(),
 				source, target, target2;
 
 		source = init;
@@ -86,9 +86,9 @@ public class FDTMCStub {
 		fdtmcPosition.setVariableName("sPosition");
 
 		//States Creation
-		State	init = fdtmcPosition.createState("initial"),
-				success = fdtmcPosition.createState("success"),
-				fail = fdtmcPosition.createState("fail"),
+		State	init = fdtmcPosition.createInitialState(),
+				success = fdtmcPosition.createSuccessState(),
+				fail = fdtmcPosition.createErrorState(),
 				source, target, target2;
 
 		source = init;
@@ -164,8 +164,8 @@ public class FDTMCStub {
 		//States Creation
 		State s0, s1, s2, s3, s4, s5, s6, s7, s8, s9,
 			  s10, s11, s12, s13, s14, s15, s16, s17;
-		s0 = fdtmcSituation.createState("error_situation");
-		s1 = fdtmcSituation.createState("initial");
+		s0 = fdtmcSituation.createErrorState();
+		s1 = fdtmcSituation.createInitialState();
 		s2 = fdtmcSituation.createState();
 		s3 = fdtmcSituation.createState("plsRte_success");
 		s4 = fdtmcSituation.createState("plsRte_error");
@@ -181,7 +181,7 @@ public class FDTMCStub {
 		s14 = fdtmcSituation.createState();
 		s15 = fdtmcSituation.createState("pos_success");
 		s16 = fdtmcSituation.createState("pos_error");
-		s17 = fdtmcSituation.createState("success");
+		s17 = fdtmcSituation.createSuccessState();
 
 		//Transitions Creation
 		fdtmcSituation.createTransition(s1, s2, "pulseRateSelection", "1");
@@ -219,9 +219,9 @@ public class FDTMCStub {
 		FDTMC fdtmcSqlite = new FDTMC();
 		fdtmcSqlite.setVariableName("sSqlite");
 
-		State   init =fdtmcSqlite.createState("initial"),
-				success = fdtmcSqlite.createState("success"),
-				fail = fdtmcSqlite.createState("fail"),
+		State   init =fdtmcSqlite.createInitialState(),
+				success = fdtmcSqlite.createSuccessState(),
+				fail = fdtmcSqlite.createErrorState(),
 				source, target;
 		source = init;
 		target = fdtmcSqlite.createState();
@@ -244,9 +244,9 @@ public class FDTMCStub {
 		fdtmcMemory.setVariableName("sMemory");
 
 		//States Creation
-		State init = fdtmcMemory.createState("initial"),
-				fail = fdtmcMemory.createState("error_mem"),
-				success = fdtmcMemory.createState("success"),
+		State init = fdtmcMemory.createInitialState(),
+				fail = fdtmcMemory.createErrorState(),
+				success = fdtmcMemory.createSuccessState(),
 				source, target;
 
 		source = init;
@@ -272,9 +272,9 @@ public class FDTMCStub {
 		fdtmcFile.setVariableName("sFile");
 
 		//States Creation
-		State 	init = fdtmcFile.createState("initial"),
-				success = fdtmcFile.createState("success"),
-				fail = fdtmcFile.createState("fail"),
+		State 	init = fdtmcFile.createInitialState(),
+				success = fdtmcFile.createSuccessState(),
+				fail = fdtmcFile.createErrorState(),
 				source, target;
 
 		source = init;
@@ -306,8 +306,8 @@ public class FDTMCStub {
 		//States creation
 		State s0, s1, s2, s3, s4, s5, s6, s7, s8, s9,
 			  s10, s11, s12, s13, s14, s15, s16;
-		s0 = fdtmcPulseRate.createState("error");
-		s1 = fdtmcPulseRate.createState("initial");
+		s0 = fdtmcPulseRate.createErrorState();
+		s1 = fdtmcPulseRate.createInitialState();
 		s2 = fdtmcPulseRate.createState();
 		s3 = fdtmcPulseRate.createState();
 		s4 = fdtmcPulseRate.createState();
@@ -322,7 +322,7 @@ public class FDTMCStub {
 		s13 = fdtmcPulseRate.createState();
 		s14 = fdtmcPulseRate.createState();
 		s15 = fdtmcPulseRate.createState();
-		s16 = fdtmcPulseRate.createState("success");
+		s16 = fdtmcPulseRate.createSuccessState();
 
 		//Transition
 		fdtmcPulseRate.createTransition(s1, s2, "register", "0.999");

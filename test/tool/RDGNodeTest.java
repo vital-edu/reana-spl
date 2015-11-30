@@ -7,6 +7,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import fdtmc.FDTMC;
+
 public class RDGNodeTest {
 
     @Before
@@ -54,7 +56,7 @@ public class RDGNodeTest {
         RDGNode memory = BSNNodes.getMemoryRDGNode();
         RDGNode file = BSNNodes.getFileRDGNode();
 
-        Map<RDGNode, Integer> numberOfPaths = RDGNode.getNumberOfPaths();
+        Map<RDGNode, Integer> numberOfPaths = situation.getNumberOfPaths();
 
         Assert.assertEquals(2, numberOfPaths.get(sqlite).intValue());
         Assert.assertEquals(2, numberOfPaths.get(memory).intValue());
@@ -62,6 +64,56 @@ public class RDGNodeTest {
         Assert.assertEquals(1, numberOfPaths.get(oxygenation).intValue());
         Assert.assertEquals(1, numberOfPaths.get(pulseRate).intValue());
         Assert.assertEquals(1, numberOfPaths.get(situation).intValue());
+    }
+
+    @Test
+    public void testNodesWithSameFDTMC() {
+        FDTMC sqliteFDTMC = FDTMCStub.createSqliteFDTMC();
+        String presenceCondition = "SQLite";
+        RDGNode firstSqlite = new RDGNode(RDGNode.getNextId(), presenceCondition, sqliteFDTMC);
+        RDGNode secondSqlite = new RDGNode(RDGNode.getNextId(), presenceCondition, sqliteFDTMC);
+
+        Assert.assertEquals("Nodes with same FDTMC and presence condition and no dependencies should be equal",
+                firstSqlite, secondSqlite);
+    }
+
+    @Test
+    public void testNodesWithSameFDTMCAndDifferentDependencies() {
+        FDTMC pulseRateFDTMC = FDTMCStub.createPulseRateFDTMC();
+        String presenceCondition = "SQLite";
+        RDGNode first = new RDGNode(RDGNode.getNextId(), presenceCondition, pulseRateFDTMC);
+        first.addDependency(BSNNodes.getMemoryRDGNode());
+        RDGNode second = new RDGNode(RDGNode.getNextId(), presenceCondition, pulseRateFDTMC);
+        second.addDependency(BSNNodes.getSQLiteRDGNode());
+
+        Assert.assertNotEquals("Nodes with same FDTMC and presence condition and different dependencies should NOT be equal",
+                first, second);
+
+        second.addDependency(BSNNodes.getMemoryRDGNode());
+        first.addDependency(BSNNodes.getSQLiteRDGNode());
+        Assert.assertEquals("Nodes with same FDTMC, presence condition and dependencies should be equal",
+                first, second);
+    }
+
+    @Test
+    public void testSimilarNodes() {
+        FDTMC pulseRateFDTMC = FDTMCStub.createPulseRateFDTMC();
+        String presenceCondition = "SQLite";
+        RDGNode first = new RDGNode(RDGNode.getNextId(), presenceCondition, pulseRateFDTMC);
+        first.addDependency(BSNNodes.getMemoryRDGNode());
+        RDGNode second = new RDGNode(RDGNode.getNextId(), presenceCondition, pulseRateFDTMC);
+        second.addDependency(BSNNodes.getSQLiteRDGNode());
+
+        RDGNode similarCandidate = RDGNode.getSimilarNode(second);
+        Assert.assertNull("Nodes with same FDTMC and presence condition and different dependencies should NOT be equal",
+                similarCandidate);
+
+        second.addDependency(BSNNodes.getMemoryRDGNode());
+        first.addDependency(BSNNodes.getSQLiteRDGNode());
+
+        similarCandidate = RDGNode.getSimilarNode(second);
+        Assert.assertEquals("Nodes with same FDTMC, presence condition and dependencies should be equal",
+                first, similarCandidate);
     }
 
 }

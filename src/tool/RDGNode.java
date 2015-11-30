@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import fdtmc.FDTMC;
 
@@ -14,10 +13,9 @@ public class RDGNode {
 
 	//This reference is used to store all the RDGnodes created during the evaluation
 	private static Map<String, RDGNode> rdgNodes = new HashMap<String, RDGNode>();
-    /**
-     * Nodes on which no other node depends (in-degree zero).
-     */
-    private static Set<RDGNode> sourceNodes = new HashSet<RDGNode>();
+	private static List<RDGNode> nodesInCreationOrder = new LinkedList<RDGNode>();
+
+    private static int lastNodeIndex = 0;
 
 	// Node identifier
 	private String id;
@@ -54,8 +52,7 @@ public class RDGNode {
 		this.height = 0;
 
 		rdgNodes.put(id, this);
-		// Every node is a source unless it is added as a dependency for some other node.
-		sourceNodes.add(this);
+		nodesInCreationOrder.add(this);
 	}
 
     public FDTMC getFDTMC() {
@@ -65,9 +62,6 @@ public class RDGNode {
     public void addDependency(RDGNode child) {
         this.dependencies.add(child);
         height = Math.max(height, child.height + 1);
-
-        // Now it is impossible for child to be a source.
-        sourceNodes.remove(child);
     }
 
     public Collection<RDGNode> getDependencies() {
@@ -95,17 +89,29 @@ public class RDGNode {
         return rdgNodes.get(id);
     }
 
+    public static String getNextId() {
+        return "n" + lastNodeIndex++;
+    }
+
+    /**
+     * We consider two RDG nodes to be equal whenever their behavior is
+     * modeled by equal FDTMCs, their presence condition is the same and
+     * their dependencies are also correspondingly equal.
+     */
     @Override
     public boolean equals(Object obj) {
         if (obj != null && obj instanceof RDGNode) {
-            return ((RDGNode) obj).id.equals(id);
+            RDGNode other = (RDGNode) obj;
+            return this.getPresenceCondition().equals(other.getPresenceCondition())
+                    && this.getFDTMC().equals(other.getFDTMC())
+                    && this.getDependencies().equals(other.getDependencies());
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        return id.hashCode();
+        return id.hashCode() + presenceCondition.hashCode() + fdtmc.hashCode() + dependencies.hashCode();
     }
 
     @Override
@@ -158,15 +164,13 @@ public class RDGNode {
      *      of paths from a source node which lead to it.
      * @throws CyclicRdgException
      */
-    public static Map<RDGNode, Integer> getNumberOfPaths() throws CyclicRdgException {
+    public Map<RDGNode, Integer> getNumberOfPaths() throws CyclicRdgException {
         Map<RDGNode, Integer> numberOfPaths = new HashMap<RDGNode, Integer>();
 
         Map<RDGNode, Boolean> marks = new HashMap<RDGNode, Boolean>();
         Map<RDGNode, Map<RDGNode, Integer>> cache = new HashMap<RDGNode, Map<RDGNode,Integer>>();
-        for (RDGNode source: sourceNodes) {
-            Map<RDGNode, Integer> tmpNumberOfPaths = numPathsVisit(source, marks, cache);
-            numberOfPaths = sumPaths(numberOfPaths, tmpNumberOfPaths);
-        }
+        Map<RDGNode, Integer> tmpNumberOfPaths = numPathsVisit(this, marks, cache);
+        numberOfPaths = sumPaths(numberOfPaths, tmpNumberOfPaths);
 
         return numberOfPaths;
     }
@@ -215,6 +219,23 @@ public class RDGNode {
             numberOfPaths.put(node, count);
         }
         return numberOfPaths;
+    }
+
+    /**
+     * Returns the first RDG node (in crescent order of creation time) which is similar
+     * to the one provided.
+     *
+     * A similar RDG node is one for which equals() returns true.
+     * @param rdgNode
+     * @return a similar RDG node or null in case there is none.
+     */
+    public static RDGNode getSimilarNode(RDGNode target) {
+        for (RDGNode candidate: nodesInCreationOrder) {
+            if (candidate != target && candidate.equals(target)) {
+                return candidate;
+            }
+        }
+        return null;
     }
 
 }

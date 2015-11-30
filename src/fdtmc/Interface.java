@@ -46,4 +46,29 @@ public class Interface {
         return abstractedId;
     }
 
+    /**
+     * Interfaces are compared for equality disregarding the abstracted id.
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (obj != null && obj instanceof Interface) {
+            Interface other = (Interface) obj;
+            return initial.equals(other.initial)
+                    && success.equals(other.success)
+                    && error.equals(other.error)
+                    && successTransition.equals(other.successTransition)
+                    && errorTransition.equals(other.errorTransition);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return initial.hashCode()
+                + success.hashCode()
+                + error.hashCode()
+                + successTransition.hashCode()
+                + errorTransition.hashCode();
+    }
+
 }

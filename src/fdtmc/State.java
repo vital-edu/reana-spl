@@ -30,4 +30,22 @@ public class State {
 		return label;
 	}
 
+    /**
+     * A state is equal to another one if they have equal indices.
+     * Labels are only considered when comparing FDTMCs as a whole.
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (obj != null && obj instanceof State) {
+            State other = (State) obj;
+            return this.index == other.index;
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return index + 1;
+    }
+
 }

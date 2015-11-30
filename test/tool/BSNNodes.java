@@ -15,7 +15,7 @@ public class BSNNodes {
         RDGNode node = RDGNode.getById(id);
         if (node == null) {
             FDTMC fdtmc = FDTMCStub.createSqliteFDTMC();
-            node = new RDGNode("sqlite", "SQLite", fdtmc);
+            node = new RDGNode(id, "SQLite", fdtmc);
         }
         return node;
     }
@@ -25,7 +25,7 @@ public class BSNNodes {
         RDGNode node = RDGNode.getById(id);
         if (node == null) {
             FDTMC fdtmc = FDTMCStub.createFileFDTMC();
-            node = new RDGNode("file", "File", fdtmc);
+            node = new RDGNode(id, "File", fdtmc);
         }
         return node;
     }
@@ -35,7 +35,7 @@ public class BSNNodes {
         RDGNode node = RDGNode.getById(id);
         if (node == null) {
             FDTMC fdtmc = FDTMCStub.createMemoryFDTMC();
-            node = new RDGNode("memory", "Memory", fdtmc);
+            node = new RDGNode(id, "Memory", fdtmc);
         }
         return node;
     }
@@ -45,7 +45,7 @@ public class BSNNodes {
         RDGNode node = RDGNode.getById(id);
         if (node == null) {
             FDTMC fdtmc = FDTMCStub.createOxygenationFDTMC();
-            node = new RDGNode("oxygenation", "Oxygenation", fdtmc);
+            node = new RDGNode(id, "Oxygenation", fdtmc);
             node.addDependency(getSQLiteRDGNode());
             node.addDependency(getFileRDGNode());
             node.addDependency(getMemoryRDGNode());
@@ -58,7 +58,7 @@ public class BSNNodes {
         RDGNode node = RDGNode.getById(id);
         if (node == null) {
             FDTMC fdtmc = FDTMCStub.createPulseRateFDTMC();
-            node = new RDGNode("pulseRate", "PulseRate", fdtmc);
+            node = new RDGNode(id, "PulseRate", fdtmc);
             node.addDependency(getSQLiteRDGNode());
             node.addDependency(getFileRDGNode());
             node.addDependency(getMemoryRDGNode());
@@ -70,8 +70,8 @@ public class BSNNodes {
         String id = "situation";
         RDGNode node = RDGNode.getById(id);
         if (node == null) {
-            FDTMC fdtmc = FDTMCStub.createPulseRateFDTMC();
-            node = new RDGNode("situation", "true", fdtmc);
+            FDTMC fdtmc = FDTMCStub.createSituationFDTMC();
+            node = new RDGNode(id, "true", fdtmc);
             node.addDependency(getOxygenationRDGNode());
             node.addDependency(getPulseRateRDGNode());
         }

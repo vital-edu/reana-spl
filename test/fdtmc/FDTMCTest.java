@@ -238,38 +238,67 @@ public class FDTMCTest {
 
 	}
 
-//	/**
-//	 * This test aims to ensure if the DOT file for a specific RDG node is being created accordingly.
-//	 */
-//	@Test
-//	public void testGetTransitions() {
-//		State s0, s1, s2;
-//		s0 = fdtmc1.createState("init");
-//		s1 = fdtmc1.createState("sucess");
-//		s2 = fdtmc1.createState("error");
-//
-//		fdtmc1.createTransition(s0, s1, "alpha", "rAlpha");
-//		fdtmc1.createTransition(s0, s2, "alpha_error", "1-rAlpha");
-//
-//		Map<State, List<Transition>> transitionsByState = fdtmc1.getTransitions();
-//		Assert.assertEquals(1, transitionsByState.size());
-//
-//		List<Transition> transitions = transitionsByState.get(s0);
-//		Assert.assertEquals(2, transitions.size());
-//
-//		List<String> temp = new ArrayList<String>();
-//		for (Transition transition : transitions) {
-//			temp.add(transition.getActionName());
-//		}
-//		Assert.assertTrue(temp.contains("alpha"));
-//		Assert.assertTrue(temp.contains("alpha_error"));
-//
-//		temp.clear();
-//		for (Transition transition : transitions) {
-//			temp.add(transition.getProbability());
-//		}
-//		Assert.assertTrue(temp.contains("rAlpha"));
-//		Assert.assertTrue(temp.contains("1-rAlpha"));
-//	}
+	@Test
+	public void testEquivalentFDTMCs() {
+	    FDTMC fdtmc1 = new FDTMC();
+        fdtmc1.setVariableName("s");
+        State init1 = fdtmc1.createInitialState(),
+              success1 = fdtmc1.createSuccessState(),
+              error1 = fdtmc1.createErrorState(),
+              source,
+              target,
+              interface_error;
+
+        source = init1;
+        target = fdtmc1.createState();
+        fdtmc1.createTransition(source, target, "persist", "0.999");
+        fdtmc1.createTransition(source, error1, "!persist", "0.001");
+
+        source = target;
+        target = fdtmc1.createState();
+        interface_error = fdtmc1.createState();
+        fdtmc1.createInterface("F", source, target, interface_error);
+
+        fdtmc1.createTransition(interface_error, error1, "error_ground", "1");
+
+        source = target;
+        target = success1;
+        fdtmc1.createTransition(source, target, "persist_return", "0.999");
+        fdtmc1.createTransition(source, error1, "!persist_return", "0.001");
+
+        FDTMC fdtmc2 = new FDTMC();
+        fdtmc2.setVariableName("v");
+        State init2 = fdtmc2.createInitialState(),
+              success2 = fdtmc2.createSuccessState(),
+              error2 = fdtmc2.createErrorState();
+
+        source = init2;
+        target = fdtmc2.createState();
+        fdtmc2.createTransition(source, target, "msg", "0.999");
+        fdtmc2.createTransition(source, error2, "!msg", "0.001");
+
+        source = target;
+        target = fdtmc2.createState();
+        interface_error = fdtmc2.createState();
+        fdtmc2.createInterface("G", source, target, interface_error);
+
+        fdtmc2.createTransition(interface_error, error2, "error_ground", "1");
+
+        source = target;
+        target = success2;
+        fdtmc2.createTransition(source, target, "msg_return", "0.999");
+        fdtmc2.createTransition(source, error2, "!msg_return", "0.001");
+
+        Assert.assertEquals("FDTMCs' states should be compared disregarding variable names",
+                init1, init2);
+        Assert.assertNotEquals("FDTMCs' states should be compared disregarding variable names",
+                success1, error2);
+
+        Assert.assertEquals("FDTMCs' states should be compared disregarding variable names",
+                fdtmc1.getStates(), fdtmc2.getStates());
+
+        Assert.assertEquals("FDTMCs should be compared disregarding actions' names, interfaces' names and variable names",
+                fdtmc1, fdtmc2);
+	}
 
 }
