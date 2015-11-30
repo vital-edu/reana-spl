@@ -84,7 +84,7 @@ public class CommandLineInterface {
         printAnalysisResults(targetConfigurations, familyReliability);
 
         if (options.hasStatsEnabled()) {
-            printStats(OUTPUT, familyReliability);
+            printStats(OUTPUT, familyReliability, rdgRoot);
         }
         long totalRunningTime = System.currentTimeMillis() - startTime;
         OUTPUT.println("Total running time: " +  totalRunningTime + " ms");
@@ -253,20 +253,20 @@ public class CommandLineInterface {
         }
     }
 
-    private static void printStats(PrintStream out, IReliabilityAnalysisResults familyReliability) {
+    private static void printStats(PrintStream out, IReliabilityAnalysisResults familyReliability, RDGNode rdgRoot) {
         out.println("-----------------------------");
         out.println("Stats:");
         out.println("------");
         timeCollector.printStats(out);
         formulaCollector.printStats(out);
         memoryCollector.printStats(out);
-        printEvaluationReuse();
+        printEvaluationReuse(rdgRoot);
         familyReliability.printStats(out);
     }
 
-    private static void printEvaluationReuse() {
+    private static void printEvaluationReuse(RDGNode rdgRoot) {
         try {
-            Map<RDGNode, Integer> numberOfPaths = RDGNode.getNumberOfPaths();
+            Map<RDGNode, Integer> numberOfPaths = rdgRoot.getNumberOfPaths();
             int nodes = 0;
             int totalPaths = 0;
             for (Map.Entry<RDGNode, Integer> entry: numberOfPaths.entrySet()) {
