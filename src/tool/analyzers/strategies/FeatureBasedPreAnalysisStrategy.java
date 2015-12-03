@@ -1,6 +1,5 @@
 package tool.analyzers.strategies;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,25 +43,17 @@ public class FeatureBasedPreAnalysisStrategy {
      * @return
      */
     public LinkedHashMap<RDGNode, String> getReliabilityExpressions(List<RDGNode> nodes) {
+        // Expressions can be calculated concurrently...
         Map<RDGNode, String> expressionsByNode = nodes.parallelStream()
             .collect(Collectors.toMap(Function.identity(),
                      this::getReliabilityExpression));
 
-        // Now we need to recover ordering information...
-        Map<RDGNode, Integer> order = new HashMap<RDGNode, Integer>();
-        for (int i = 0; i < nodes.size(); i++) {
-            order.put(nodes.get(i), i);
-        }
-        // ... so that we can format the response accordingly.
+        // ... but then we need to recover ordering information
+        // so that we can format the response accordingly.
         LinkedHashMap<RDGNode, String> reliabilityExpressions = new LinkedHashMap<RDGNode, String>();
-        expressionsByNode.entrySet().stream()
-            .sorted((entry1, entry2) -> {
-                return order.get(entry1.getKey()) - order.get(entry2.getKey());
-            })
-            .forEach(entry -> {
-                reliabilityExpressions.put(entry.getKey(),
-                                           entry.getValue());
-            });
+        for (RDGNode node: nodes) {
+            reliabilityExpressions.put(node, expressionsByNode.get(node));
+        }
         return reliabilityExpressions;
     }
 
