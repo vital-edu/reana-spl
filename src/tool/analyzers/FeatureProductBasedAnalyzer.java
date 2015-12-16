@@ -87,8 +87,9 @@ public class FeatureProductBasedAnalyzer {
         if (!featureModel.isValidConfiguration(configuration)) {
             return 0.0;
         }
-        Map<RDGNode, Double> reliabilities = evaluateReliabilities(expressionsByNode, configuration);
-        return reliabilities.get(node);
+        return evaluateReliabilities(node,
+                                     expressionsByNode,
+                                     configuration);
     }
 
     /**
@@ -97,11 +98,11 @@ public class FeatureProductBasedAnalyzer {
      *
      * This function implements the product-based part of a feature-product-based analysis.
      *
-     * @param node RDG node whose reliability is to be evaluated.
+     * @param targetNode RDG node whose reliability is to be evaluated.
      * @return
      * @throws UnknownFeatureException
      */
-    private Map<RDGNode, Double> evaluateReliabilities(LinkedHashMap<RDGNode, String> expressionsByNode, List<String> configuration) throws UnknownFeatureException {
+    private Double evaluateReliabilities(RDGNode targetNode, LinkedHashMap<RDGNode, String> expressionsByNode, List<String> configuration) throws UnknownFeatureException {
         Map<RDGNode, Double> reliabilities = new HashMap<RDGNode, Double>();
         for (SortedMap.Entry<RDGNode, String> entry: expressionsByNode.entrySet()) {
             RDGNode node = entry.getKey();
@@ -118,7 +119,7 @@ public class FeatureProductBasedAnalyzer {
             reliabilities.put(node, reliability);
         }
 
-        return reliabilities;
+        return reliabilities.get(targetNode);
     }
 
     /**

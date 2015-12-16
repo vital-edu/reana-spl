@@ -82,14 +82,13 @@ public class FeatureFamilyBasedAnalyzer {
         LinkedHashMap<RDGNode, String> expressionsByNode = featureBasedPreAnalysisStrategy.getReliabilityExpressions(dependencies);
 
         timeCollector.startTimer(CollectibleTimers.FAMILY_BASED_TIME);
-        Map<RDGNode, ADD> reliabilities = evaluateReliabilities(expressionsByNode);
-        ADD reliability = reliabilities.get(node);
+        ADD result = evaluateReliabilities(node, expressionsByNode);
 
         // After evaluating the expression, constant terms alter the {0,1} nature
         // of the reliability ADD. Thus, we must multiply the result by the
         // {0,1} representation of the feature model in order to retain 0 as the
         // value for invalid configurations.
-        ADD result = featureModel.times(reliability);
+        result = featureModel.times(result);
         timeCollector.stopTimer(CollectibleTimers.FAMILY_BASED_TIME);
 
         if (dotOutput != null) {
@@ -119,10 +118,10 @@ public class FeatureFamilyBasedAnalyzer {
      *
      * This function implements the family-based part of a feature-family-based analysis.
      *
-     * @param node RDG node whose reliability is to be evaluated.
+     * @param targetNode RDG node whose reliability is to be evaluated.
      * @return
      */
-    private Map<RDGNode, ADD> evaluateReliabilities(LinkedHashMap<RDGNode, String> expressionsByNode) {
+    private ADD evaluateReliabilities(RDGNode targetNode, LinkedHashMap<RDGNode, String> expressionsByNode) {
         Map<RDGNode, ADD> reliabilities = new HashMap<RDGNode, ADD>();
 
         for (SortedMap.Entry<RDGNode, String> entry: expressionsByNode.entrySet()) {
@@ -139,7 +138,7 @@ public class FeatureFamilyBasedAnalyzer {
             reliabilities.put(node, reliability);
         }
 
-        return reliabilities;
+        return reliabilities.get(targetNode);
     }
 
     /**
