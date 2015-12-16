@@ -66,17 +66,18 @@ public class FamilyBasedPreAnalysisStrategy {
         Map<RDGNode, FDTMC> derivedModels = new HashMap<RDGNode, FDTMC>();
         for (RDGNode node: dependencies) {
             FDTMC model = node.getFDTMC();
-            FDTMC derivedModel = inline150Model(model, derivedModels);
-            derivedModels.put(node, derivedModel);
+            FDTMC derivedModel = inlineModel(model, derivedModels);
+            FDTMC decoratedModel = derivedModel.decoratedWithPresence(node.getId());
+            derivedModels.put(node, decoratedModel);
         }
         return derivedModels;
     }
 
-    private FDTMC inline150Model(FDTMC model, final Map<RDGNode, FDTMC> derivedModels) {
+    private FDTMC inlineModel(FDTMC model, final Map<RDGNode, FDTMC> derivedModels) {
         Map<String, FDTMC> indexedModels = derivedModels.entrySet().stream()
                 .collect(Collectors.toMap(entry -> entry.getKey().getId(),
                                           entry -> entry.getValue()));
-        return model.inlineWithVariability(indexedModels);
+        return model.inline(indexedModels);
     }
 
 }
