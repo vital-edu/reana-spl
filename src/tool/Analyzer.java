@@ -18,7 +18,7 @@ import tool.analyzers.FeatureFamilyBasedAnalyzer;
 import tool.analyzers.FeatureProductBasedAnalyzer;
 import tool.analyzers.IPruningStrategy;
 import tool.analyzers.IReliabilityAnalysisResults;
-import tool.analyzers.ProductBasedAnalyzer;
+import tool.analyzers.functional.ProductBasedAnalyzer;
 import tool.stats.IFormulaCollector;
 import tool.stats.ITimeCollector;
 import tool.stats.NoopFormulaCollector;
@@ -100,7 +100,6 @@ public class Analyzer {
                                                                                this.timeCollector,
                                                                                this.formulaCollector);
         this.productBasedAnalyzerImpl = new ProductBasedAnalyzer(this.jadd,
-                                                                 this.featureModel,
                                                                  this.modelChecker,
                                                                  this.timeCollector,
                                                                  this.formulaCollector);

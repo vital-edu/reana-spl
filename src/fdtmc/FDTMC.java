@@ -306,6 +306,25 @@ public class FDTMC {
     }
 
     /**
+     * Returns an FDTMC with a transition to {@code ifPresent} annotated by
+     * {@code presenceVariable} and a complement one ({@code 1 - ifPresent})
+     * to {@code ifAbsent}. Of course, {@code presenceVariable} is meant to
+     * be resolved with a value of 0 or 1.
+     *
+     * The success states of both {@code ifPresent} and {@code ifAbsent} are
+     * linked to a new success state.
+     *
+     * @param presenceVariable
+     * @param ifPresent
+     * @param ifAbsent
+     * @return
+     */
+    public static FDTMC ifThenElse(String presenceVariable, FDTMC ifPresent, FDTMC ifAbsent) {
+        // TODO Handle ifAbsent.
+        return ifPresent.decoratedWithPresence(presenceVariable);
+    }
+
+    /**
      * Prepares {@code destination} FDTMC to be an inlined version of this one.
      * @param destination
      * @return a mapping from states in this FDTMC to the corresponding states
