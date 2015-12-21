@@ -30,6 +30,7 @@ public class FamilyBasedAnalyzer {
     ParametricModelChecker modelChecker;
 
     private FamilyBasedFirstPhase firstPhase;
+    private FamilyBasedHelper helper;
 
     private ITimeCollector timeCollector;
     private IFormulaCollector formulaCollector;
@@ -47,6 +48,7 @@ public class FamilyBasedAnalyzer {
         this.formulaCollector = formulaCollector;
 
         this.firstPhase = new FamilyBasedFirstPhase(modelChecker);
+        this.helper = new FamilyBasedHelper(expressionSolver);
     }
 
     /**
@@ -66,7 +68,7 @@ public class FamilyBasedAnalyzer {
         formulaCollector.collectFormula(node, expression);
 
         // Lift
-        Expression<ADD> liftedExpression = expressionSolver.parseExpressionForFunctions(expression);
+        Expression<ADD> liftedExpression = helper.lift(expression);
 
         Function<RDGNode, String> getPC = RDGNode::getPresenceCondition;
         Map<String, ADD> values = dependencies.stream()

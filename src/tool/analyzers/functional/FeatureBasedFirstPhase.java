@@ -1,10 +1,7 @@
 package tool.analyzers.functional;
 
-import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -40,17 +37,16 @@ public class FeatureBasedFirstPhase {
      */
     public List<Component<String>> getReliabilityExpressions(List<RDGNode> nodes) {
         // Expressions can be calculated concurrently...
-        Map<RDGNode, String> expressionsByNode = nodes.parallelStream()
-            .collect(Collectors.toMap(Function.identity(),
+        Map<String, String> expressionsByNode = nodes.parallelStream()
+            .collect(Collectors.toMap(RDGNode::getId,
                                       this::getReliabilityExpression));
 
         // ... but then we need to recover ordering information
         // so that we can format the response accordingly.
-        List<Component<String>> reliabilityExpressions = new LinkedList<Component<String>>();
-        for (RDGNode node: nodes) {
-            reliabilityExpressions.add(mapNodeToExpression(node, expressionsByNode));
-        }
-        return reliabilityExpressions;
+        return nodes.stream()
+                .map(RDGNode::toComponent)
+                .map(c -> c.fmap((FDTMC f) -> expressionsByNode.get(c.getId())))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -66,16 +62,6 @@ public class FeatureBasedFirstPhase {
         formulaCollector.collectFormula(node, reliabilityExpression);
         LOGGER.fine("Reliability expression for "+ node.getId() + " -> " + reliabilityExpression);
         return reliabilityExpression;
-    }
-
-    private Component<String> mapNodeToExpression(RDGNode node, Map<RDGNode, String> expressionsByNode) {
-        Collection<Component<String>> dependencies = node.getDependencies().stream()
-                .map(n -> mapNodeToExpression(n, expressionsByNode))
-                .collect(Collectors.toSet());
-        return new Component<String>(node.getId(),
-                                     node.getPresenceCondition(),
-                                     expressionsByNode.get(node),
-                                     dependencies);
     }
 
 }

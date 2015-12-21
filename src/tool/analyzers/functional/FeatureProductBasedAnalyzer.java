@@ -3,9 +3,7 @@ package tool.analyzers.functional;
 import jadd.JADD;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import paramwrapper.ParametricModelChecker;
 import tool.CyclicRdgException;
@@ -82,31 +80,11 @@ public class FeatureProductBasedAnalyzer {
     }
 
     private Double evaluateReliabilityForSingleConfiguration(RDGNode node, List<String> configuration, List<Component<String>> expressions) {
-        return solveFromMany(expressions, configuration);
-    }
-
-    // TODO Candidate!
-    private Double solveFromMany(List<Component<String>> dependencies, List<String> configuration) {
-        Map<String, Double> reliabilities = new HashMap<String, Double>();
-        return dependencies.stream()
-                .map(c -> deriveSingle(c, configuration, solve, reliabilities))
-                .reduce((first, actual) -> actual)
-                .get();
-    }
-
-    // TODO Candidate!
-    private Double deriveSingle(Component<String> component, List<String> configuration, DerivationFunction<Boolean, String, Double> derive, Map<String, Double> derivedModels) {
-        boolean presence = isPresent(component, configuration);
-        Double derived = derive.apply(presence, component.getAsset(), derivedModels);
-        derivedModels.put(component.getId(), derived);
-        return derived;
-    }
-
-    // TODO Candidate!
-    private boolean isPresent(Component<String> component, List<String> configuration) {
-        return PresenceConditions.isPresent(component.getPresenceCondition(),
-                                            configuration,
-                                            expressionSolver);
+        return Component.deriveFromMany(expressions,
+                                        solve,
+                                        c -> PresenceConditions.isPresent(c.getPresenceCondition(),
+                                                                          configuration,
+                                                                          expressionSolver));
     }
 
 }

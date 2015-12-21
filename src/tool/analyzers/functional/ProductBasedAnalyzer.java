@@ -3,9 +3,7 @@ package tool.analyzers.functional;
 import jadd.JADD;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import paramwrapper.ParametricModelChecker;
 import tool.CyclicRdgException;
@@ -13,6 +11,7 @@ import tool.RDGNode;
 import tool.UnknownFeatureException;
 import tool.analyzers.IReliabilityAnalysisResults;
 import tool.analyzers.MapBasedReliabilityResults;
+import tool.analyzers.buildingblocks.Component;
 import tool.analyzers.buildingblocks.DerivationFunction;
 import tool.analyzers.buildingblocks.IfOperator;
 import tool.stats.CollectibleTimers;
@@ -26,6 +25,11 @@ public class ProductBasedAnalyzer {
 
     private ExpressionSolver expressionSolver;
     ParametricModelChecker modelChecker;
+    /**
+     * LAMBDA
+     */
+    private DerivationFunction<Boolean, FDTMC, FDTMC> derive;
+
 
     private ITimeCollector timeCollector;
     private IFormulaCollector formulaCollector;
@@ -39,6 +43,10 @@ public class ProductBasedAnalyzer {
 
         this.timeCollector = timeCollector;
         this.formulaCollector = formulaCollector;
+
+        derive = DerivationFunction.abstractDerivation(new IfOperator<FDTMC>(),
+                                                       FDTMC::inline,
+                                                       trivialFdtmc());
     }
 
     /**
@@ -66,8 +74,9 @@ public class ProductBasedAnalyzer {
     }
 
     private Double evaluateReliabilityForSingleConfiguration(RDGNode node, List<String> configuration, List<RDGNode> dependencies) throws UnknownFeatureException {
+        List<Component<FDTMC>> models = RDGNode.toComponentList(dependencies);
         // Lambda folding
-        FDTMC rootModel = deriveFromMany(dependencies, configuration);
+        FDTMC rootModel = deriveFromMany(models, configuration);
         // Alpha
         String reliabilityExpression = modelChecker.getReliability(rootModel);
         formulaCollector.collectFormula(node, reliabilityExpression);
@@ -75,32 +84,12 @@ public class ProductBasedAnalyzer {
         return expressionSolver.solveExpression(reliabilityExpression);
     }
 
-    /**
-     * LAMBDA
-     */
-    private DerivationFunction<Boolean, FDTMC, FDTMC> derive = DerivationFunction.abstractDerivation(new IfOperator<FDTMC>(), FDTMC::inline, trivialFdtmc());
-
-    private FDTMC deriveFromMany(List<RDGNode> dependencies, List<String> configuration) {
-        Map<String, FDTMC> derivedModels = new HashMap<String, FDTMC>();
-        return dependencies.stream()
-                .map(n -> deriveNode(n, configuration, derive, derivedModels))
-                .reduce((first, fdtmc) -> fdtmc)
-                .get();
-    }
-
-    // TODO Candidate!
-    private FDTMC deriveNode(RDGNode node, List<String> configuration, DerivationFunction<Boolean, FDTMC, FDTMC> derive, Map<String, FDTMC> derivedModels) {
-        boolean presence = isPresent(node, configuration);
-        FDTMC derived = derive.apply(presence, node.getFDTMC(), derivedModels);
-        derivedModels.put(node.getId(), derived);
-        return derived;
-    }
-
-    // Candidate!
-    private boolean isPresent(RDGNode node, List<String> configuration) {
-        return PresenceConditions.isPresent(node.getPresenceCondition(),
-                                            configuration,
-                                            expressionSolver);
+    private FDTMC deriveFromMany(List<Component<FDTMC>> dependencies, List<String> configuration) {
+        return Component.deriveFromMany(dependencies,
+                                        derive,
+                                        c -> PresenceConditions.isPresent(c.getPresenceCondition(),
+                                                                          configuration,
+                                                                          expressionSolver));
     }
 
     private FDTMC trivialFdtmc() {

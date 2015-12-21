@@ -3,9 +3,7 @@ package tool.analyzers.functional;
 import jadd.ADD;
 import jadd.JADD;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import paramwrapper.ParametricModelChecker;
@@ -32,6 +30,7 @@ public class FeatureFamilyBasedAnalyzer {
     private IPruningStrategy pruningStrategy;
 
     private FeatureBasedFirstPhase firstPhase;
+    private FamilyBasedHelper helper;
 
     /**
      * Sigma_v
@@ -55,6 +54,7 @@ public class FeatureFamilyBasedAnalyzer {
 
         this.firstPhase = new FeatureBasedFirstPhase(modelChecker,
                                                      formulaCollector);
+        this.helper = new FamilyBasedHelper(expressionSolver);
 
         AssetProcessor<Expression<ADD>, ADD> evalAndPrune = (expr, values) -> {
             return this.pruningStrategy.pruneInvalidConfigurations(null,
@@ -89,9 +89,9 @@ public class FeatureFamilyBasedAnalyzer {
         timeCollector.startTimer(CollectibleTimers.FAMILY_BASED_TIME);
         // Lift
         List<Component<Expression<ADD>>> liftedExpressions = expressions.stream()
-                .map(c -> c.map(expressionSolver::parseExpressionForFunctions))
+                .map(helper::lift)
                 .collect(Collectors.toList());
-
+        // Sigma_v
         ADD reliability = solveFromMany(liftedExpressions);
         ADD result = featureModel.times(reliability);
         timeCollector.stopTimer(CollectibleTimers.FAMILY_BASED_TIME);
@@ -129,20 +129,10 @@ public class FeatureFamilyBasedAnalyzer {
         jadd.dumpDot("Family Reliability", familyReliability, outputFile);
     }
 
-    // TODO Candidate!
     private ADD solveFromMany(List<Component<Expression<ADD>>> dependencies) {
-        Map<String, ADD> reliabilities = new HashMap<String, ADD>();
-        return dependencies.stream()
-                .map(c -> deriveSingle(c, solve, reliabilities))
-                .reduce((first, actual) -> actual)
-                .get();
+        return Component.deriveFromMany(dependencies,
+                                        solve,
+                                        c -> expressionSolver.encodeFormula(c.getPresenceCondition()));
     }
 
-    // TODO Candidate!
-    private ADD deriveSingle(Component<Expression<ADD>> component, DerivationFunction<ADD, Expression<ADD>, ADD> derive, Map<String, ADD> derivedModels) {
-        ADD presence = expressionSolver.encodeFormula(component.getPresenceCondition());
-        ADD derived = derive.apply(presence, component.getAsset(), derivedModels);
-        derivedModels.put(component.getId(), derived);
-        return derived;
-    }
 }

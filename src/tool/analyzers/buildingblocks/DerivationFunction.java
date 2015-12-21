@@ -3,13 +3,13 @@ package tool.analyzers.buildingblocks;
 import java.util.Map;
 
 @FunctionalInterface
-public interface DerivationFunction<P, T, U> {
+public interface DerivationFunction<P, A, V> {
 
-    U apply(P presence, T asset, Map<String, U> values);
+    V apply(P presence, A asset, Map<String, V> values);
 
-    static <P, T, U> DerivationFunction<P, T, U> abstractDerivation(IfThenElse<P, U> ite,
-                                                                    AssetProcessor<T, U> processAsset,
-                                                                    U defaultValue) {
+    static <P, T, D> DerivationFunction<P, T, D> abstractDerivation(IfThenElse<P, D> ite,
+                                                                    AssetProcessor<T, D> processAsset,
+                                                                    D defaultValue) {
         return (presence, asset, values) -> ite.apply(presence,
                                                       processAsset.apply(asset, values),
                                                       defaultValue);
