@@ -127,6 +127,13 @@ public class ADD {
         return new ADD(dd, result, variableStore);
     }
 
+    /**
+     * Implements if-then-else with {@code condition} as the conditional.
+     */
+    public static ADD ite(ADD condition, ADD ifTrue, ADD ifFalse) {
+        return condition.ifThenElse(ifTrue, ifFalse);
+    }
+
     public Set<String> getVariables() {
         Set<String> variables = new HashSet<String>();
 
@@ -148,6 +155,10 @@ public class ADD {
                                                             Pointer.pointerToInts(presenceVector));
         DdNode terminalNode = terminal.get();
         return terminalNode.type().value();
+    }
+
+    public double eval(List<String> variables) throws UnrecognizedVariableException {
+        return eval(variables.toArray(new String[variables.size()]));
     }
 
     /**
