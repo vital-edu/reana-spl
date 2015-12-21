@@ -122,6 +122,16 @@ public class Analyzer {
     }
 
     /**
+     * Returns true if and only if {@code configuration} is valid according
+     * to the feature model.
+     * @param configuration
+     * @return
+     */
+    public boolean isValidConfiguration(List<String> configuration) {
+        return featureModel.isValidConfiguration(configuration);
+    }
+
+    /**
      * Sets the pruning strategy to be used for preventing calculation
      * of reliability values for invalid configurations.
      *

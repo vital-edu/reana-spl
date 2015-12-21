@@ -22,6 +22,7 @@ import java.util.function.BiFunction;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import modeling.DiagramAPI;
 
@@ -76,14 +77,19 @@ public class CommandLineInterface {
 
         Analyzer analyzer = makeAnalyzer(options);
         Collection<List<String>> targetConfigurations = getTargetConfigurations(options, analyzer);
+        Map<Boolean, List<List<String>>> splitConfigs = targetConfigurations.parallelStream()
+                .collect(Collectors.partitioningBy(analyzer::isValidConfiguration));
 
         memoryCollector.takeSnapshot("before evaluation");
         long analysisStartTime = System.currentTimeMillis();
-        IReliabilityAnalysisResults familyReliability = evaluateReliability(analyzer, rdgRoot, targetConfigurations, options);
+        IReliabilityAnalysisResults familyReliability = evaluateReliability(analyzer,
+                                                                            rdgRoot,
+                                                                            splitConfigs.get(true),
+                                                                            options);
         long totalAnalysisTime = System.currentTimeMillis() - analysisStartTime;
         memoryCollector.takeSnapshot("after evaluation");
 
-        printAnalysisResults(targetConfigurations, familyReliability);
+        printAnalysisResults(splitConfigs, familyReliability);
 
         if (options.hasStatsEnabled()) {
             printStats(OUTPUT, familyReliability, rdgRoot);
@@ -217,14 +223,14 @@ public class CommandLineInterface {
         }
     }
 
-    private static void printAnalysisResults(Collection<List<String>> configurations, IReliabilityAnalysisResults familyReliability) {
+    private static void printAnalysisResults(Map<Boolean, List<List<String>>> splitConfigs, IReliabilityAnalysisResults familyReliability) {
         OUTPUT.println("Configurations:");
         OUTPUT.println("=========================================");
 
-        for (List<String> configuration: configurations) {
+        for (List<String> validConfig: splitConfigs.get(true)) {
             try {
-                String[] configurationAsArray = configuration.toArray(new String[configuration.size()]);
-                printSingleConfiguration(configuration.toString(),
+                String[] configurationAsArray = validConfig.toArray(new String[validConfig.size()]);
+                printSingleConfiguration(validConfig.toString(),
                                          familyReliability.getResult(configurationAsArray));
             } catch (UnknownFeatureException e) {
                 LOGGER.severe("Unrecognized feature: " + e.getFeatureName());
@@ -232,19 +238,12 @@ public class CommandLineInterface {
             }
         }
 
-        int count = 0;
-        for (List<String> config: configurations) {
-            int tmpCount = 1;
-            for (String feature: config) {
-                if (feature.startsWith("(")) {
-                    tmpCount *= 2;
-                }
-            }
-            count += tmpCount;
+        for (List<String> invalidConfig: splitConfigs.get(false)) {
+            printSingleConfiguration(invalidConfig.toString(), 0);
         }
 
         OUTPUT.println("=========================================");
-        OUTPUT.println(">>>> Total configurations: " + count);
+        OUTPUT.println(">>>> Total valid configurations: " + splitConfigs.get(true).size());
     }
 
     private static void printSingleConfiguration(String configuration, double reliability) {
