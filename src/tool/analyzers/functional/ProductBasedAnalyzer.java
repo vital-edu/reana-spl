@@ -96,6 +96,7 @@ public class ProductBasedAnalyzer {
         return derived;
     }
 
+    // Candidate!
     private boolean isPresent(RDGNode node, List<String> configuration) {
         return PresenceConditions.isPresent(node.getPresenceCondition(),
                                             configuration,

@@ -12,7 +12,7 @@ import java.util.List;
 
 import paramwrapper.ParamWrapper;
 import paramwrapper.ParametricModelChecker;
-import tool.analyzers.FamilyProductBasedAnalyzer;
+import tool.analyzers.functional.FamilyProductBasedAnalyzer;
 import tool.analyzers.FeatureFamilyBasedAnalyzer;
 import tool.analyzers.FeatureProductBasedAnalyzer;
 import tool.analyzers.IPruningStrategy;
@@ -109,7 +109,6 @@ public class Analyzer {
                                                                this.timeCollector,
                                                                this.formulaCollector);
         this.familyProductBasedAnalyzerImpl = new FamilyProductBasedAnalyzer(this.jadd,
-                                                                             this.featureModel,
                                                                              this.modelChecker,
                                                                              this.timeCollector,
                                                                              this.formulaCollector);
