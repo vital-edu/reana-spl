@@ -1,4 +1,4 @@
-package tool.analyzers.functional;
+package tool.analyzers.strategies;
 
 import jadd.JADD;
 
@@ -14,13 +14,18 @@ import tool.CyclicRdgException;
 import tool.RDGNode;
 import tool.analyzers.IReliabilityAnalysisResults;
 import tool.analyzers.MapBasedReliabilityResults;
-import tool.analyzers.functional.ProductIterationHelper.CONCURRENCY;
+import tool.analyzers.buildingblocks.PresenceConditions;
+import tool.analyzers.buildingblocks.ProductIterationHelper;
+import tool.analyzers.buildingblocks.ProductIterationHelper.CONCURRENCY;
 import tool.stats.CollectibleTimers;
 import tool.stats.IFormulaCollector;
 import tool.stats.ITimeCollector;
 import expressionsolver.Expression;
 import expressionsolver.ExpressionSolver;
 
+/**
+ * Orchestrator of family-product-based analyses.
+ */
 public class FamilyProductBasedAnalyzer {
     private static final Logger LOGGER = Logger.getLogger(FamilyProductBasedAnalyzer.class.getName());
 
@@ -67,8 +72,8 @@ public class FamilyProductBasedAnalyzer {
         Map<Collection<String>, Double> results = ProductIterationHelper.evaluate(configuration -> evaluateSingle(parsedExpression,
                                                                                                                   configuration,
                                                                                                                   dependencies),
-                                                                              configurations,
-                                                                              CONCURRENCY.SEQUENTIAL);
+                                                                                  configurations,
+                                                                                  CONCURRENCY.SEQUENTIAL);
 
         timeCollector.stopTimer(CollectibleTimers.PRODUCT_BASED_TIME);
         LOGGER.info("Formulae evaluation ok...");

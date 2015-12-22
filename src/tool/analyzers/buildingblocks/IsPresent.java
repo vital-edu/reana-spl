@@ -1,8 +1,14 @@
 package tool.analyzers.buildingblocks;
 
+/**
+ * Presence function for an asset.
+ *
+ * @param <A> Asset type
+ * @param <P> Presence type (boolean-like)
+ */
 @FunctionalInterface
-public interface IsPresent<T, P> {
+public interface IsPresent<A, P> {
 
-    P apply(Component<T> component);
+    P apply(Component<A> component);
 
 }

@@ -1,4 +1,4 @@
-package tool.analyzers.functional;
+package tool.analyzers.strategies;
 
 import jadd.ADD;
 import jadd.JADD;
@@ -16,12 +16,16 @@ import tool.analyzers.NoPruningStrategy;
 import tool.analyzers.buildingblocks.AssetProcessor;
 import tool.analyzers.buildingblocks.Component;
 import tool.analyzers.buildingblocks.DerivationFunction;
+import tool.analyzers.buildingblocks.FamilyBasedHelper;
 import tool.stats.CollectibleTimers;
 import tool.stats.IFormulaCollector;
 import tool.stats.ITimeCollector;
 import expressionsolver.Expression;
 import expressionsolver.ExpressionSolver;
 
+/**
+ * Orchestrator of feature-family-based analyses.
+ */
 public class FeatureFamilyBasedAnalyzer {
 
     private ADD featureModel;

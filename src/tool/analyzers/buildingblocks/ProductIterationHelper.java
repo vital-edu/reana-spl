@@ -1,4 +1,4 @@
-package tool.analyzers.functional;
+package tool.analyzers.buildingblocks;
 
 import java.util.Collection;
 import java.util.Map;

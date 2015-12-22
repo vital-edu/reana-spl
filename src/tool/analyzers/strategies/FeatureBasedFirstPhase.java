@@ -1,33 +1,29 @@
 package tool.analyzers.strategies;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import paramwrapper.ParametricModelChecker;
 import tool.Analyzer;
 import tool.RDGNode;
-import tool.stats.CollectibleTimers;
+import tool.analyzers.buildingblocks.Component;
 import tool.stats.IFormulaCollector;
-import tool.stats.ITimeCollector;
 import fdtmc.FDTMC;
 
-public class FeatureBasedPreAnalysisStrategy {
-    private static final Logger LOGGER = Logger.getLogger(FeatureBasedPreAnalysisStrategy.class.getName());
+/**
+ * First phase of a feature-family- or a feature-product-based strategy.
+ */
+public class FeatureBasedFirstPhase {
+    private static final Logger LOGGER = Logger.getLogger(FeatureBasedFirstPhase.class.getName());
 
     ParametricModelChecker modelChecker;
-    private ITimeCollector timeCollector;
     private IFormulaCollector formulaCollector;
 
-    public FeatureBasedPreAnalysisStrategy(ParametricModelChecker modelChecker,
-                                           ITimeCollector timeCollector,
-                                           IFormulaCollector formulaCollector) {
+    public FeatureBasedFirstPhase(ParametricModelChecker modelChecker,
+                                  IFormulaCollector formulaCollector) {
         this.modelChecker = modelChecker;
-
-        this.timeCollector = timeCollector;
         this.formulaCollector = formulaCollector;
     }
 
@@ -42,19 +38,18 @@ public class FeatureBasedPreAnalysisStrategy {
      * @param node
      * @return
      */
-    public LinkedHashMap<RDGNode, String> getReliabilityExpressions(List<RDGNode> nodes) {
+    public List<Component<String>> getReliabilityExpressions(List<RDGNode> nodes) {
         // Expressions can be calculated concurrently...
-        Map<RDGNode, String> expressionsByNode = nodes.parallelStream()
-            .collect(Collectors.toMap(Function.identity(),
-                     this::getReliabilityExpression));
+        Map<String, String> expressionsByNode = nodes.parallelStream()
+            .collect(Collectors.toMap(RDGNode::getId,
+                                      this::getReliabilityExpression));
 
         // ... but then we need to recover ordering information
         // so that we can format the response accordingly.
-        LinkedHashMap<RDGNode, String> reliabilityExpressions = new LinkedHashMap<RDGNode, String>();
-        for (RDGNode node: nodes) {
-            reliabilityExpressions.put(node, expressionsByNode.get(node));
-        }
-        return reliabilityExpressions;
+        return nodes.stream()
+                .map(RDGNode::toComponent)
+                .map(c -> c.fmap((FDTMC f) -> expressionsByNode.get(c.getId())))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -64,10 +59,8 @@ public class FeatureBasedPreAnalysisStrategy {
      * @return an algebraic expression on the variables present in the node's model.
      */
     private String getReliabilityExpression(RDGNode node) {
-        timeCollector.startTimer(CollectibleTimers.FEATURE_BASED_TIME);
         FDTMC model = node.getFDTMC();
         String reliabilityExpression = modelChecker.getReliability(model);
-        timeCollector.stopTimer(CollectibleTimers.FEATURE_BASED_TIME);
 
         formulaCollector.collectFormula(node, reliabilityExpression);
         LOGGER.fine("Reliability expression for "+ node.getId() + " -> " + reliabilityExpression);

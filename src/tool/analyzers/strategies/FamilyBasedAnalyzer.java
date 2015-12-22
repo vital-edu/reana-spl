@@ -1,4 +1,4 @@
-package tool.analyzers.functional;
+package tool.analyzers.strategies;
 
 import jadd.ADD;
 import jadd.JADD;
@@ -16,12 +16,16 @@ import tool.RDGNode;
 import tool.UnknownFeatureException;
 import tool.analyzers.ADDReliabilityResults;
 import tool.analyzers.IReliabilityAnalysisResults;
+import tool.analyzers.buildingblocks.FamilyBasedHelper;
 import tool.stats.CollectibleTimers;
 import tool.stats.IFormulaCollector;
 import tool.stats.ITimeCollector;
 import expressionsolver.Expression;
 import expressionsolver.ExpressionSolver;
 
+/**
+ * Orchestrator of family-based analyses.
+ */
 public class FamilyBasedAnalyzer {
     private static final Logger LOGGER = Logger.getLogger(FamilyBasedAnalyzer.class.getName());
 

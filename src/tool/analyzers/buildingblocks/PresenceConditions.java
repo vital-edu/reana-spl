@@ -1,4 +1,4 @@
-package tool.analyzers.functional;
+package tool.analyzers.buildingblocks;
 
 import jadd.ADD;
 import jadd.UnrecognizedVariableException;

@@ -1,4 +1,4 @@
-package tool.analyzers.functional;
+package tool.analyzers.strategies;
 
 import java.util.List;
 import java.util.logging.Logger;

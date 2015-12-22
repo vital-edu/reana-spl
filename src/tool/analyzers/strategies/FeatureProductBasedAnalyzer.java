@@ -1,4 +1,4 @@
-package tool.analyzers.functional;
+package tool.analyzers.strategies;
 
 import jadd.JADD;
 
@@ -15,12 +15,17 @@ import tool.analyzers.MapBasedReliabilityResults;
 import tool.analyzers.buildingblocks.Component;
 import tool.analyzers.buildingblocks.DerivationFunction;
 import tool.analyzers.buildingblocks.IfOperator;
-import tool.analyzers.functional.ProductIterationHelper.CONCURRENCY;
+import tool.analyzers.buildingblocks.PresenceConditions;
+import tool.analyzers.buildingblocks.ProductIterationHelper;
+import tool.analyzers.buildingblocks.ProductIterationHelper.CONCURRENCY;
 import tool.stats.CollectibleTimers;
 import tool.stats.IFormulaCollector;
 import tool.stats.ITimeCollector;
 import expressionsolver.ExpressionSolver;
 
+/**
+ * Orchestrator of feature-product-based analyses.
+ */
 public class FeatureProductBasedAnalyzer {
 
     private ExpressionSolver expressionSolver;
@@ -72,8 +77,8 @@ public class FeatureProductBasedAnalyzer {
         Map<Collection<String>, Double> results = ProductIterationHelper.evaluate(configuration -> evaluateSingle(node,
                                                                                                                   configuration,
                                                                                                                   expressions),
-                                                                              configurations,
-                                                                              CONCURRENCY.PARALLEL);
+                                                                                  configurations,
+                                                                                  CONCURRENCY.PARALLEL);
 
         timeCollector.stopTimer(CollectibleTimers.PRODUCT_BASED_TIME);
         return new MapBasedReliabilityResults(results);

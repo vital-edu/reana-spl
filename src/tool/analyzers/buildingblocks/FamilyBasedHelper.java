@@ -1,10 +1,12 @@
-package tool.analyzers.functional;
+package tool.analyzers.buildingblocks;
 
 import jadd.ADD;
-import tool.analyzers.buildingblocks.Component;
 import expressionsolver.Expression;
 import expressionsolver.ExpressionSolver;
 
+/**
+ * Helper for lifting of expressions in *-family-*-based strategies.
+ */
 public class FamilyBasedHelper {
 
     private ExpressionSolver expressionSolver;
