@@ -76,8 +76,8 @@ public class CommandLineInterface {
         memoryCollector.takeSnapshot("after model parsing");
 
         Analyzer analyzer = makeAnalyzer(options);
-        Collection<List<String>> targetConfigurations = getTargetConfigurations(options, analyzer);
-        Map<Boolean, List<List<String>>> splitConfigs = targetConfigurations.parallelStream()
+        Collection<Collection<String>> targetConfigurations = getTargetConfigurations(options, analyzer);
+        Map<Boolean, List<Collection<String>>> splitConfigs = targetConfigurations.parallelStream()
                 .collect(Collectors.partitioningBy(analyzer::isValidConfiguration));
 
         memoryCollector.takeSnapshot("before evaluation");
@@ -105,7 +105,7 @@ public class CommandLineInterface {
      * @param options
      * @return
      */
-    private static IReliabilityAnalysisResults evaluateReliability(Analyzer analyzer, RDGNode rdgRoot, Collection<List<String>> configurations, Options options) {
+    private static IReliabilityAnalysisResults evaluateReliability(Analyzer analyzer, RDGNode rdgRoot, Collection<Collection<String>> configurations, Options options) {
         IReliabilityAnalysisResults results = null;
         switch (options.getAnalysisStrategy()) {
         case FEATURE_PRODUCT:
@@ -152,9 +152,9 @@ public class CommandLineInterface {
         return results;
     }
 
-    private static IReliabilityAnalysisResults evaluateReliability(BiFunction<RDGNode, Collection<List<String>>, IReliabilityAnalysisResults> analyzer,
+    private static IReliabilityAnalysisResults evaluateReliability(BiFunction<RDGNode, Collection<Collection<String>>, IReliabilityAnalysisResults> analyzer,
                                                                    RDGNode rdgRoot,
-                                                                   Collection<List<String>> configurations) {
+                                                                   Collection<Collection<String>> configurations) {
         IReliabilityAnalysisResults results = null;
         try {
             results = analyzer.apply(rdgRoot, configurations);
@@ -195,11 +195,11 @@ public class CommandLineInterface {
         formulaCollector = statsCollectorFactory.createFormulaCollector();
     }
 
-    private static Collection<List<String>> getTargetConfigurations(Options options, Analyzer analyzer) {
+    private static Collection<Collection<String>> getTargetConfigurations(Options options, Analyzer analyzer) {
         if (options.hasPrintAllConfigurations()) {
             return analyzer.getValidConfigurations();
         } else {
-            Set<List<String>> configurations = new HashSet<List<String>>();
+            Set<Collection<String>> configurations = new HashSet<Collection<String>>();
 
             List<String> rawConfigurations = new LinkedList<String>();
             if (options.getConfiguration() != null) {
@@ -223,11 +223,11 @@ public class CommandLineInterface {
         }
     }
 
-    private static void printAnalysisResults(Map<Boolean, List<List<String>>> splitConfigs, IReliabilityAnalysisResults familyReliability) {
+    private static void printAnalysisResults(Map<Boolean, List<Collection<String>>> splitConfigs, IReliabilityAnalysisResults familyReliability) {
         OUTPUT.println("Configurations:");
         OUTPUT.println("=========================================");
 
-        for (List<String> validConfig: splitConfigs.get(true)) {
+        for (Collection<String> validConfig: splitConfigs.get(true)) {
             try {
                 String[] configurationAsArray = validConfig.toArray(new String[validConfig.size()]);
                 printSingleConfiguration(validConfig.toString(),
@@ -238,7 +238,7 @@ public class CommandLineInterface {
             }
         }
 
-        for (List<String> invalidConfig: splitConfigs.get(false)) {
+        for (Collection<String> invalidConfig: splitConfigs.get(false)) {
             printSingleConfiguration(invalidConfig.toString(), 0);
         }
 

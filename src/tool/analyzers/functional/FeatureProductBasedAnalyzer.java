@@ -4,6 +4,7 @@ import jadd.JADD;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import paramwrapper.ParametricModelChecker;
 import tool.CyclicRdgException;
@@ -14,6 +15,7 @@ import tool.analyzers.MapBasedReliabilityResults;
 import tool.analyzers.buildingblocks.Component;
 import tool.analyzers.buildingblocks.DerivationFunction;
 import tool.analyzers.buildingblocks.IfOperator;
+import tool.analyzers.functional.ProductIterationHelper.CONCURRENCY;
 import tool.stats.CollectibleTimers;
 import tool.stats.IFormulaCollector;
 import tool.stats.ITimeCollector;
@@ -57,7 +59,7 @@ public class FeatureProductBasedAnalyzer {
      * @throws CyclicRdgException
      * @throws UnknownFeatureException
      */
-    public IReliabilityAnalysisResults evaluateReliability(RDGNode node, Collection<List<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
+    public IReliabilityAnalysisResults evaluateReliability(RDGNode node, Collection<Collection<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
         List<RDGNode> dependencies = node.getDependenciesTransitiveClosure();
 
         timeCollector.startTimer(CollectibleTimers.FEATURE_BASED_TIME);
@@ -67,19 +69,17 @@ public class FeatureProductBasedAnalyzer {
 
         timeCollector.startTimer(CollectibleTimers.PRODUCT_BASED_TIME);
 
-        MapBasedReliabilityResults results = new MapBasedReliabilityResults();
-        configurations.parallelStream().forEach(configuration -> {
-            Double result = evaluateReliabilityForSingleConfiguration(node,
-                                                                      configuration,
-                                                                      expressions);
-            results.putResult(configuration, result);
-        });
+        Map<Collection<String>, Double> results = ProductIterationHelper.evaluate(configuration -> evaluateSingle(node,
+                                                                                                                  configuration,
+                                                                                                                  expressions),
+                                                                              configurations,
+                                                                              CONCURRENCY.PARALLEL);
 
         timeCollector.stopTimer(CollectibleTimers.PRODUCT_BASED_TIME);
-        return results;
+        return new MapBasedReliabilityResults(results);
     }
 
-    private Double evaluateReliabilityForSingleConfiguration(RDGNode node, List<String> configuration, List<Component<String>> expressions) {
+    private Double evaluateSingle(RDGNode node, Collection<String> configuration, List<Component<String>> expressions) {
         return Component.deriveFromMany(expressions,
                                         solve,
                                         c -> PresenceConditions.isPresent(c.getPresenceCondition(),

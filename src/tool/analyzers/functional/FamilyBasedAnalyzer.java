@@ -58,7 +58,7 @@ public class FamilyBasedAnalyzer {
      * @return
      * @throws CyclicRdgException
      */
-    public IReliabilityAnalysisResults evaluateReliability(RDGNode node, Collection<List<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
+    public IReliabilityAnalysisResults evaluateReliability(RDGNode node, Collection<Collection<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
         List<RDGNode> dependencies = node.getDependenciesTransitiveClosure();
 
         timeCollector.startTimer(CollectibleTimers.FAMILY_BASED_TIME);

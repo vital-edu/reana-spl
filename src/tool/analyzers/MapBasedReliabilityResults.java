@@ -2,11 +2,14 @@ package tool.analyzers;
 
 import java.io.PrintStream;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import tool.UnknownFeatureException;
 
@@ -18,6 +21,16 @@ public class MapBasedReliabilityResults implements IReliabilityAnalysisResults {
     public MapBasedReliabilityResults() {
         this.results = new HashMap<Set<String>, Double>();
         this.features = new HashSet<String>();
+    }
+
+    public MapBasedReliabilityResults(Map<Collection<String>, Double> backup) {
+        this.results = backup.entrySet().stream()
+                .collect(Collectors.toMap(e -> new HashSet<String>(e.getKey()),
+                                          e -> e.getValue()));
+        this.features = backup.keySet().stream()
+                .map(Collection::stream)
+                .flatMap(Function.identity())
+                .collect(Collectors.toSet());
     }
 
     @Override

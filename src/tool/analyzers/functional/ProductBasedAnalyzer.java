@@ -4,6 +4,7 @@ import jadd.JADD;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import paramwrapper.ParametricModelChecker;
 import tool.CyclicRdgException;
@@ -14,6 +15,7 @@ import tool.analyzers.MapBasedReliabilityResults;
 import tool.analyzers.buildingblocks.Component;
 import tool.analyzers.buildingblocks.DerivationFunction;
 import tool.analyzers.buildingblocks.IfOperator;
+import tool.analyzers.functional.ProductIterationHelper.CONCURRENCY;
 import tool.stats.CollectibleTimers;
 import tool.stats.IFormulaCollector;
 import tool.stats.ITimeCollector;
@@ -56,24 +58,22 @@ public class ProductBasedAnalyzer {
      * @return
      * @throws CyclicRdgException
      */
-    public IReliabilityAnalysisResults evaluateReliability(RDGNode node, Collection<List<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
+    public IReliabilityAnalysisResults evaluateReliability(RDGNode node, Collection<Collection<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
         List<RDGNode> dependencies = node.getDependenciesTransitiveClosure();
 
-        MapBasedReliabilityResults results = new MapBasedReliabilityResults();
         timeCollector.startTimer(CollectibleTimers.PRODUCT_BASED_TIME);
 
-        configurations.parallelStream().forEach(configuration -> {
-            Double result = evaluateReliabilityForSingleConfiguration(node,
-                                                                      configuration,
-                                                                      dependencies);
-            results.putResult(configuration, result);
-        });
+        Map<Collection<String>, Double> results = ProductIterationHelper.evaluate(configuration -> evaluateSingle(node,
+                                                                                                                  configuration,
+                                                                                                                  dependencies),
+                                                                              configurations,
+                                                                              CONCURRENCY.PARALLEL);
 
         timeCollector.stopTimer(CollectibleTimers.PRODUCT_BASED_TIME);
-        return results;
+        return new MapBasedReliabilityResults(results);
     }
 
-    private Double evaluateReliabilityForSingleConfiguration(RDGNode node, List<String> configuration, List<RDGNode> dependencies) throws UnknownFeatureException {
+    private Double evaluateSingle(RDGNode node, Collection<String> configuration, List<RDGNode> dependencies) throws UnknownFeatureException {
         List<Component<FDTMC>> models = RDGNode.toComponentList(dependencies);
         // Lambda folding
         FDTMC rootModel = deriveFromMany(models, configuration);
@@ -84,7 +84,7 @@ public class ProductBasedAnalyzer {
         return expressionSolver.solveExpression(reliabilityExpression);
     }
 
-    private FDTMC deriveFromMany(List<Component<FDTMC>> dependencies, List<String> configuration) {
+    private FDTMC deriveFromMany(List<Component<FDTMC>> dependencies, Collection<String> configuration) {
         return Component.deriveFromMany(dependencies,
                                         derive,
                                         c -> PresenceConditions.isPresent(c.getPresenceCondition(),

@@ -8,7 +8,6 @@ import jadd.JADD;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 
 import paramwrapper.ParamWrapper;
 import paramwrapper.ParametricModelChecker;
@@ -117,7 +116,7 @@ public class Analyzer {
      * Returns the set of all valid configurations according to the feature model.
      * @return
      */
-    public Collection<List<String>> getValidConfigurations() {
+    public Collection<Collection<String>> getValidConfigurations() {
         return featureModel.getExpandedConfigurations();
     }
 
@@ -127,7 +126,7 @@ public class Analyzer {
      * @param configuration
      * @return
      */
-    public boolean isValidConfiguration(List<String> configuration) {
+    public boolean isValidConfiguration(Collection<String> configuration) {
         return featureModel.isValidConfiguration(configuration);
     }
 
@@ -180,7 +179,7 @@ public class Analyzer {
      * @throws CyclicRdgException
      * @throws UnknownFeatureException
      */
-    public IReliabilityAnalysisResults evaluateFeatureProductBasedReliability(RDGNode node, Collection<List<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
+    public IReliabilityAnalysisResults evaluateFeatureProductBasedReliability(RDGNode node, Collection<Collection<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
         return featureProductBasedAnalyzerImpl.evaluateReliability(node, configurations);
     }
 
@@ -193,7 +192,7 @@ public class Analyzer {
      * @throws CyclicRdgException
      * @throws UnknownFeatureException
      */
-    public IReliabilityAnalysisResults evaluateProductBasedReliability(RDGNode node, Collection<List<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
+    public IReliabilityAnalysisResults evaluateProductBasedReliability(RDGNode node, Collection<Collection<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
         return productBasedAnalyzerImpl.evaluateReliability(node, configurations);
     }
 
@@ -206,7 +205,7 @@ public class Analyzer {
      * @throws CyclicRdgException
      * @throws UnknownFeatureException
      */
-    public IReliabilityAnalysisResults evaluateFamilyBasedReliability(RDGNode node, Collection<List<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
+    public IReliabilityAnalysisResults evaluateFamilyBasedReliability(RDGNode node, Collection<Collection<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
         return familyBasedAnalyzerImpl.evaluateReliability(node, configurations);
     }
 
@@ -219,7 +218,7 @@ public class Analyzer {
      * @throws CyclicRdgException
      * @throws UnknownFeatureException
      */
-    public IReliabilityAnalysisResults evaluateFamilyProductBasedReliability(RDGNode node, Collection<List<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
+    public IReliabilityAnalysisResults evaluateFamilyProductBasedReliability(RDGNode node, Collection<Collection<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
         return familyProductBasedAnalyzerImpl.evaluateReliability(node, configurations);
     }
 

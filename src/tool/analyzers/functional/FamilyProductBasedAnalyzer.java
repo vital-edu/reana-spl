@@ -14,6 +14,7 @@ import tool.CyclicRdgException;
 import tool.RDGNode;
 import tool.analyzers.IReliabilityAnalysisResults;
 import tool.analyzers.MapBasedReliabilityResults;
+import tool.analyzers.functional.ProductIterationHelper.CONCURRENCY;
 import tool.stats.CollectibleTimers;
 import tool.stats.IFormulaCollector;
 import tool.stats.ITimeCollector;
@@ -49,7 +50,7 @@ public class FamilyProductBasedAnalyzer {
      * @return
      * @throws CyclicRdgException
      */
-    public IReliabilityAnalysisResults evaluateReliability(RDGNode node, Collection<List<String>> configurations) throws CyclicRdgException {
+    public IReliabilityAnalysisResults evaluateReliability(RDGNode node, Collection<Collection<String>> configurations) throws CyclicRdgException {
         List<RDGNode> dependencies = node.getDependenciesTransitiveClosure();
 
         timeCollector.startTimer(CollectibleTimers.FAMILY_BASED_TIME);
@@ -63,20 +64,18 @@ public class FamilyProductBasedAnalyzer {
         timeCollector.stopTimer(CollectibleTimers.FAMILY_BASED_TIME);
         timeCollector.startTimer(CollectibleTimers.PRODUCT_BASED_TIME);
 
-        MapBasedReliabilityResults results = new MapBasedReliabilityResults();
-        configurations.stream().forEach(configuration -> {
-            Double result = evaluateReliabilityForSingleConfiguration(parsedExpression,
-                                                                      configuration,
-                                                                      dependencies);
-            results.putResult(configuration, result);
-        });
+        Map<Collection<String>, Double> results = ProductIterationHelper.evaluate(configuration -> evaluateSingle(parsedExpression,
+                                                                                                                  configuration,
+                                                                                                                  dependencies),
+                                                                              configurations,
+                                                                              CONCURRENCY.SEQUENTIAL);
+
         timeCollector.stopTimer(CollectibleTimers.PRODUCT_BASED_TIME);
         LOGGER.info("Formulae evaluation ok...");
-
-        return results;
+        return new MapBasedReliabilityResults(results);
     }
 
-    private Double evaluateReliabilityForSingleConfiguration(Expression<Double> expression, List<String> configuration, List<RDGNode> dependencies) {
+    private Double evaluateSingle(Expression<Double> expression, Collection<String> configuration, List<RDGNode> dependencies) {
         Function<RDGNode, Boolean> isPresent = node -> isPresent(node, configuration);
         Map<String, Double> values = dependencies.stream()
             .collect(Collectors.toMap(RDGNode::getId,
@@ -87,7 +86,7 @@ public class FamilyProductBasedAnalyzer {
     }
 
     // Candidate!
-    private boolean isPresent(RDGNode node, List<String> configuration) {
+    private boolean isPresent(RDGNode node, Collection<String> configuration) {
         return PresenceConditions.isPresent(node.getPresenceCondition(),
                                             configuration,
                                             expressionSolver);

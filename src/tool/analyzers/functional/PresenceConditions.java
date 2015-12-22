@@ -3,14 +3,14 @@ package tool.analyzers.functional;
 import jadd.ADD;
 import jadd.UnrecognizedVariableException;
 
-import java.util.List;
+import java.util.Collection;
 
 import tool.UnknownFeatureException;
 import expressionsolver.ExpressionSolver;
 
 public class PresenceConditions {
 
-    public static boolean isPresent(String presenceCondition, List<String> configuration, ExpressionSolver expressionSolver) {
+    public static boolean isPresent(String presenceCondition, Collection<String> configuration, ExpressionSolver expressionSolver) {
         ADD encodedPresenceCondition = expressionSolver.encodeFormula(presenceCondition);
         Double presenceValue;
         try {

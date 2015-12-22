@@ -167,7 +167,7 @@ public class ADD {
      * @return
      * @throws UnknownFeatureException
      */
-    public boolean isValidConfiguration(List<String> configuration) throws UnknownFeatureException {
+    public boolean isValidConfiguration(Collection<String> configuration) throws UnknownFeatureException {
         double validity;
         try {
             validity = eval(configuration.toArray(new String[configuration.size()]));
@@ -183,7 +183,7 @@ public class ADD {
      * Variables which may or may not be present ("don't care") are parenthesized.
      * @return
      */
-    public Map<List<String>, Double> getValidConfigurations() {
+    public Map<Collection<String>, Double> getValidConfigurations() {
         Pointer<Integer> dummy = Pointer.allocateInt();
         // A pointer to a freshly allocated pointer to int.
         // As Cudd_FirstCube and Cudd_NextCube allocate the returned cubes,
@@ -194,7 +194,7 @@ public class ADD {
         // A pointer to a freshly allocated double.
         Pointer<Double> valuePtr = Pointer.pointerToDouble(0);
 
-        Map<List<String>, Double> configurationsAndValues = new HashMap<List<String>, Double>();
+        Map<Collection<String>, Double> configurationsAndValues = new HashMap<Collection<String>, Double>();
         // So let's start the iteration!
         Pointer<DdGen> generator = BigcuddLibrary.Cudd_FirstCube(dd,
                                                                  function,
@@ -226,11 +226,11 @@ public class ADD {
      * two different configurations: ["A", "B", "C"] and ["A", "C"].
      * @return
      */
-    public Collection<List<String>> getExpandedConfigurations() {
-        Map<List<String>, Double> configurationsAndValues = getValidConfigurations();
-        Set<List<String>> configsWithDontCares = configurationsAndValues.keySet();
-        Set<List<String>> configsWithoutDontCares = new HashSet<List<String>>();
-        for (List<String> config: configsWithDontCares) {
+    public Collection<Collection<String>> getExpandedConfigurations() {
+        Map<Collection<String>, Double> configurationsAndValues = getValidConfigurations();
+        Set<Collection<String>> configsWithDontCares = configurationsAndValues.keySet();
+        Set<Collection<String>> configsWithoutDontCares = new HashSet<Collection<String>>();
+        for (Collection<String> config: configsWithDontCares) {
             configsWithoutDontCares.addAll(expandDontCares(config.iterator()));
         }
         return configsWithoutDontCares;
