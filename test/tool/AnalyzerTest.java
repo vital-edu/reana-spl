@@ -4,8 +4,8 @@ import jadd.JADD;
 import jadd.UnrecognizedVariableException;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -106,7 +106,7 @@ public class AnalyzerTest {
     public void testEvaluateFeatureProductReliabilityOxygenation() throws UnrecognizedVariableException, CyclicRdgException, UnknownFeatureException {
         RDGNode node = BSNNodes.getOxygenationRDGNode();
 
-        Set<List<String>> configurations = new HashSet<List<String>>();
+        Set<Collection<String>> configurations = new HashSet<Collection<String>>();
 
         String[] sqliteConfig = new String[]{
                 "Root",
@@ -158,8 +158,6 @@ public class AnalyzerTest {
                 0.9920279440699441, reliability.getResult(memoryConfig), 1E-14);
         Assert.assertEquals("Configuration without SQLite or Memory",
                 0.994014980014994001, reliability.getResult(fileConfig), 1E-14);
-        Assert.assertEquals("Invalid configuration",
-                0, reliability.getResult(noneConfig), 1E-14);
     }
 
 }
