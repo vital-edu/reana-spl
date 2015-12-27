@@ -161,13 +161,13 @@ public class Transformer {
 		BigDecimal a = new BigDecimal("1.0");
 		BigDecimal b = new BigDecimal(Float.toString(msg.getProb()));
 
-		if (msg.getType().equals(MessageType.ASYNCHRONOUS)) {
-			fdtmc.createTransition(source, target, "", b.toString());
-			fdtmc.createTransition(source, error, "", a.subtract(b).toString());
-		} else { /* Mensagem sincrona */
-			fdtmc.createTransition(source, target, msg.getName(), b.toString());
-			fdtmc.createTransition(source, error, msg.getName(), a.subtract(b).toString());
-		}
+        String msgName = msg.getType().equals(MessageType.ASYNCHRONOUS) ? "" : msg.getName();
+        fdtmc.createTransition(source, target, msgName, b.toString());
+        if (!a.equals(b)) {
+            // PARAM has an issue with alternatives with 0.0 probability, so we simply
+            // omit this impossible transition.
+            fdtmc.createTransition(source, error, msgName, a.subtract(b).toString());
+        }
 		return target;
 	}
 
