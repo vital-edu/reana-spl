@@ -1,13 +1,16 @@
 package tool.analyzers.strategies;
 
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import paramwrapper.ParametricModelChecker;
 import tool.Analyzer;
 import tool.RDGNode;
 import tool.analyzers.buildingblocks.Component;
 import tool.analyzers.buildingblocks.DerivationFunction;
+import tool.analyzers.buildingblocks.PresenceConditions;
 import fdtmc.FDTMC;
 
 public class FamilyBasedFirstPhase {
@@ -44,9 +47,14 @@ public class FamilyBasedFirstPhase {
      */
     public String getReliabilityExpression(List<RDGNode> dependencies) {
         List<Component<FDTMC>> components = RDGNode.toComponentList(dependencies);
+        List<String> presenceConditions = components.stream()
+                .map(Component::getPresenceCondition)
+                .collect(Collectors.toList());
+
+        Map<String, String> pcEquivalence = PresenceConditions.toEquivalenceClasses(presenceConditions);
         FDTMC derived150Model = Component.deriveFromMany(components,
                                                          derive150Model,
-                                                         Component::getId);
+                                                         c -> pcEquivalence.get(c.getPresenceCondition()));
         String expression = modelChecker.getReliability(derived150Model);
         LOGGER.info("Parametric model-checking ok...");
         return expression;

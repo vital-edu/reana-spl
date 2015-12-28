@@ -6,7 +6,6 @@ import jadd.JADD;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -17,6 +16,7 @@ import tool.UnknownFeatureException;
 import tool.analyzers.ADDReliabilityResults;
 import tool.analyzers.IReliabilityAnalysisResults;
 import tool.analyzers.buildingblocks.FamilyBasedHelper;
+import tool.analyzers.buildingblocks.PresenceConditions;
 import tool.stats.CollectibleTimers;
 import tool.stats.IFormulaCollector;
 import tool.stats.ITimeCollector;
@@ -74,10 +74,18 @@ public class FamilyBasedAnalyzer {
         // Lift
         Expression<ADD> liftedExpression = helper.lift(expression);
 
-        Function<RDGNode, String> getPC = RDGNode::getPresenceCondition;
-        Map<String, ADD> values = dependencies.stream()
-                .collect(Collectors.toMap(RDGNode::getId,
-                                          getPC.andThen(expressionSolver::encodeFormula)));
+        List<String> presenceConditions = dependencies.stream()
+                .map(RDGNode::getPresenceCondition)
+                .collect(Collectors.toList());
+        Map<String, String> pcEquivalence = PresenceConditions.toEquivalenceClasses(presenceConditions);
+        Map<String, String> eqClassToPC = pcEquivalence.entrySet().stream()
+                .collect(Collectors.toMap(e -> e.getValue(),
+                                          e -> e.getKey(),
+                                          (a, b) -> a));
+
+        Map<String, ADD> values = eqClassToPC.entrySet().stream()
+                .collect(Collectors.toMap(e -> e.getKey(),
+                                          e -> expressionSolver.encodeFormula(e.getValue())));
 
         // Sigma'_v
         ADD reliability = liftedExpression.solve(values);

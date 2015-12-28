@@ -66,12 +66,21 @@ public class FamilyProductBasedAnalyzer {
 
         Expression<Double> parsedExpression = expressionSolver.parseExpression(expression);
 
+        List<String> presenceConditions = dependencies.stream()
+                .map(RDGNode::getPresenceCondition)
+                .collect(Collectors.toList());
+        Map<String, String> pcEquivalence = PresenceConditions.toEquivalenceClasses(presenceConditions);
+        Map<String, String> eqClassToPC = pcEquivalence.entrySet().stream()
+                .collect(Collectors.toMap(e -> e.getValue(),
+                                          e -> e.getKey(),
+                                          (a, b) -> a));
+
         timeCollector.stopTimer(CollectibleTimers.FAMILY_BASED_TIME);
         timeCollector.startTimer(CollectibleTimers.PRODUCT_BASED_TIME);
 
         Map<Collection<String>, Double> results = ProductIterationHelper.evaluate(configuration -> evaluateSingle(parsedExpression,
                                                                                                                   configuration,
-                                                                                                                  dependencies),
+                                                                                                                  eqClassToPC),
                                                                                   configurations,
                                                                                   CONCURRENCY.SEQUENTIAL);
 
@@ -80,21 +89,16 @@ public class FamilyProductBasedAnalyzer {
         return new MapBasedReliabilityResults(results);
     }
 
-    private Double evaluateSingle(Expression<Double> expression, Collection<String> configuration, List<RDGNode> dependencies) {
-        Function<RDGNode, Boolean> isPresent = node -> isPresent(node, configuration);
-        Map<String, Double> values = dependencies.stream()
-            .collect(Collectors.toMap(RDGNode::getId,
+    private Double evaluateSingle(Expression<Double> expression, Collection<String> configuration, Map<String, String> eqClassToPC) {
+        Function<Map.Entry<String, String>, Boolean> isPresent = e -> PresenceConditions.isPresent(e.getValue(),
+                                                                                                   configuration,
+                                                                                                   expressionSolver);
+        Map<String, Double> values = eqClassToPC.entrySet().stream()
+            .collect(Collectors.toMap(e -> e.getKey(),
                                       isPresent.andThen(present -> present ? 1.0 : 0.0)));
 
         return expression.solve(values);
 
-    }
-
-    // Candidate!
-    private boolean isPresent(RDGNode node, Collection<String> configuration) {
-        return PresenceConditions.isPresent(node.getPresenceCondition(),
-                                            configuration,
-                                            expressionSolver);
     }
 
 }
