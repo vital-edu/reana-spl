@@ -23,6 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import modeling.DiagramAPI;
 
@@ -76,19 +77,20 @@ public class CommandLineInterface {
         memoryCollector.takeSnapshot("after model parsing");
 
         Analyzer analyzer = makeAnalyzer(options);
-        Collection<Collection<String>> targetConfigurations = getTargetConfigurations(options, analyzer);
-        Map<Boolean, List<Collection<String>>> splitConfigs = targetConfigurations.parallelStream()
-                .collect(Collectors.partitioningBy(analyzer::isValidConfiguration));
+        Stream<Collection<String>> targetConfigurations = getTargetConfigurations(options, analyzer);
 
         memoryCollector.takeSnapshot("before evaluation");
         long analysisStartTime = System.currentTimeMillis();
+        Stream<Collection<String>> validConfigs = targetConfigurations.filter(analyzer::isValidConfiguration);
         IReliabilityAnalysisResults familyReliability = evaluateReliability(analyzer,
                                                                             rdgRoot,
-                                                                            splitConfigs.get(true),
+                                                                            validConfigs,
                                                                             options);
         long totalAnalysisTime = System.currentTimeMillis() - analysisStartTime;
         memoryCollector.takeSnapshot("after evaluation");
 
+        Map<Boolean, List<Collection<String>>> splitConfigs = getTargetConfigurations(options, analyzer)
+                .collect(Collectors.partitioningBy(analyzer::isValidConfiguration));
         printAnalysisResults(splitConfigs, familyReliability);
 
         if (options.hasStatsEnabled()) {
@@ -105,28 +107,28 @@ public class CommandLineInterface {
      * @param options
      * @return
      */
-    private static IReliabilityAnalysisResults evaluateReliability(Analyzer analyzer, RDGNode rdgRoot, Collection<Collection<String>> configurations, Options options) {
+    private static IReliabilityAnalysisResults evaluateReliability(Analyzer analyzer, RDGNode rdgRoot, Stream<Collection<String>> validConfigs, Options options) {
         IReliabilityAnalysisResults results = null;
         switch (options.getAnalysisStrategy()) {
         case FEATURE_PRODUCT:
             results = evaluateReliability(analyzer::evaluateFeatureProductBasedReliability,
                                           rdgRoot,
-                                          configurations);
+                                          validConfigs);
             break;
         case PRODUCT:
             results = evaluateReliability(analyzer::evaluateProductBasedReliability,
                                           rdgRoot,
-                                          configurations);
+                                          validConfigs);
             break;
         case FAMILY:
             results = evaluateReliability(analyzer::evaluateFamilyBasedReliability,
                                           rdgRoot,
-                                          configurations);
+                                          validConfigs);
             break;
         case FAMILY_PRODUCT:
             results = evaluateReliability(analyzer::evaluateFamilyProductBasedReliability,
                                           rdgRoot,
-                                          configurations);
+                                          validConfigs);
             break;
         case FEATURE_FAMILY:
         default:
@@ -142,7 +144,7 @@ public class CommandLineInterface {
         String dotOutput = "family-reliability.dot";
         try {
             analyzer.setPruningStrategy(PruningStrategyFactory.createPruningStrategy(options.getPruningStrategy()));
-            results = analyzer.evaluateFeatureFamilyBasedReliability(rdgRoot, dotOutput);
+            results = analyzer.evaluateFeatureFamilyBasedReliability(rdgRoot, null);
         } catch (CyclicRdgException e) {
             LOGGER.severe("Cyclic dependency detected in RDG.");
             LOGGER.log(Level.SEVERE, e.toString(), e);
@@ -152,12 +154,12 @@ public class CommandLineInterface {
         return results;
     }
 
-    private static IReliabilityAnalysisResults evaluateReliability(BiFunction<RDGNode, Collection<Collection<String>>, IReliabilityAnalysisResults> analyzer,
+    private static IReliabilityAnalysisResults evaluateReliability(BiFunction<RDGNode, Stream<Collection<String>>, IReliabilityAnalysisResults> analyzer,
                                                                    RDGNode rdgRoot,
-                                                                   Collection<Collection<String>> configurations) {
+                                                                   Stream<Collection<String>> validConfigs) {
         IReliabilityAnalysisResults results = null;
         try {
-            results = analyzer.apply(rdgRoot, configurations);
+            results = analyzer.apply(rdgRoot, validConfigs);
         } catch (CyclicRdgException e) {
             LOGGER.severe("Cyclic dependency detected in RDG.");
             LOGGER.log(Level.SEVERE, e.toString(), e);
@@ -195,7 +197,7 @@ public class CommandLineInterface {
         formulaCollector = statsCollectorFactory.createFormulaCollector();
     }
 
-    private static Collection<Collection<String>> getTargetConfigurations(Options options, Analyzer analyzer) {
+    private static Stream<Collection<String>> getTargetConfigurations(Options options, Analyzer analyzer) {
         if (options.hasPrintAllConfigurations()) {
             return analyzer.getValidConfigurations();
         } else {
@@ -219,7 +221,7 @@ public class CommandLineInterface {
                 configurations.add(Arrays.asList(variables));
             }
 
-            return configurations;
+            return configurations.stream();
         }
     }
 

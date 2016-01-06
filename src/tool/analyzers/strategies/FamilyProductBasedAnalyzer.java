@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import paramwrapper.ParametricModelChecker;
 import tool.CyclicRdgException;
@@ -55,7 +56,7 @@ public class FamilyProductBasedAnalyzer {
      * @return
      * @throws CyclicRdgException
      */
-    public IReliabilityAnalysisResults evaluateReliability(RDGNode node, Collection<Collection<String>> configurations) throws CyclicRdgException {
+    public IReliabilityAnalysisResults evaluateReliability(RDGNode node, Stream<Collection<String>> configurations) throws CyclicRdgException {
         List<RDGNode> dependencies = node.getDependenciesTransitiveClosure();
 
         timeCollector.startTimer(CollectibleTimers.FAMILY_BASED_TIME);

@@ -151,7 +151,7 @@ public class AnalyzerTest {
                 "SPO2"};
         configurations.add(Arrays.asList(noneConfig));
 
-        IReliabilityAnalysisResults reliability = analyzer.evaluateFeatureProductBasedReliability(node, configurations);
+        IReliabilityAnalysisResults reliability = analyzer.evaluateFeatureProductBasedReliability(node, configurations.stream());
         Assert.assertEquals("Configuration with SQLite",
                 0.9920279440699441, reliability.getResult(sqliteConfig), 1E-14);
         Assert.assertEquals("Configuration with Memory",

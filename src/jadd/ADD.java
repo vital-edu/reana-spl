@@ -1,13 +1,16 @@
 package jadd;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators.AbstractSpliterator;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.bridj.Pointer;
 
@@ -178,62 +181,15 @@ public class ADD {
     }
 
     /**
-     * Returns all valid configurations and respective values.
-     *
-     * Variables which may or may not be present ("don't care") are parenthesized.
-     * @return
-     */
-    public Map<Collection<String>, Double> getValidConfigurations() {
-        Pointer<Integer> dummy = Pointer.allocateInt();
-        // A pointer to a freshly allocated pointer to int.
-        // As Cudd_FirstCube and Cudd_NextCube allocate the returned cubes,
-        // allocating a whole int[] here makes no sense. Thus, we allocate
-        // only the position where the address to the generated cubes are
-        // to be stored.
-        Pointer<Pointer<Integer>> cubePtr = Pointer.pointerToPointer(dummy);
-        // A pointer to a freshly allocated double.
-        Pointer<Double> valuePtr = Pointer.pointerToDouble(0);
-
-        Map<Collection<String>, Double> configurationsAndValues = new HashMap<Collection<String>, Double>();
-        // So let's start the iteration!
-        Pointer<DdGen> generator = BigcuddLibrary.Cudd_FirstCube(dd,
-                                                                 function,
-                                                                 cubePtr,
-                                                                 valuePtr);
-        int numVars = BigcuddLibrary.Cudd_ReadSize(dd);
-        while (BigcuddLibrary.Cudd_IsGenEmpty(generator) == 0) {
-            Double value = valuePtr.get();
-            Pointer<Integer> cube = cubePtr.getPointer(Integer.class);
-            int[] presenceVector = cube.getInts(numVars);
-            List<String> configuration = variableStore.fromPresenceVector(presenceVector);
-
-            configurationsAndValues.put(configuration, value);
-
-            BigcuddLibrary.Cudd_NextCube(generator,
-                                         cubePtr,
-                                         valuePtr);
-        }
-        BigcuddLibrary.Cudd_GenFree(generator);
-
-        return configurationsAndValues;
-    }
-
-    /**
-     * Returns all valid (non-zero) configurations for this ADD, but expands
+     * Returns a stream of valid (non-zero) configurations for this ADD, expanding
      * "don't care" variables into possible concrete configurations.
      *
      * For instance, the configuration ["A", "(B)", "C"] would be returned as
      * two different configurations: ["A", "B", "C"] and ["A", "C"].
      * @return
      */
-    public Collection<Collection<String>> getExpandedConfigurations() {
-        Map<Collection<String>, Double> configurationsAndValues = getValidConfigurations();
-        Set<Collection<String>> configsWithDontCares = configurationsAndValues.keySet();
-        Set<Collection<String>> configsWithoutDontCares = new HashSet<Collection<String>>();
-        for (Collection<String> config: configsWithDontCares) {
-            configsWithoutDontCares.addAll(expandDontCares(config.iterator()));
-        }
-        return configsWithoutDontCares;
+    public Stream<Collection<String>> getExpandedConfigurations() {
+        return StreamSupport.stream(new CubeSpliterator(), true);
     }
 
     /**
@@ -398,5 +354,65 @@ public class ADD {
             return BigcuddLibrary.Cudd_addOr(dd, node1, node2);
         }
     };
+
+    private class CubeSpliterator extends AbstractSpliterator<Collection<String>> {
+
+        private Pointer<Pointer<Integer>> cubePtr;
+        private Pointer<Double> valuePtr;
+        private Pointer<DdGen> generator;
+        private int numVars;
+        private Iterator<List<String>> expandedIterator;
+
+        protected CubeSpliterator() {
+            super((long) BigcuddLibrary.Cudd_CountPathsToNonZero(function),
+                  Spliterator.SIZED | Spliterator.IMMUTABLE | Spliterator.NONNULL | Spliterator.ORDERED);
+
+            Pointer<Integer> dummy = Pointer.allocateInt();
+            // A pointer to a freshly allocated pointer to int.
+            // As Cudd_FirstCube and Cudd_NextCube allocate the returned cubes,
+            // allocating a whole int[] here makes no sense. Thus, we allocate
+            // only the position where the address to the generated cubes are
+            // to be stored.
+            cubePtr = Pointer.pointerToPointer(dummy);
+            // A pointer to a freshly allocated double.
+            valuePtr = Pointer.pointerToDouble(0);
+
+            // So let's start the iteration!
+            generator = BigcuddLibrary.Cudd_FirstCube(dd,
+                                                      function,
+                                                      cubePtr,
+                                                      valuePtr);
+            numVars = BigcuddLibrary.Cudd_ReadSize(dd);
+
+        }
+
+        @Override
+        public boolean tryAdvance(Consumer<? super Collection<String>> action) {
+            if (expandedIterator == null || !expandedIterator.hasNext()) {
+                if (BigcuddLibrary.Cudd_IsGenEmpty(generator) == 0) {
+                    Pointer<Integer> cube = cubePtr.getPointer(Integer.class);
+                    int[] presenceVector = cube.getInts(numVars);
+                    List<String> configuration = variableStore.fromPresenceVector(presenceVector);
+
+                    Collection<List<String>> expanded = expandDontCares(configuration);
+                    expandedIterator = expanded.iterator();
+
+                    BigcuddLibrary.Cudd_NextCube(generator,
+                            cubePtr,
+                            valuePtr);
+                } else {
+                    if (generator != null) {
+                        BigcuddLibrary.Cudd_GenFree(generator);
+                        generator = null;
+                    }
+                    return false;
+                }
+            }
+
+            action.accept(expandedIterator.next());
+            return true;
+        }
+
+    }
 
 }

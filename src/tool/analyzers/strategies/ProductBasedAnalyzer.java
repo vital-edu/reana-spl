@@ -5,6 +5,7 @@ import jadd.JADD;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import paramwrapper.ParametricModelChecker;
 import tool.CyclicRdgException;
@@ -63,7 +64,7 @@ public class ProductBasedAnalyzer {
      * @return
      * @throws CyclicRdgException
      */
-    public IReliabilityAnalysisResults evaluateReliability(RDGNode node, Collection<Collection<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
+    public IReliabilityAnalysisResults evaluateReliability(RDGNode node, Stream<Collection<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
         List<RDGNode> dependencies = node.getDependenciesTransitiveClosure();
 
         timeCollector.startTimer(CollectibleTimers.PRODUCT_BASED_TIME);

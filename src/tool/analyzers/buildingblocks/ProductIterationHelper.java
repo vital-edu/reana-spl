@@ -14,12 +14,11 @@ public class ProductIterationHelper {
     };
 
     public static <T> Map<Collection<String>, Double> evaluate(Function<Collection<String>, Double> eval,
-                                                               Collection<Collection<String>> configurations,
+                                                               Stream<Collection<String>> configurations,
                                                                CONCURRENCY mode) {
-        Stream<Collection<String>> configs = configurations.stream();
-        if (mode == CONCURRENCY.PARALLEL) {
-            configs = configs.parallel();
-        }
+        Stream<Collection<String>> configs = mode == CONCURRENCY.PARALLEL ?
+                                                        configurations.parallel()
+                                                        : configurations.sequential();
 
         Map<Collection<String>, Double> results = configs
                 .collect(Collectors.toMap(Function.identity(),

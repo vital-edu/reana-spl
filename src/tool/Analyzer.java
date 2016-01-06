@@ -8,6 +8,7 @@ import jadd.JADD;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.stream.Stream;
 
 import paramwrapper.ParamWrapper;
 import paramwrapper.ParametricModelChecker;
@@ -116,7 +117,7 @@ public class Analyzer {
      * Returns the set of all valid configurations according to the feature model.
      * @return
      */
-    public Collection<Collection<String>> getValidConfigurations() {
+    public Stream<Collection<String>> getValidConfigurations() {
         return featureModel.getExpandedConfigurations();
     }
 
@@ -179,7 +180,7 @@ public class Analyzer {
      * @throws CyclicRdgException
      * @throws UnknownFeatureException
      */
-    public IReliabilityAnalysisResults evaluateFeatureProductBasedReliability(RDGNode node, Collection<Collection<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
+    public IReliabilityAnalysisResults evaluateFeatureProductBasedReliability(RDGNode node, Stream<Collection<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
         return featureProductBasedAnalyzerImpl.evaluateReliability(node, configurations);
     }
 
@@ -192,7 +193,7 @@ public class Analyzer {
      * @throws CyclicRdgException
      * @throws UnknownFeatureException
      */
-    public IReliabilityAnalysisResults evaluateProductBasedReliability(RDGNode node, Collection<Collection<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
+    public IReliabilityAnalysisResults evaluateProductBasedReliability(RDGNode node, Stream<Collection<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
         return productBasedAnalyzerImpl.evaluateReliability(node, configurations);
     }
 
@@ -205,8 +206,8 @@ public class Analyzer {
      * @throws CyclicRdgException
      * @throws UnknownFeatureException
      */
-    public IReliabilityAnalysisResults evaluateFamilyBasedReliability(RDGNode node, Collection<Collection<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
-        return familyBasedAnalyzerImpl.evaluateReliability(node, configurations);
+    public IReliabilityAnalysisResults evaluateFamilyBasedReliability(RDGNode node, Stream<Collection<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
+        return familyBasedAnalyzerImpl.evaluateReliability(node);
     }
 
     /**
@@ -218,7 +219,7 @@ public class Analyzer {
      * @throws CyclicRdgException
      * @throws UnknownFeatureException
      */
-    public IReliabilityAnalysisResults evaluateFamilyProductBasedReliability(RDGNode node, Collection<Collection<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
+    public IReliabilityAnalysisResults evaluateFamilyProductBasedReliability(RDGNode node, Stream<Collection<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
         return familyProductBasedAnalyzerImpl.evaluateReliability(node, configurations);
     }
 
