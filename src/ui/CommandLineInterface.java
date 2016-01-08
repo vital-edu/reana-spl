@@ -89,9 +89,11 @@ public class CommandLineInterface {
         long totalAnalysisTime = System.currentTimeMillis() - analysisStartTime;
         memoryCollector.takeSnapshot("after evaluation");
 
-        Map<Boolean, List<Collection<String>>> splitConfigs = getTargetConfigurations(options, analyzer)
-                .collect(Collectors.partitioningBy(analyzer::isValidConfiguration));
-        printAnalysisResults(splitConfigs, familyReliability);
+        if (!options.hasSuppressReport()) {
+            Map<Boolean, List<Collection<String>>> splitConfigs = getTargetConfigurations(options, analyzer)
+                    .collect(Collectors.partitioningBy(analyzer::isValidConfiguration));
+            printAnalysisResults(splitConfigs, familyReliability);
+        }
 
         if (options.hasStatsEnabled()) {
             printStats(OUTPUT, familyReliability, rdgRoot);

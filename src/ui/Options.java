@@ -21,6 +21,7 @@ class Options {
     private String configuration;
     private String configurationsFilePath;
     private boolean printAllConfigurations;
+    private boolean suppressReport;
     private boolean statsEnabled;
     private PruningStrategy pruningStrategy;
     private AnalysisStrategy analysisStrategy;
@@ -54,6 +55,9 @@ class Options {
         OptionSpec<Void> allConfigurationsOption = optionParser
                 .accepts("all-configurations",
                          "Print the reliabilities of all valid configurations");
+        OptionSpec<Void> suppressReportOption = optionParser
+                .accepts("suppress-report",
+                         "Suppress reliabilities report for all evaluated configurations");
         OptionSpec<Void> statsEnabledOption = optionParser
                 .accepts("stats",
                          "Print profiling stats");
@@ -92,6 +96,7 @@ class Options {
         result.configuration = options.valueOf(configurationOption);
         result.configurationsFilePath = options.valueOf(configurationsFileOption);
         result.printAllConfigurations = options.has(allConfigurationsOption);
+        result.suppressReport = options.has(suppressReportOption);
         result.statsEnabled = options.has(statsEnabledOption);
         result.pruningStrategy = options.valueOf(pruningStrategyOption);
         result.analysisStrategy = options.valueOf(analysisStrategyOption);
@@ -117,6 +122,10 @@ class Options {
 
     public boolean hasPrintAllConfigurations() {
         return printAllConfigurations;
+    }
+
+    public boolean hasSuppressReport() {
+        return suppressReport;
     }
 
     public String getConfiguration() {
