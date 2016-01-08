@@ -231,7 +231,10 @@ public class CommandLineInterface {
         OUTPUT.println("Configurations:");
         OUTPUT.println("=========================================");
 
-        for (Collection<String> validConfig: splitConfigs.get(true)) {
+        List<Collection<String>> validConfigs = splitConfigs.get(true);
+        // Ordered report
+        validConfigs.sort((c1, c2) -> c1.toString().compareTo(c2.toString()));
+        for (Collection<String> validConfig: validConfigs) {
             try {
                 String[] configurationAsArray = validConfig.toArray(new String[validConfig.size()]);
                 printSingleConfiguration(validConfig.toString(),
