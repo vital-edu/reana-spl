@@ -225,19 +225,6 @@ public class FDTMCTest {
 	}
 
 
-
-
-
-	/**
-	 * This test aims to ensure if the DOT file for a specific RDG node is being created accordingly.
-	 */
-	@Test
-	public void testCreateDotFile() {
-		fail("Not yet implemented");
-
-
-	}
-
 	@Test
 	public void testEquivalentFDTMCs() {
 	    FDTMC fdtmc1 = new FDTMC();

@@ -52,7 +52,7 @@ class ParamModel {
 		Collection<State> states = fdtmc.getStates();
 		for (State s : states) {
 			String label = s.getLabel();
-			if (label != null) {
+			if (label != null && !label.isEmpty()) {
 				if (!labeledStates.containsKey(label)) {
 					labeledStates.put(label, new TreeSet<Integer>());
 				}

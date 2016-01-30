@@ -5,7 +5,9 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import tool.analyzers.buildingblocks.Component;
 import fdtmc.FDTMC;
 
 
@@ -236,6 +238,26 @@ public class RDGNode {
             }
         }
         return null;
+    }
+
+    /**
+     * Converts this RDG node into a Component<FDTMC>.
+     * @return
+     */
+    public Component<FDTMC> toComponent() {
+        Collection<Component<FDTMC>> dependencies = this.getDependencies().stream()
+                .map(RDGNode::toComponent)
+                .collect(Collectors.toSet());
+        return new Component<FDTMC>(this.getId(),
+                                    this.getPresenceCondition(),
+                                    this.getFDTMC(),
+                                    dependencies);
+    }
+
+    public static List<Component<FDTMC>> toComponentList(List<RDGNode> nodes) {
+        return nodes.stream()
+                .map(RDGNode::toComponent)
+                .collect(Collectors.toList());
     }
 
 }

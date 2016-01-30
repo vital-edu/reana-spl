@@ -22,6 +22,8 @@ import java.util.function.BiFunction;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import modeling.DiagramAPI;
 
@@ -75,15 +77,23 @@ public class CommandLineInterface {
         memoryCollector.takeSnapshot("after model parsing");
 
         Analyzer analyzer = makeAnalyzer(options);
-        Collection<List<String>> targetConfigurations = getTargetConfigurations(options, analyzer);
+        Stream<Collection<String>> targetConfigurations = getTargetConfigurations(options, analyzer);
 
         memoryCollector.takeSnapshot("before evaluation");
         long analysisStartTime = System.currentTimeMillis();
-        IReliabilityAnalysisResults familyReliability = evaluateReliability(analyzer, rdgRoot, targetConfigurations, options);
+        Stream<Collection<String>> validConfigs = targetConfigurations.filter(analyzer::isValidConfiguration);
+        IReliabilityAnalysisResults familyReliability = evaluateReliability(analyzer,
+                                                                            rdgRoot,
+                                                                            validConfigs,
+                                                                            options);
         long totalAnalysisTime = System.currentTimeMillis() - analysisStartTime;
         memoryCollector.takeSnapshot("after evaluation");
 
-        printAnalysisResults(targetConfigurations, familyReliability);
+        if (!options.hasSuppressReport()) {
+            Map<Boolean, List<Collection<String>>> splitConfigs = getTargetConfigurations(options, analyzer)
+                    .collect(Collectors.partitioningBy(analyzer::isValidConfiguration));
+            printAnalysisResults(splitConfigs, familyReliability);
+        }
 
         if (options.hasStatsEnabled()) {
             printStats(OUTPUT, familyReliability, rdgRoot);
@@ -99,28 +109,28 @@ public class CommandLineInterface {
      * @param options
      * @return
      */
-    private static IReliabilityAnalysisResults evaluateReliability(Analyzer analyzer, RDGNode rdgRoot, Collection<List<String>> configurations, Options options) {
+    private static IReliabilityAnalysisResults evaluateReliability(Analyzer analyzer, RDGNode rdgRoot, Stream<Collection<String>> validConfigs, Options options) {
         IReliabilityAnalysisResults results = null;
         switch (options.getAnalysisStrategy()) {
         case FEATURE_PRODUCT:
             results = evaluateReliability(analyzer::evaluateFeatureProductBasedReliability,
                                           rdgRoot,
-                                          configurations);
+                                          validConfigs);
             break;
         case PRODUCT:
             results = evaluateReliability(analyzer::evaluateProductBasedReliability,
                                           rdgRoot,
-                                          configurations);
+                                          validConfigs);
             break;
         case FAMILY:
             results = evaluateReliability(analyzer::evaluateFamilyBasedReliability,
                                           rdgRoot,
-                                          configurations);
+                                          validConfigs);
             break;
         case FAMILY_PRODUCT:
             results = evaluateReliability(analyzer::evaluateFamilyProductBasedReliability,
                                           rdgRoot,
-                                          configurations);
+                                          validConfigs);
             break;
         case FEATURE_FAMILY:
         default:
@@ -136,7 +146,7 @@ public class CommandLineInterface {
         String dotOutput = "family-reliability.dot";
         try {
             analyzer.setPruningStrategy(PruningStrategyFactory.createPruningStrategy(options.getPruningStrategy()));
-            results = analyzer.evaluateFeatureFamilyBasedReliability(rdgRoot, dotOutput);
+            results = analyzer.evaluateFeatureFamilyBasedReliability(rdgRoot, null);
         } catch (CyclicRdgException e) {
             LOGGER.severe("Cyclic dependency detected in RDG.");
             LOGGER.log(Level.SEVERE, e.toString(), e);
@@ -146,12 +156,12 @@ public class CommandLineInterface {
         return results;
     }
 
-    private static IReliabilityAnalysisResults evaluateReliability(BiFunction<RDGNode, Collection<List<String>>, IReliabilityAnalysisResults> analyzer,
+    private static IReliabilityAnalysisResults evaluateReliability(BiFunction<RDGNode, Stream<Collection<String>>, IReliabilityAnalysisResults> analyzer,
                                                                    RDGNode rdgRoot,
-                                                                   Collection<List<String>> configurations) {
+                                                                   Stream<Collection<String>> validConfigs) {
         IReliabilityAnalysisResults results = null;
         try {
-            results = analyzer.apply(rdgRoot, configurations);
+            results = analyzer.apply(rdgRoot, validConfigs);
         } catch (CyclicRdgException e) {
             LOGGER.severe("Cyclic dependency detected in RDG.");
             LOGGER.log(Level.SEVERE, e.toString(), e);
@@ -189,11 +199,11 @@ public class CommandLineInterface {
         formulaCollector = statsCollectorFactory.createFormulaCollector();
     }
 
-    private static Collection<List<String>> getTargetConfigurations(Options options, Analyzer analyzer) {
+    private static Stream<Collection<String>> getTargetConfigurations(Options options, Analyzer analyzer) {
         if (options.hasPrintAllConfigurations()) {
             return analyzer.getValidConfigurations();
         } else {
-            Set<List<String>> configurations = new HashSet<List<String>>();
+            Set<Collection<String>> configurations = new HashSet<Collection<String>>();
 
             List<String> rawConfigurations = new LinkedList<String>();
             if (options.getConfiguration() != null) {
@@ -213,18 +223,21 @@ public class CommandLineInterface {
                 configurations.add(Arrays.asList(variables));
             }
 
-            return configurations;
+            return configurations.stream();
         }
     }
 
-    private static void printAnalysisResults(Collection<List<String>> configurations, IReliabilityAnalysisResults familyReliability) {
+    private static void printAnalysisResults(Map<Boolean, List<Collection<String>>> splitConfigs, IReliabilityAnalysisResults familyReliability) {
         OUTPUT.println("Configurations:");
         OUTPUT.println("=========================================");
 
-        for (List<String> configuration: configurations) {
+        List<Collection<String>> validConfigs = splitConfigs.get(true);
+        // Ordered report
+        validConfigs.sort((c1, c2) -> c1.toString().compareTo(c2.toString()));
+        for (Collection<String> validConfig: validConfigs) {
             try {
-                String[] configurationAsArray = configuration.toArray(new String[configuration.size()]);
-                printSingleConfiguration(configuration.toString(),
+                String[] configurationAsArray = validConfig.toArray(new String[validConfig.size()]);
+                printSingleConfiguration(validConfig.toString(),
                                          familyReliability.getResult(configurationAsArray));
             } catch (UnknownFeatureException e) {
                 LOGGER.severe("Unrecognized feature: " + e.getFeatureName());
@@ -232,19 +245,12 @@ public class CommandLineInterface {
             }
         }
 
-        int count = 0;
-        for (List<String> config: configurations) {
-            int tmpCount = 1;
-            for (String feature: config) {
-                if (feature.startsWith("(")) {
-                    tmpCount *= 2;
-                }
-            }
-            count += tmpCount;
+        for (Collection<String> invalidConfig: splitConfigs.get(false)) {
+            printSingleConfiguration(invalidConfig.toString(), 0);
         }
 
         OUTPUT.println("=========================================");
-        OUTPUT.println(">>>> Total configurations: " + count);
+        OUTPUT.println(">>>> Total valid configurations: " + splitConfigs.get(true).size());
     }
 
     private static void printSingleConfiguration(String configuration, double reliability) {

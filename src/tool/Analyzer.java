@@ -8,17 +8,17 @@ import jadd.JADD;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
+import java.util.stream.Stream;
 
 import paramwrapper.ParamWrapper;
 import paramwrapper.ParametricModelChecker;
-import tool.analyzers.FamilyBasedAnalyzer;
-import tool.analyzers.FamilyProductBasedAnalyzer;
-import tool.analyzers.FeatureFamilyBasedAnalyzer;
-import tool.analyzers.FeatureProductBasedAnalyzer;
 import tool.analyzers.IPruningStrategy;
 import tool.analyzers.IReliabilityAnalysisResults;
-import tool.analyzers.ProductBasedAnalyzer;
+import tool.analyzers.strategies.FamilyBasedAnalyzer;
+import tool.analyzers.strategies.FamilyProductBasedAnalyzer;
+import tool.analyzers.strategies.FeatureFamilyBasedAnalyzer;
+import tool.analyzers.strategies.FeatureProductBasedAnalyzer;
+import tool.analyzers.strategies.ProductBasedAnalyzer;
 import tool.stats.IFormulaCollector;
 import tool.stats.ITimeCollector;
 import tool.stats.NoopFormulaCollector;
@@ -95,12 +95,10 @@ public class Analyzer {
                                                                              this.timeCollector,
                                                                              this.formulaCollector);
         this.featureProductBasedAnalyzerImpl = new FeatureProductBasedAnalyzer(this.jadd,
-                                                                               this.featureModel,
                                                                                this.modelChecker,
                                                                                this.timeCollector,
                                                                                this.formulaCollector);
         this.productBasedAnalyzerImpl = new ProductBasedAnalyzer(this.jadd,
-                                                                 this.featureModel,
                                                                  this.modelChecker,
                                                                  this.timeCollector,
                                                                  this.formulaCollector);
@@ -110,7 +108,6 @@ public class Analyzer {
                                                                this.timeCollector,
                                                                this.formulaCollector);
         this.familyProductBasedAnalyzerImpl = new FamilyProductBasedAnalyzer(this.jadd,
-                                                                             this.featureModel,
                                                                              this.modelChecker,
                                                                              this.timeCollector,
                                                                              this.formulaCollector);
@@ -120,8 +117,18 @@ public class Analyzer {
      * Returns the set of all valid configurations according to the feature model.
      * @return
      */
-    public Collection<List<String>> getValidConfigurations() {
+    public Stream<Collection<String>> getValidConfigurations() {
         return featureModel.getExpandedConfigurations();
+    }
+
+    /**
+     * Returns true if and only if {@code configuration} is valid according
+     * to the feature model.
+     * @param configuration
+     * @return
+     */
+    public boolean isValidConfiguration(Collection<String> configuration) {
+        return featureModel.isValidConfiguration(configuration);
     }
 
     /**
@@ -173,7 +180,7 @@ public class Analyzer {
      * @throws CyclicRdgException
      * @throws UnknownFeatureException
      */
-    public IReliabilityAnalysisResults evaluateFeatureProductBasedReliability(RDGNode node, Collection<List<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
+    public IReliabilityAnalysisResults evaluateFeatureProductBasedReliability(RDGNode node, Stream<Collection<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
         return featureProductBasedAnalyzerImpl.evaluateReliability(node, configurations);
     }
 
@@ -186,7 +193,7 @@ public class Analyzer {
      * @throws CyclicRdgException
      * @throws UnknownFeatureException
      */
-    public IReliabilityAnalysisResults evaluateProductBasedReliability(RDGNode node, Collection<List<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
+    public IReliabilityAnalysisResults evaluateProductBasedReliability(RDGNode node, Stream<Collection<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
         return productBasedAnalyzerImpl.evaluateReliability(node, configurations);
     }
 
@@ -199,8 +206,8 @@ public class Analyzer {
      * @throws CyclicRdgException
      * @throws UnknownFeatureException
      */
-    public IReliabilityAnalysisResults evaluateFamilyBasedReliability(RDGNode node, Collection<List<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
-        return familyBasedAnalyzerImpl.evaluateReliability(node, configurations);
+    public IReliabilityAnalysisResults evaluateFamilyBasedReliability(RDGNode node, Stream<Collection<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
+        return familyBasedAnalyzerImpl.evaluateReliability(node);
     }
 
     /**
@@ -212,7 +219,7 @@ public class Analyzer {
      * @throws CyclicRdgException
      * @throws UnknownFeatureException
      */
-    public IReliabilityAnalysisResults evaluateFamilyProductBasedReliability(RDGNode node, Collection<List<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
+    public IReliabilityAnalysisResults evaluateFamilyProductBasedReliability(RDGNode node, Stream<Collection<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
         return familyProductBasedAnalyzerImpl.evaluateReliability(node, configurations);
     }
 
