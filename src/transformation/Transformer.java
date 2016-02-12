@@ -407,6 +407,8 @@ public class Transformer {
 		Activity sourceAct = adEdge.getSource();
 		State targetState;
 
+		System.err.println("$$$$ "+ adEdge.getGuard() + " " + adEdge.getName() + " " + adEdge.getProbability());
+
 		String sourceActivitySD = sourceAct.getSd() != null ? sourceAct.getSd().getName() : "";
 
 		if (sourceAct.getType().equals(ActivityType.INITIAL_NODE)) {
@@ -447,17 +449,14 @@ public class Transformer {
 				}
 				else targetState = fdtmc.createState();
 
-				// Assuming equiprobable choice at decision node.
-				// TODO Use annotated probabilities for AD decision nodes.
-				fdtmc.createTransition(sourceState, targetState, "", Double.toString(1.0/sourceAct.getOutgoingCount()));
+				fdtmc.createTransition(sourceState, targetState, "", Float.toString(adEdge.getProbability()));
 
 				/* continue path */
 				for (Edge e : targetAct.getOutgoing()) {
 					transformPath(fdtmc, targetState, errorState, e);
 				}
 			} else { // atividade target ja foi criada
-                // Assuming equiprobable choice at decision node.
-				fdtmc.createTransition(sourceState, targetState, "", Double.toString(1.0/sourceAct.getOutgoingCount()));
+				fdtmc.createTransition(sourceState, targetState, "", Float.toString(adEdge.getProbability()));
 				/* end path */
 			}
 		} else if (sourceAct.getType().equals(ActivityType.MERGE)) {

@@ -19,7 +19,8 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import parsing.Node;
+import parsing.ProbabilityEnergyTimeProfile;
+import parsing.ProbabilityEnergyTimeProfileReader;
 import parsing.exceptions.InvalidTagException;
 import parsing.exceptions.UnsupportedFragmentTypeException;
 
@@ -104,7 +105,9 @@ public class SDReader {
 										cAttrs.getNamedItem("interactionOperator").getTextContent(),
 										extractName(cAttrs)
 								);
-						retrieveProbEnergyTime(newFragment);
+
+						ProbabilityEnergyTimeProfile profile = ProbabilityEnergyTimeProfileReader.retrieveProbEnergyTime(newFragment.getId(), this.doc);
+						newFragment.setProfile(profile);
 						this.sd.addNode(newFragment);
 						traceFragment(newFragment, child);
 
@@ -209,7 +212,8 @@ public class SDReader {
 						message.setType(MessageType.SYNCHRONOUS);
 					}
 
-					retrieveProbEnergyTime(message);
+					ProbabilityEnergyTimeProfile profile = ProbabilityEnergyTimeProfileReader.retrieveProbEnergyTime(message.getId(), this.doc);
+					message.setProfile(profile);
 					this.messages.add(message);
 					this.messagesByID.put(message.getId(), message);
 				}
@@ -249,7 +253,8 @@ public class SDReader {
 										extractName(kAttrs)
 									);
 
-						retrieveProbEnergyTime(innerFragment);
+						ProbabilityEnergyTimeProfile profile = ProbabilityEnergyTimeProfileReader.retrieveProbEnergyTime(innerFragment.getId(), this.doc);
+                        innerFragment.setProfile(profile);
 						operand.addNode(innerFragment);
 						traceFragment(innerFragment, itemK);
 					}
@@ -294,77 +299,6 @@ public class SDReader {
 			}
 		}
 
-		/**
-		 * Validates the input string and returns the proper float value from it
-		 * @param tagValue
-		 * @param tagName
-		 * @return the string related float value
-		 * @throws InvalidTagException
-		 */
-		private Float parseTag(String tagValue, String tagName) throws InvalidTagException {
-			if ("".equals(tagValue)) {
-				throw new InvalidTagException("Tag " + tagName + " is missing!", tagName);
-			}
-			Float parsedValue;
-			try {
-				parsedValue = Float.valueOf(tagValue);
-			} catch (NumberFormatException e) {
-				throw new InvalidTagException("Tag \"" + tagValue + "\" is not a float number!", tagName);
-			}
-
-			return parsedValue;
-		}
-
-		/**
-		 * Trigger for retrieveProbEnergyTimeHelper
-		 * @param n
-		 * @throws InvalidTagException
-		 */
-		private void retrieveProbEnergyTime(Node n) throws InvalidTagException {
-			retrieveProbEnergyTimeHelper(this.doc.getElementsByTagName("GQAM:GaStep"), n);
-
-			retrieveProbEnergyTimeHelper(this.doc.getElementsByTagName("PAM:PaStep"), n);
-
-			retrieveProbEnergyTimeHelper(this.doc.getElementsByTagName("GRM:ResourceUsage"), n);
-
-			retrieveProbEnergyTimeHelper(this.doc.getElementsByTagName("PAM:PaCommStep"), n);
-		}
-
-		/**
-		 * Parses the xmi file in search for pertinent annotations of an fSD
-		 * $nodes indicates the xmi nodes to be analyzed
-		 * $n indicates the object in which the resultant data will be put
-		 * @param nodes
-		 * @param n
-		 * @throws InvalidTagException
-		 */
-		private void retrieveProbEnergyTimeHelper(NodeList nodes, Node n)  throws InvalidTagException {
-			for (int k = 0; k < nodes.getLength(); k++) {
-				org.w3c.dom.Node tmp;
-				NamedNodeMap kAttrs = nodes.item(k).getAttributes();
-
-
-				if (kAttrs.getNamedItem("base_NamedElement").getTextContent().equals(n.getId())) {
-					if (kAttrs.getNamedItem("prob") != null) {
-						n.setProb(parseTag(kAttrs.getNamedItem("prob").getTextContent(), "prob").floatValue());
-					}
-
-					if (nodes.item(k).hasChildNodes()) {
-						NodeList kChilds = nodes.item(k).getChildNodes();
-						for (int i = 0; i < kChilds.getLength(); i++) {
-							tmp = kChilds.item(i);
-							if (tmp.getNodeName() != null && tmp.getNodeName().equals("energy")) {
-								n.setEnergy(parseTag(tmp.getTextContent(), "energy").floatValue());
-							}
-							if (tmp.getNodeName() != null && tmp.getNodeName().equals("execTime")) {
-								n.setExecTime(parseTag(tmp.getTextContent(), "execTime"));
-							}
-						}
-					}
-
-				}
-			}
-		}
 
 	// Getters and Setters
 

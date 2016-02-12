@@ -16,6 +16,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
+import parsing.ProbabilityEnergyTimeProfile;
+import parsing.ProbabilityEnergyTimeProfileReader;
+import parsing.exceptions.InvalidTagException;
+
 /**
  * @author andlanna
  *
@@ -79,8 +83,9 @@ public class ADReader {
 	 * retrieveActivities function is responsible for identifying the activity diagrams
 	 * represented in a XMI file, identify all the activities in each activity diagram and
 	 * create the trace (link) between each activity and its related sequence diagram.
+	 * @throws InvalidTagException
 	 */
-	public void retrieveActivities() {
+	public void retrieveActivities() throws InvalidTagException {
 		org.w3c.dom.Node ad;
 		List<org.w3c.dom.Node> adList = new ArrayList<org.w3c.dom.Node>();
 		NodeList nodes = this.doc.getElementsByTagName("packagedElement");
@@ -148,8 +153,9 @@ public class ADReader {
 	 * edge type, source and target activities, guards conditions). By the end the function creates a
 	 * mapping <id, edge>.
 	 * @param node The XMI fragment representing a sequence diagram to be parsed.
+	 * @throws InvalidTagException
 	 */
-	public void retrieveEdges(org.w3c.dom.Node node) {
+	public void retrieveEdges(org.w3c.dom.Node node) throws InvalidTagException {
 		NodeList elements = node.getChildNodes();
 		this.edges = new ArrayList<Edge>();
 
@@ -183,6 +189,10 @@ public class ADReader {
 						}
 						break;
 					}
+				}
+				ProbabilityEnergyTimeProfile profile = ProbabilityEnergyTimeProfileReader.retrieveProbEnergyTime(tmp.getId(), this.doc);
+				if (profile.hasProbability()) {
+				    tmp.setProbability(profile.getProbability());
 				}
 				this.edges.add(tmp);
 			}

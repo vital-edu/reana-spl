@@ -2,15 +2,14 @@ package parsing;
 
 public abstract class Node {
 	private String id;
-	private float execTime;
-	private float energy;
-	private float prob;
-	protected boolean hasProb = false;
-	protected boolean hasExecTime = false;
-	protected boolean hasEnergy = false;
+	ProbabilityEnergyTimeProfile profile = new ProbabilityEnergyTimeProfile();
 
 	public Node(String id) {
 		this.id = id;
+	}
+
+	public void setProfile(ProbabilityEnergyTimeProfile profile) {
+	    this.profile = profile;
 	}
 
 	@Override
@@ -42,11 +41,11 @@ public abstract class Node {
 	}
 
 	public float getEnergy() {
-		return this.energy;
+		return this.profile.getEnergy();
 	}
 
 	public float getExecTime() {
-		return this.execTime;
+		return this.profile.getExecTime();
 	}
 
 	public String getId() {
@@ -54,33 +53,19 @@ public abstract class Node {
 	}
 
 	public boolean hasEnergy() {
-		return this.hasEnergy;
+		return this.profile.hasEnergy();
 	}
 
 	public boolean hasExecTime() {
-		return this.hasExecTime;
+		return this.profile.hasExecTime();
 	}
 
 	public boolean hasProb() {
-		return this.hasProb;
+		return this.profile.hasProbability();
 	}
 
 	public float getProb() {
-		return this.prob;
+		return this.profile.getProbability();
 	}
 
-	public void setProb(float prob) {
-		this.hasProb = true;
-		this.prob = prob;
-	}
-
-	public void setEnergy(float energy) {
-		this.hasEnergy = true;
-		this.energy = energy;
-	}
-
-	public void setExecTime(float execTime) {
-		this.hasExecTime = true;
-		this.execTime = execTime;
-	}
 }

@@ -7,6 +7,7 @@ public class Edge {
 	private EdgeType type;
 	private Activity source;
 	private Activity target;
+	private float probability = 1.0f;
 
 	public Edge(String id, String name, String type) {
 		this.id = id;
@@ -45,6 +46,14 @@ public class Edge {
 	public void setTarget(Activity target) {
 		this.target = target;
 	}
+
+    public void setProbability(float probability) {
+        this.probability = probability;
+    }
+
+    public float getProbability() {
+        return this.probability;
+    }
 
 	public String getId() {
 		return id;
