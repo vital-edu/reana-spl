@@ -407,8 +407,6 @@ public class Transformer {
 		Activity sourceAct = adEdge.getSource();
 		State targetState;
 
-		System.err.println("$$$$ "+ adEdge.getGuard() + " " + adEdge.getName() + " " + adEdge.getProbability());
-
 		String sourceActivitySD = sourceAct.getSd() != null ? sourceAct.getSd().getName() : "";
 
 		if (sourceAct.getType().equals(ActivityType.INITIAL_NODE)) {
