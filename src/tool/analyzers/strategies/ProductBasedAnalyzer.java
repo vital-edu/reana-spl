@@ -67,7 +67,7 @@ public class ProductBasedAnalyzer {
     public IReliabilityAnalysisResults evaluateReliability(RDGNode node, Stream<Collection<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
         List<RDGNode> dependencies = node.getDependenciesTransitiveClosure();
 
-        timeCollector.startTimer(CollectibleTimers.PRODUCT_BASED_TIME);
+        timeCollector.startTimer(CollectibleTimers.MODEL_CHECKING_TIME);
 
         Map<Collection<String>, Double> results = ProductIterationHelper.evaluate(configuration -> evaluateSingle(node,
                                                                                                                   configuration,
@@ -75,7 +75,7 @@ public class ProductBasedAnalyzer {
                                                                                   configurations,
                                                                                   CONCURRENCY.PARALLEL);
 
-        timeCollector.stopTimer(CollectibleTimers.PRODUCT_BASED_TIME);
+        timeCollector.stopTimer(CollectibleTimers.MODEL_CHECKING_TIME);
         return new MapBasedReliabilityResults(results);
     }
 

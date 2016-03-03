@@ -64,12 +64,13 @@ public class FamilyBasedAnalyzer {
     public IReliabilityAnalysisResults evaluateReliability(RDGNode node) throws CyclicRdgException, UnknownFeatureException {
         List<RDGNode> dependencies = node.getDependenciesTransitiveClosure();
 
-        timeCollector.startTimer(CollectibleTimers.FAMILY_BASED_TIME);
-
+        timeCollector.startTimer(CollectibleTimers.MODEL_CHECKING_TIME);
         // Lambda_v + alpha_v
         String expression = firstPhase.getReliabilityExpression(dependencies);
         formulaCollector.collectFormula(node, expression);
+        timeCollector.stopTimer(CollectibleTimers.MODEL_CHECKING_TIME);
 
+        timeCollector.startTimer(CollectibleTimers.EXPRESSION_SOLVING_TIME);
         // Lift
         Expression<ADD> liftedExpression = helper.lift(expression);
 
@@ -90,7 +91,7 @@ public class FamilyBasedAnalyzer {
         ADD reliability = liftedExpression.solve(values);
         ADD result = featureModel.times(reliability);
 
-        timeCollector.stopTimer(CollectibleTimers.FAMILY_BASED_TIME);
+        timeCollector.stopTimer(CollectibleTimers.EXPRESSION_SOLVING_TIME);
         LOGGER.info("Formula evaluation ok...");
 
         return new ADDReliabilityResults(result);

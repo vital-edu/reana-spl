@@ -85,12 +85,12 @@ public class FeatureFamilyBasedAnalyzer {
     public IReliabilityAnalysisResults evaluateReliability(RDGNode node, String dotOutput) throws CyclicRdgException {
         List<RDGNode> dependencies = node.getDependenciesTransitiveClosure();
 
-        timeCollector.startTimer(CollectibleTimers.FEATURE_BASED_TIME);
+        timeCollector.startTimer(CollectibleTimers.MODEL_CHECKING_TIME);
         // Alpha_v
         List<Component<String>> expressions = firstPhase.getReliabilityExpressions(dependencies);
-        timeCollector.stopTimer(CollectibleTimers.FEATURE_BASED_TIME);
+        timeCollector.stopTimer(CollectibleTimers.MODEL_CHECKING_TIME);
 
-        timeCollector.startTimer(CollectibleTimers.FAMILY_BASED_TIME);
+        timeCollector.startTimer(CollectibleTimers.EXPRESSION_SOLVING_TIME);
         // Lift
         List<Component<Expression<ADD>>> liftedExpressions = expressions.stream()
                 .map(helper::lift)
@@ -98,7 +98,7 @@ public class FeatureFamilyBasedAnalyzer {
         // Sigma_v
         ADD reliability = solveFromMany(liftedExpressions);
         ADD result = featureModel.times(reliability);
-        timeCollector.stopTimer(CollectibleTimers.FAMILY_BASED_TIME);
+        timeCollector.stopTimer(CollectibleTimers.EXPRESSION_SOLVING_TIME);
 
         if (dotOutput != null) {
             generateDotFile(result, dotOutput);

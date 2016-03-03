@@ -59,12 +59,13 @@ public class FamilyProductBasedAnalyzer {
     public IReliabilityAnalysisResults evaluateReliability(RDGNode node, Stream<Collection<String>> configurations) throws CyclicRdgException {
         List<RDGNode> dependencies = node.getDependenciesTransitiveClosure();
 
-        timeCollector.startTimer(CollectibleTimers.FAMILY_BASED_TIME);
-
+        timeCollector.startTimer(CollectibleTimers.MODEL_CHECKING_TIME);
         // Lambda_v + alpha_v
         String expression = firstPhase.getReliabilityExpression(dependencies);
         formulaCollector.collectFormula(node, expression);
+        timeCollector.stopTimer(CollectibleTimers.MODEL_CHECKING_TIME);
 
+        timeCollector.startTimer(CollectibleTimers.EXPRESSION_SOLVING_TIME);
         Expression<Double> parsedExpression = expressionSolver.parseExpression(expression);
 
         List<String> presenceConditions = dependencies.stream()
@@ -76,16 +77,13 @@ public class FamilyProductBasedAnalyzer {
                                           e -> e.getKey(),
                                           (a, b) -> a));
 
-        timeCollector.stopTimer(CollectibleTimers.FAMILY_BASED_TIME);
-        timeCollector.startTimer(CollectibleTimers.PRODUCT_BASED_TIME);
-
         Map<Collection<String>, Double> results = ProductIterationHelper.evaluate(configuration -> evaluateSingle(parsedExpression,
                                                                                                                   configuration,
                                                                                                                   eqClassToPC),
                                                                                   configurations,
                                                                                   CONCURRENCY.SEQUENTIAL);
 
-        timeCollector.stopTimer(CollectibleTimers.PRODUCT_BASED_TIME);
+        timeCollector.stopTimer(CollectibleTimers.EXPRESSION_SOLVING_TIME);
         LOGGER.info("Formulae evaluation ok...");
         return new MapBasedReliabilityResults(results);
     }

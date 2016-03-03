@@ -68,12 +68,12 @@ public class FeatureProductBasedAnalyzer {
     public IReliabilityAnalysisResults evaluateReliability(RDGNode node, Stream<Collection<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
         List<RDGNode> dependencies = node.getDependenciesTransitiveClosure();
 
-        timeCollector.startTimer(CollectibleTimers.FEATURE_BASED_TIME);
+        timeCollector.startTimer(CollectibleTimers.MODEL_CHECKING_TIME);
         // Alpha_v
         List<Component<String>> expressions = firstPhase.getReliabilityExpressions(dependencies);
-        timeCollector.stopTimer(CollectibleTimers.FEATURE_BASED_TIME);
+        timeCollector.stopTimer(CollectibleTimers.MODEL_CHECKING_TIME);
 
-        timeCollector.startTimer(CollectibleTimers.PRODUCT_BASED_TIME);
+        timeCollector.startTimer(CollectibleTimers.EXPRESSION_SOLVING_TIME);
 
         Map<Collection<String>, Double> results = ProductIterationHelper.evaluate(configuration -> evaluateSingle(node,
                                                                                                                   configuration,
@@ -81,7 +81,7 @@ public class FeatureProductBasedAnalyzer {
                                                                                   configurations,
                                                                                   CONCURRENCY.PARALLEL);
 
-        timeCollector.stopTimer(CollectibleTimers.PRODUCT_BASED_TIME);
+        timeCollector.stopTimer(CollectibleTimers.EXPRESSION_SOLVING_TIME);
         return new MapBasedReliabilityResults(results);
     }
 
