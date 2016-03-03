@@ -1,8 +1,8 @@
 package ui.stats;
 
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -11,45 +11,22 @@ import tool.stats.IFormulaCollector;
 
 public class FormulaCollector implements IFormulaCollector {
 
-    private long count = 0;
-    private long minSize = Long.MAX_VALUE;
-    private long maxSize = 0;
-    private long sizesSum = 0;
     private Map<RDGNode, String> formulae = new HashMap<RDGNode, String>();
-    List<Integer> allFormulaeSizes = new ArrayList<Integer>();
 
     @Override
-    public void collectFormula(RDGNode node, String formula) {
-        count++;
-        int formulaSize = formula.length();
-        minSize = Math.min(minSize, formulaSize);
-        maxSize = Math.max(maxSize, formulaSize);
-        sizesSum += formulaSize;
+    public synchronized void collectFormula(RDGNode node, String formula) {
         formulae.put(node, formula);
-        allFormulaeSizes.add(formulaSize);
-    }
-
-    @Override
-    public long getMinFormulaSize() {
-        return minSize;
-    }
-
-    @Override
-    public long getMaxFormulaSize() {
-        return maxSize;
-    }
-
-    @Override
-    public long getSizesSum() {
-        return sizesSum;
     }
 
     @Override
     public void printStats(PrintStream out) {
-        out.println("Maximum formula size: " + maxSize);
-        out.println("Minimum formula size: " + minSize);
-        out.println("Sum of formulae sizes: " + sizesSum);
-        out.println("Number of formulae: " + count);
+        long count = 0;
+        long minSize = Long.MAX_VALUE;
+        long maxSize = 0;
+        long sizesSum = 0;
+        List<Integer> allFormulaeSizes = new LinkedList<Integer>();
+
+        out.println("Formulae stats:");
         for (Map.Entry<RDGNode, String> entry: formulae.entrySet()) {
             RDGNode node = entry.getKey();
             int numChildren = node.getDependencies().size();
@@ -62,7 +39,17 @@ public class FormulaCollector implements IFormulaCollector {
             out.println("    " + node + ": "
                         + numChildren + " children | height " + height + " | "
                         + formulaSize + " bytes " + formattedFormula);
+
+            count++;
+            minSize = Math.min(minSize, formulaSize);
+            maxSize = Math.max(maxSize, formulaSize);
+            sizesSum += formulaSize;
+            allFormulaeSizes.add(formulaSize);
         }
+        out.println("Maximum formula size: " + maxSize);
+        out.println("Minimum formula size: " + minSize);
+        out.println("Sum of formulae sizes: " + sizesSum);
+        out.println("Number of formulae: " + count);
         out.println("All formulae sizes: " + allFormulaeSizes);
     }
 

@@ -12,9 +12,6 @@ import tool.RDGNode;
 public interface IFormulaCollector {
 
     public void collectFormula(RDGNode node, String formula);
-    public long getMinFormulaSize();
-    public long getMaxFormulaSize();
-    public long getSizesSum();
 
     public void printStats(PrintStream out);
 
