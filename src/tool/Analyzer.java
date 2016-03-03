@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.stream.Stream;
 
+import paramwrapper.IModelCollector;
 import paramwrapper.ParamWrapper;
 import paramwrapper.ParametricModelChecker;
 import tool.analyzers.IPruningStrategy;
@@ -57,8 +58,8 @@ public class Analyzer {
      *          expressed using Java logical operators.
      * @throws IOException if there is a problem reading the file.
      */
-    public Analyzer(String featureModel, String paramPath, ITimeCollector timeCollector, IFormulaCollector formulaCollector) {
-        this(new JADD(), featureModel, paramPath, timeCollector, formulaCollector);
+    public Analyzer(String featureModel, String paramPath, ITimeCollector timeCollector, IFormulaCollector formulaCollector, IModelCollector modelCollector) {
+        this(new JADD(), featureModel, paramPath, timeCollector, formulaCollector, modelCollector);
     }
 
     /**
@@ -68,7 +69,7 @@ public class Analyzer {
      * @param featureModel
      */
     Analyzer(JADD jadd, String featureModel, String paramPath) {
-        this(jadd, featureModel, paramPath, null, null);
+        this(jadd, featureModel, paramPath, null, null, null);
     }
 
 
@@ -77,8 +78,7 @@ public class Analyzer {
      * @param jadd
      * @param featureModel
      */
-    private Analyzer(JADD jadd, String featureModel, String paramPath, ITimeCollector timeCollector, IFormulaCollector formulaCollector) {
-        this.modelChecker = new ParamWrapper(paramPath);
+    private Analyzer(JADD jadd, String featureModel, String paramPath, ITimeCollector timeCollector, IFormulaCollector formulaCollector, IModelCollector modelCollector) {
         this.jadd = jadd;
         this.expressionSolver = new ExpressionSolver(jadd);
         this.featureModel = expressionSolver.encodeFormula(featureModel);
@@ -88,6 +88,7 @@ public class Analyzer {
 
         this.timeCollector = (timeCollector != null) ? timeCollector : new NoopTimeCollector();
         this.formulaCollector = (formulaCollector != null) ? formulaCollector : new NoopFormulaCollector();
+        this.modelChecker = (modelCollector != null) ? new ParamWrapper(paramPath, modelCollector) : new ParamWrapper(paramPath);
 
         this.featureFamilyBasedAnalyzerImpl = new FeatureFamilyBasedAnalyzer(this.jadd,
                                                                              this.featureModel,

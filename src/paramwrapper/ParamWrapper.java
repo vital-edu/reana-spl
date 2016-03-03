@@ -25,15 +25,23 @@ public class ParamWrapper implements ParametricModelChecker {
     private static final Logger LOGGER = Logger.getLogger(ParamWrapper.class.getName());
 
 	private String paramPath;
+	private IModelCollector modelCollector;
 	private final String prismPath = "/opt/prism-4.2.1-src/bin/prism";
 	private boolean usePrism = false;
 
-	public ParamWrapper(String paramPath) {
-	    this.paramPath = paramPath;
-	}
+    public ParamWrapper(String paramPath) {
+        this.paramPath = paramPath;
+        this.modelCollector = new NoopModelCollector();
+    }
+
+    public ParamWrapper(String paramPath, IModelCollector modelCollector) {
+        this.paramPath = paramPath;
+        this.modelCollector = modelCollector;
+    }
 
 	public String fdtmcToParam(FDTMC fdtmc) {
 		ParamModel model = new ParamModel(fdtmc);
+		modelCollector.collectModel(model.getParametersNumber(), model.getStatesNumber());
 		return model.toString();
 	}
 
@@ -47,6 +55,7 @@ public class ParamWrapper implements ParametricModelChecker {
 
 	private String evaluate(String model, String property) {
 		try {
+		    LOGGER.finer(model);
 			File modelFile = File.createTempFile("model", "param");
 			FileWriter modelWriter = new FileWriter(modelFile);
 			modelWriter.write(model);
@@ -62,6 +71,7 @@ public class ParamWrapper implements ParametricModelChecker {
 			File resultsFile = File.createTempFile("result", null);
 
 			String formula;
+			long startTime = System.nanoTime();
 			if (usePrism && !model.contains("param")) {
 			    formula = invokeModelChecker(modelFile.getAbsolutePath(),
 			                                 propertyFile.getAbsolutePath(),
@@ -71,6 +81,8 @@ public class ParamWrapper implements ParametricModelChecker {
 			                                           propertyFile.getAbsolutePath(),
 			                                           resultsFile.getAbsolutePath());
 			}
+			long elapsedTime = System.nanoTime() - startTime;
+            modelCollector.collectModelCheckingTime(elapsedTime);
 			return formula.trim().replaceAll("\\s+", "");
 		} catch (IOException e) {
 			LOGGER.log(Level.SEVERE, e.toString(), e);

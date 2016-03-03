@@ -29,6 +29,7 @@ import modeling.DiagramAPI;
 
 import org.w3c.dom.DOMException;
 
+import paramwrapper.IModelCollector;
 import parsing.exceptions.InvalidNodeClassException;
 import parsing.exceptions.InvalidNodeType;
 import parsing.exceptions.InvalidNumberOfOperandsException;
@@ -59,6 +60,7 @@ public class CommandLineInterface {
     private static IMemoryCollector memoryCollector;
     private static ITimeCollector timeCollector;
     private static IFormulaCollector formulaCollector;
+    private static IModelCollector modelCollector;
 
     private CommandLineInterface() {
         // NO-OP
@@ -185,7 +187,8 @@ public class CommandLineInterface {
         Analyzer analyzer = new Analyzer(featureModel,
                                          paramPath,
                                          timeCollector,
-                                         formulaCollector);
+                                         formulaCollector,
+                                         modelCollector);
         return analyzer;
     }
 
@@ -197,6 +200,7 @@ public class CommandLineInterface {
         memoryCollector = statsCollectorFactory.createMemoryCollector();
         timeCollector = statsCollectorFactory.createTimeCollector();
         formulaCollector = statsCollectorFactory.createFormulaCollector();
+        modelCollector = statsCollectorFactory.createModelCollector();
     }
 
     private static Stream<Collection<String>> getTargetConfigurations(Options options, Analyzer analyzer) {
@@ -268,6 +272,7 @@ public class CommandLineInterface {
         out.println("------");
         timeCollector.printStats(out);
         formulaCollector.printStats(out);
+        modelCollector.printStats(out);
         memoryCollector.printStats(out);
         printEvaluationReuse(rdgRoot);
         familyReliability.printStats(out);

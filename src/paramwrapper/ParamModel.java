@@ -47,6 +47,14 @@ class ParamModel {
 		parameters = getParameters(commands.values());
 	}
 
+	public int getParametersNumber() {
+	    return parameters.size();
+	}
+
+	public int getStatesNumber() {
+	    return stateRangeEnd+1;
+	}
+
 	private Map<String, Set<Integer>> getLabels(FDTMC fdtmc) {
 		Map<String, Set<Integer>> labeledStates = new TreeMap<String, Set<Integer>>();
 		Collection<State> states = fdtmc.getStates();

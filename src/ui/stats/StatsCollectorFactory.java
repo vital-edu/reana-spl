@@ -1,5 +1,6 @@
 package ui.stats;
 
+import paramwrapper.IModelCollector;
 import tool.stats.IFormulaCollector;
 import tool.stats.IMemoryCollector;
 import tool.stats.ITimeCollector;
@@ -36,6 +37,14 @@ public class StatsCollectorFactory {
             return new MemoryCollector();
         } else {
             return new NoopMemoryCollector();
+        }
+    }
+
+    public IModelCollector createModelCollector() {
+        if (collectionEnabled) {
+            return new ModelCollector();
+        } else {
+            return null;
         }
     }
 
