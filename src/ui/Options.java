@@ -73,11 +73,15 @@ class Options {
         OptionSpec<AnalysisStrategy> analysisStrategyOption = optionParser
                 .accepts("analysis-strategy",
                          "The strategy that should be used for analysis. Can be one of: "
-                         + "FEATURE_FAMILY (feature-family-based); FEATURE_PRODUCT (feature-product-based)")
+                                 + "FEATURE_FAMILY (feature-family-based); "
+                                 + "FEATURE_PRODUCT (feature-product-based); "
+                                 + "FAMILY (family-based); "
+                                 + "FAMILY_PRODUCT (family-product-based); "
+                                 + "PRODUCT (product-based).")
                 .withRequiredArg()
                 .ofType(AnalysisStrategy.class)
                 .defaultsTo(AnalysisStrategy.FEATURE_FAMILY)
-                .describedAs("FEATURE_FAMILY | FEATURE_PRODUCT");
+                .describedAs("FEATURE_FAMILY | FEATURE_PRODUCT | FAMILY | FAMILY_PRODUCT | PRODUCT");
 
         OptionSpec<Void> helpOption = optionParser
                 .accepts("help")

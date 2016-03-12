@@ -5,6 +5,7 @@ package ui;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
@@ -71,7 +72,11 @@ public class CommandLineInterface {
 
         Options options = Options.parseOptions(args);
         LogManager logManager = LogManager.getLogManager();
-        logManager.readConfiguration(new FileInputStream("logging.properties"));
+        try {
+            logManager.readConfiguration(new FileInputStream("logging.properties"));
+        } catch(FileNotFoundException e) {
+            e.printStackTrace();
+        }
         initializeStatsCollectors(options);
 
         memoryCollector.takeSnapshot("before model parsing");
