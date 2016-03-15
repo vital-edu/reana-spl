@@ -15,7 +15,7 @@ All required dependencies are in the `libs` folder:
     The jar was created with [JNAerator](https://code.google.com/p/jnaerator/), and the CUDD shared library is bundled inside the jar.
 - jep-2.23-custom.jar: a customized version of [JEP](http://www.cse.msu.edu/SENS/Software/jep-2.23/doc/website/doc/doc_usage.htm) 2.23
     which allows overriding standard arithmetic operators (e.g., +, -). The modified source code
-    is available at https://github.com/thiagomael/jep.
+    is available at https://github.com/SPLMC/jep.
 - jopt-simple-4.9.jar: [JOpt Simple](https://pholser.github.io/jopt-simple/), a library for command-line
     argument parsing.
 
