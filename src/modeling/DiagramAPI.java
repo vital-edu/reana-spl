@@ -21,7 +21,7 @@ import tool.RDGNode;
 import transformation.Transformer;
 import fdtmc.FDTMC;
 
-public class DiagramAPI {
+public class DiagramAPI implements IModelerAPI {
 	// Attributes
 
 		private final File xmlFile;
@@ -45,10 +45,8 @@ public class DiagramAPI {
 	// Relevant public methods
 
 
-		/**
-		 * Triggers the applicable transformations, either AD or SD based
-		 * @throws InvalidNumberOfOperandsException
-		 * @throws InvalidNodeClassException
+		/* (non-Javadoc)
+		 * @see modeling.IModelerAPI#transform()
 		 */
 		public RDGNode transform() throws InvalidNumberOfOperandsException, InvalidNodeClassException, InvalidNodeType {
 			RDGNode topLevel = transformer.transformSingleAD(adParser);
@@ -59,10 +57,16 @@ public class DiagramAPI {
 			return topLevel;
 		}
 
+		/* (non-Javadoc)
+		 * @see modeling.IModelerAPI#measureSizeModel(fdtmc.FDTMC)
+		 */
 		public void measureSizeModel (FDTMC fdtmc) {
 			transformer.measureSizeModel(fdtmc);
 		}
 
+		/* (non-Javadoc)
+		 * @see modeling.IModelerAPI#printNumberOfCalls(java.lang.String)
+		 */
 		public void printNumberOfCalls (String name) {
 			transformer.printNumberOfCalls(name);
 		}
@@ -110,14 +114,23 @@ public class DiagramAPI {
 
 	// Getters and Setters
 
+		/* (non-Javadoc)
+		 * @see modeling.IModelerAPI#getFdtmcByName()
+		 */
 		public Map<String, FDTMC> getFdtmcByName() {
 			return transformer.getFdtmcByName();
 		}
 
+		/* (non-Javadoc)
+		 * @see modeling.IModelerAPI#getSdParsers()
+		 */
 		public List<SDReader> getSdParsers() {
 			return sdParsers;
 		}
 
+		/* (non-Javadoc)
+		 * @see modeling.IModelerAPI#getAdParser()
+		 */
 		public ADReader getAdParser() {
 			return adParser;
 		}

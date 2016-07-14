@@ -26,9 +26,18 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import modeling.DiagramAPI;
+import modeling.IModelerAPI;
 
 import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import paramwrapper.IModelCollector;
 import parsing.exceptions.InvalidNodeClassException;
@@ -350,13 +359,64 @@ public class CommandLineInterface {
      * @throws InvalidNumberOfOperandsException
      */
     private static RDGNode model(File umlModels, ITimeCollector timeCollector) throws UnsupportedFragmentTypeException, InvalidTagException, InvalidNumberOfOperandsException, InvalidNodeClassException, InvalidNodeType {
-        timeCollector.startTimer(CollectibleTimers.PARSING_TIME);
+    	String exporter = identifyExporter(umlModels);
+    	IModelerAPI modeler = null;
+    	
+    	timeCollector.startTimer(CollectibleTimers.PARSING_TIME);
+    	
+    	switch (exporter) {
+		case "MagicDraw":
+			modeler = new DiagramAPI(umlModels);
+			
+			break;
 
-        DiagramAPI modeler = new DiagramAPI(umlModels);
-        RDGNode result = modeler.transform();
+		case "SplGenerator": 
+			modeler = null;
+			break;
+			
+		default:
+			break;
+		}
 
-        timeCollector.stopTimer(CollectibleTimers.PARSING_TIME);
+        
+    	RDGNode result = modeler.transform();
+    	timeCollector.stopTimer(CollectibleTimers.PARSING_TIME);
+
         return result;
     }
+    
+    /**
+     * @author andlanna
+     * This method's role is to identify which behavioral model exporter was 
+     * used for generating activity and sequence diagrams.
+     * @param umlModels - the XML file representing the SPL's activity and sequence diagrams.
+     * @return a string with the name of the exporter
+     */
+	private static String identifyExporter(File umlModels) {
+		String answer = null; 
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance(); 
+		
+		DocumentBuilder builder;
+		Document doc = null; 
+		try {
+			builder = factory.newDocumentBuilder();
+			doc = builder.parse(umlModels);
+		} catch (ParserConfigurationException | SAXException | IOException e) {
+			e.printStackTrace();
+		} 
+		
+		NodeList nodes = doc.getElementsByTagName("xmi:exporter");
+		if (nodes.getLength() > 0) {
+			Element e = (Element) nodes.item(0);
+			if (e.getTextContent().equals("MagicDraw UML")) {
+				answer = "MagicDraw";
+			}
+		} else {
+			answer = "SplGenerator";
+		}
+		
+		
+		return answer;
+	}
 
 }
