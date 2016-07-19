@@ -40,6 +40,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import paramwrapper.IModelCollector;
+import parsing.SplGeneratorModels.SplGeneratorModelingAPI;
 import parsing.exceptions.InvalidNodeClassException;
 import parsing.exceptions.InvalidNodeType;
 import parsing.exceptions.InvalidNumberOfOperandsException;
@@ -371,7 +372,7 @@ public class CommandLineInterface {
 			break;
 
 		case "SplGenerator": 
-			modeler = null;
+			modeler = new SplGeneratorModelingAPI(umlModels);
 			break;
 			
 		default:
