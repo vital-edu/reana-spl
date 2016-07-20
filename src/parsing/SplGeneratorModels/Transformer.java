@@ -1,10 +1,10 @@
 package parsing.SplGeneratorModels;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
-
 
 import fdtmc.FDTMC;
 import parsing.SplGeneratorModels.Activity;
@@ -134,11 +134,18 @@ public class Transformer {
 				source = f.createState();
 				for (Transition t : adElem.getTransitions()) {
 					fdtmc.State target = transformAdElement(t.getTarget(), f);
+					double reliability = new BigDecimal(t.getProbability()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue();
+					double complement  = new BigDecimal(1-t.getProbability()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue();
 					f.createTransition(source, target, t.getElementName(),
-							Double.toString(t.getProbability()));
+							Double.toString(reliability));
 					f.createTransition(source, f.getErrorState(),
 							t.getElementName(),
-							Double.toString(1 - t.getProbability()));
+							Double.toString(complement));
+//					f.createTransition(source, target, t.getElementName(),
+//							Double.toString(t.getProbability()));
+//					f.createTransition(source, f.getErrorState(),
+//							t.getElementName(),
+//							Double.toString(1 - t.getProbability()));
 				}
 				fdtmcStateById.put(adElem.getElementName(), source);
 				answer = source;

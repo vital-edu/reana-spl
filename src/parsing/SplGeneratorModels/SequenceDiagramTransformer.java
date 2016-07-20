@@ -66,36 +66,39 @@ public class SequenceDiagramTransformer {
 
 		source = f.createState();
 
-		// String sdClass = e.getClass().getSimpleName();
-
 		switch (sdClass) {
 		case "Message":
 			Message m = (Message) e;
 			if (m.getType() == Message.SYNCHRONOUS) {
-//				Double probability = m.getProbability();
-//				Double failure = 1 - m.getProbability();
+				double reliability = new BigDecimal(m.getProbability()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue();
+				double complement = new BigDecimal(1-m.getProbability()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue();
 				f.createTransition(source, target, m.getName(),
-						Double.toString(m.getProbability()));
+						Double.toString(reliability));
 				f.createTransition(source, f.getErrorState(), m.getName(),
-						Double.toString(1 - m.getProbability()));
+						Double.toString(complement));
+//				f.createTransition(source, target, m.getName(),
+//						Double.toString(m.getProbability()));
+//				f.createTransition(source, f.getErrorState(), m.getName(),
+//						Double.toString(1 - m.getProbability()));
 				System.out.println("sync");
-				// f.createTransition(source, target, m.getName(),
-				// probability.toString());
-				// f.createTransition(source, f.getErrorState(), m.getName(),
-				// failure.toString());
 			}
 			if (m.getType() == Message.ASYNCHRONOUS) {
+				double reliability = new BigDecimal(m.getProbability()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue();
+				double complement = new BigDecimal(1-m.getProbability()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue();
 				f.createTransition(source, target, m.getName(),
-						Double.toString(m.getProbability()));
+						Double.toString(reliability));
 				f.createTransition(source, f.getErrorState(), m.getName(),
-						Double.toString(1 - m.getProbability()));
+						Double.toString(complement));
+//				f.createTransition(source, target, m.getName(),
+//						Double.toString(m.getProbability()));
+//				f.createTransition(source, f.getErrorState(), m.getName(),
+//						Double.toString(1 - m.getProbability()));
 				System.out.println("async");
 			}
 			break;
 
 		case "Fragment":
 			Fragment fr = (Fragment) e;
-			// System.out.println(fr.getName());
 			if (fr.getType() == Fragment.OPTIONAL) {
 				f.createTransition(source, target, "", fr.getSequenceDiagrams()
 						.getFirst().getName());
@@ -109,8 +112,11 @@ public class SequenceDiagramTransformer {
 			} else if (fr.getType() == Fragment.ALTERNATIVE) {
 				for (SequenceDiagram s : fr.getSequenceDiagrams()) {
 					target = transformSdElement(s.getElements(), f);
+					double probability = new BigDecimal(1 / fr.getSequenceDiagrams().size()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue();
 					f.createTransition(source, target, "alt", Double
-							.toString(1 / fr.getSequenceDiagrams().size()));
+							.toString(probability));
+//					f.createTransition(source, target, "alt", Double
+//							.toString(1 / fr.getSequenceDiagrams().size()));
 				}
 			}
 			break;
