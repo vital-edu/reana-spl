@@ -30,19 +30,10 @@ public class SequenceDiagramTransformer {
 		RDGNode answer = new RDGNode(s.getName(), s.getGuardCondition(), f);
 		root = answer;
 
-//		LinkedList<SequenceDiagramElement> sde = (LinkedList<SequenceDiagramElement>) s
-//				.getElements().clone();
-		
 		State s0 = f.createInitialState();
 		f.createErrorState();
-//		State target = transformSdElement(sde, f);
 		State target = transformSdElement(s.getElements(), f);
 		f.createTransition(s0, target, "", Double.toString(1.0));
-		// State s0 = transformSdElement(sde, f);
-		// s0.setLabel(FDTMC.INITIAL_LABEL);
-
-		// System.out.println(f);
-		// SPLFilePersistence.fdtmc2Dot(f, s.getName());
 
 		return answer;
 	}
@@ -76,11 +67,6 @@ public class SequenceDiagramTransformer {
 						Double.toString(reliability));
 				f.createTransition(source, f.getErrorState(), m.getName(),
 						Double.toString(complement));
-//				f.createTransition(source, target, m.getName(),
-//						Double.toString(m.getProbability()));
-//				f.createTransition(source, f.getErrorState(), m.getName(),
-//						Double.toString(1 - m.getProbability()));
-				System.out.println("sync");
 			}
 			if (m.getType() == Message.ASYNCHRONOUS) {
 				double reliability = new BigDecimal(m.getProbability()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue();
@@ -89,11 +75,6 @@ public class SequenceDiagramTransformer {
 						Double.toString(reliability));
 				f.createTransition(source, f.getErrorState(), m.getName(),
 						Double.toString(complement));
-//				f.createTransition(source, target, m.getName(),
-//						Double.toString(m.getProbability()));
-//				f.createTransition(source, f.getErrorState(), m.getName(),
-//						Double.toString(1 - m.getProbability()));
-				System.out.println("async");
 			}
 			break;
 
@@ -115,8 +96,6 @@ public class SequenceDiagramTransformer {
 					double probability = new BigDecimal(1 / fr.getSequenceDiagrams().size()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue();
 					f.createTransition(source, target, "alt", Double
 							.toString(probability));
-//					f.createTransition(source, target, "alt", Double
-//							.toString(1 / fr.getSequenceDiagrams().size()));
 				}
 			}
 			break;

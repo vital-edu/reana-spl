@@ -32,7 +32,6 @@ public class Transformer {
 	public RDGNode transformAD(ActivityDiagram ad) {
 		FDTMC f = new FDTMC();
 		f.setVariableName(ad.getName() + "_s");
-//		f.createErrorState();
 		RDGNode answer = new RDGNode(ad.getName(), "true", f);
 		root = answer;
 
@@ -113,13 +112,9 @@ public class Transformer {
 		case "EndNode":
 			// 1st.: check if the end node is already modeled and its FDTMC is
 			// available
-			System.out.println("Achei END NODE de ACT DIAGRAM");
 			isModeled = fdtmcStateById.get(adElem.getElementName());
 			if (isModeled == null) {
-				System.out.println("Entrei IS MODELED de ActDiagram");
-//				source = f.createState();
 				source = f.createSuccessState();
-//				source.setLabel("success");
 				f.createTransition(source, source, "", Double.toString(1.0));
 				answer = source;
 			} else
@@ -141,11 +136,6 @@ public class Transformer {
 					f.createTransition(source, f.getErrorState(),
 							t.getElementName(),
 							Double.toString(complement));
-//					f.createTransition(source, target, t.getElementName(),
-//							Double.toString(t.getProbability()));
-//					f.createTransition(source, f.getErrorState(),
-//							t.getElementName(),
-//							Double.toString(1 - t.getProbability()));
 				}
 				fdtmcStateById.put(adElem.getElementName(), source);
 				answer = source;
