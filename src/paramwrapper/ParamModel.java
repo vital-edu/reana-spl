@@ -93,12 +93,12 @@ class ParamModel {
 	private Set<String> getParameters(Collection<Command> commands) {
 		Set<String> tmpParameters = new HashSet<String>();
 
-		Pattern validIdentifier = Pattern.compile("[A-Za-z_][A-Za-z0-9_]*");
+		Pattern validIdentifier = Pattern.compile("(^|\\d+-)([A-Za-z_][A-Za-z0-9_]*)");
 		for (Command command : commands) {
 			for (String probability : command.getUpdatesProbabilities()) {
 				Matcher m = validIdentifier.matcher(probability);
 				while (m.find()) {
-					tmpParameters.add(m.group());
+					tmpParameters.add(m.group(2));
 				}
 			}
 		}
