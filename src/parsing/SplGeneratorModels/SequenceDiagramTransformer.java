@@ -27,7 +27,7 @@ public class SequenceDiagramTransformer {
 	public RDGNode transformSD(SequenceDiagram s) {
 		FDTMC f = new FDTMC();
 		f.setVariableName(s.getName() + "_s");
-		RDGNode answer = new RDGNode(s.getName(), s.getGuardCondition(), f);
+		RDGNode answer = new RDGNode(RDGNode.getNextId(), s.getGuardCondition(), f);
 		root = answer;
 
 		State s0 = f.createInitialState();
@@ -81,15 +81,14 @@ public class SequenceDiagramTransformer {
 		case "Fragment":
 			Fragment fr = (Fragment) e;
 			if (fr.getType() == Fragment.OPTIONAL) {
-				f.createTransition(source, target, "", fr.getSequenceDiagrams()
-						.getFirst().getName());
-				f.createTransition(source, f.getErrorState(), "", "1-"
-						+ fr.getSequenceDiagrams().getFirst().getName());
+				SequenceDiagram onlySD = fr.getSequenceDiagrams()
+						.getFirst();
+				SequenceDiagramTransformer transformer = new SequenceDiagramTransformer();
+				RDGNode dependencyNode = transformer.transformSD(onlySD);
+				this.root.addDependency(dependencyNode);
 
-				for (SequenceDiagram s : fr.getSequenceDiagrams()) {
-					SequenceDiagramTransformer transformer = new SequenceDiagramTransformer();
-					this.root.addDependency(transformer.transformSD(s));
-				}
+				String dependencyName = dependencyNode.getId();
+                f.createInterface(dependencyName, source, target, f.getErrorState());
 			} else if (fr.getType() == Fragment.ALTERNATIVE) {
 				for (SequenceDiagram s : fr.getSequenceDiagrams()) {
 					target = transformSdElement(s.getElements(), f);

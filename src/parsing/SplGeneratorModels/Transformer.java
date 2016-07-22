@@ -82,27 +82,23 @@ public class Transformer {
 				// In case the activity was not modeled yet, we should model its
 				// associated sequence diagrams
 				Activity a = (Activity) adElem;
-				for (SequenceDiagram s : a.getSequenceDiagrams()) {
-					SequenceDiagramTransformer sdt = new SequenceDiagramTransformer();
-					this.root.addDependency(sdt.transformSD(s));
-				}
+				// TODO Throw exception if there is more than one associated SD
+				SequenceDiagram onlyAssociatedSD = a.getSequenceDiagrams().getFirst();
+				SequenceDiagramTransformer sdt = new SequenceDiagramTransformer();
+				RDGNode dependencyNode = sdt.transformSD(onlyAssociatedSD);
+                this.root.addDependency(dependencyNode);
 
 				source = f.createState();
-				HashSet<ActivityDiagramElement> nextElement = new HashSet<ActivityDiagramElement>();
+				// An activity should have only one transition (to another activity or to a decision node).
+				ActivityDiagramElement nextElement = null;
+				// TODO Throw exception if there is more than one outgoing transition.
 				for (Transition t : adElem.getTransitions()) {
-					ActivityDiagramElement e = t.getTarget();
-					nextElement.add(e);
+					nextElement = t.getTarget();
 				}
 
-				for (ActivityDiagramElement e : nextElement) {
-					fdtmc.State target = transformAdElement(e, f);
-					f.createTransition(source, target, a.getElementName(), a
-							.getSequenceDiagrams().getFirst().getName());
-					f.createTransition(source, f.getErrorState(),
-							a.getElementName(), "1-"
-									+ a.getSequenceDiagrams().getFirst()
-											.getName());
-				}
+				fdtmc.State target = transformAdElement(nextElement, f);
+                f.createInterface(dependencyNode.getId(), source, target, f.getErrorState());
+
 				fdtmcStateById.put(adElem.getElementName(), source);
 				answer = source;
 			} else
