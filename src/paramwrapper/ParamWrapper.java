@@ -123,7 +123,6 @@ public class ParamWrapper implements ParametricModelChecker {
         int openBracket = rawResult.indexOf("{");
         int closeBracket = rawResult.indexOf("}");
         String expression = rawResult.substring(openBracket+1, closeBracket);
-        System.out.println("$$$$$$$$$$ "+expression);
         return expression.trim().replace('|', '/');
     }
 
