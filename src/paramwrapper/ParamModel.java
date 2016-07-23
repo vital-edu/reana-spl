@@ -47,9 +47,13 @@ class ParamModel {
 		parameters = getParameters(commands.values());
 	}
 
-	public int getParametersNumber() {
-	    return parameters.size();
-	}
+    public int getParametersNumber() {
+        return parameters.size();
+    }
+
+    public Set<String> getParameters() {
+        return parameters;
+    }
 
 	public int getStatesNumber() {
 	    return stateRangeEnd+1;

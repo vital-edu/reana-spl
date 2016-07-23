@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 
 import org.nfunk.jep.JEP;
 import org.nfunk.jep.SymbolTable;
+import org.nfunk.jep.type.DoubleNumberFactory;
 
 import expressionsolver.functions.ADDAdd;
 import expressionsolver.functions.ADDDivide;
@@ -181,7 +182,7 @@ public class ExpressionSolver {
      * @param jadd
      */
     private JEP makeADDParser(JADD jadd) {
-        JEP parser = new JEP(false, true, false, new ADDNumberFactory(jadd));
+        JEP parser = new JEP(false, true, true, new ADDNumberFactory(jadd));
         parser.addFunction("\"+\"", new ADDAdd());
         parser.addFunction("\"-\":2", new ADDSubtract());
         parser.addFunction("\"-\":1", new UnaryMinus());
@@ -199,7 +200,7 @@ public class ExpressionSolver {
      * Makes a standard floating-point-based parser.
      */
     private JEP makeFloatingPointParser() {
-        JEP parser = new JEP();
+        JEP parser = new JEP(false, true, true, new DoubleNumberFactory());
         parser.setAllowUndeclared(true);
         return parser;
     }

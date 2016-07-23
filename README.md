@@ -31,7 +31,7 @@ The tool accepts a number of command-line arguments which provide for some degre
     from a feature diagram using FeatureIDE's _Export to CNF_ functionality.
 - `--uml-models` (defaults to _modeling.xml_): an XML file containing the UML behavioral models (Activity and Sequence Diagrams)
     to be analyzed. Currently the only accepted format is the one used by the MagicDraw tool.
-- `--param-path` (defaults to _/opt/param-2-3-64_): the directory of the PARAM installation.
+- `--param-path` (defaults to _/opt/param-2-3-64_): the directory of the parametric model checker (PARAM or Prism) installation.
 - `--configurations-file` (defaults to _configurations.txt_): path to a file with a comma-separated list of
     features per line, each corresponding to a configuration for which the reliability is wanted.
 - `--configuration`: alternatively, it is possible to specify a single configuration inline. Overrides `--configurations-file`.

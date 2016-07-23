@@ -39,7 +39,8 @@ class Options {
                 .defaultsTo("modeling.xml")
                 .describedAs("File");
         OptionSpec<String> paramPathOption = optionParser
-                .accepts("param-path")
+                .accepts("param-path",
+                         "Path to the parametric model checker (either PARAM or Prism)")
                 .withRequiredArg()
                 .defaultsTo("/opt/param-2-3-64")
                 .describedAs("Directory");
