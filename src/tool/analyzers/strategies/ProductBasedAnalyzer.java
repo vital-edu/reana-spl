@@ -5,6 +5,7 @@ import jadd.JADD;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import paramwrapper.ParametricModelChecker;
@@ -14,11 +15,11 @@ import tool.UnknownFeatureException;
 import tool.analyzers.IReliabilityAnalysisResults;
 import tool.analyzers.MapBasedReliabilityResults;
 import tool.analyzers.buildingblocks.Component;
+import tool.analyzers.buildingblocks.ConcurrencyStrategy;
 import tool.analyzers.buildingblocks.DerivationFunction;
 import tool.analyzers.buildingblocks.IfOperator;
 import tool.analyzers.buildingblocks.PresenceConditions;
 import tool.analyzers.buildingblocks.ProductIterationHelper;
-import tool.analyzers.buildingblocks.ProductIterationHelper.CONCURRENCY;
 import tool.stats.CollectibleTimers;
 import tool.stats.IFormulaCollector;
 import tool.stats.ITimeCollector;
@@ -30,6 +31,7 @@ import fdtmc.State;
  * Orchestrator of product-based analyses.
  */
 public class ProductBasedAnalyzer {
+    private static final Logger LOGGER = Logger.getLogger(ProductBasedAnalyzer.class.getName());
 
     private ExpressionSolver expressionSolver;
     ParametricModelChecker modelChecker;
@@ -61,10 +63,14 @@ public class ProductBasedAnalyzer {
      * Evaluates the product-based reliability values of an RDG node.
      *
      * @param node RDG node whose reliability is to be evaluated.
+     * @param concurrencyStrategy
      * @return
      * @throws CyclicRdgException
      */
-    public IReliabilityAnalysisResults evaluateReliability(RDGNode node, Stream<Collection<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
+    public IReliabilityAnalysisResults evaluateReliability(RDGNode node, Stream<Collection<String>> configurations, ConcurrencyStrategy concurrencyStrategy) throws CyclicRdgException, UnknownFeatureException {
+        if (concurrencyStrategy == ConcurrencyStrategy.PARALLEL) {
+            LOGGER.info("Running the whole analysis of each product in parallel.");
+        }
         List<RDGNode> dependencies = node.getDependenciesTransitiveClosure();
 
         timeCollector.startTimer(CollectibleTimers.MODEL_CHECKING_TIME);
@@ -73,7 +79,7 @@ public class ProductBasedAnalyzer {
                                                                                                                   configuration,
                                                                                                                   dependencies),
                                                                                   configurations,
-                                                                                  CONCURRENCY.PARALLEL);
+                                                                                  concurrencyStrategy);
 
         timeCollector.stopTimer(CollectibleTimers.MODEL_CHECKING_TIME);
         return new MapBasedReliabilityResults(results);

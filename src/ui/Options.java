@@ -7,6 +7,7 @@ import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
 import tool.PruningStrategy;
 import tool.analyzers.AnalysisStrategy;
+import tool.analyzers.buildingblocks.ConcurrencyStrategy;
 
 
 /**
@@ -23,6 +24,7 @@ class Options {
     private boolean printAllConfigurations;
     private boolean suppressReport;
     private boolean statsEnabled;
+    private ConcurrencyStrategy concurrencyStrategy;
     private PruningStrategy pruningStrategy;
     private AnalysisStrategy analysisStrategy;
 
@@ -63,6 +65,13 @@ class Options {
                 .accepts("stats",
                          "Print profiling stats");
 
+        OptionSpec<ConcurrencyStrategy> concurrencyStrategyOption = optionParser
+                .accepts("concurrency-strategy",
+                        "Run independent computations in parallel (PARALLEL) or sequentially (SEQUENTIAL)")
+                        .withRequiredArg()
+                        .ofType(ConcurrencyStrategy.class)
+                        .defaultsTo(ConcurrencyStrategy.PARALLEL)
+                        .describedAs("PARALLEL | SEQUENTIAL");
         OptionSpec<PruningStrategy> pruningStrategyOption = optionParser
                 .accepts("pruning-strategy",
                          "The strategy that should be used for pruning invalid configurations. Can be one of: FM (whole feature model); NONE (no pruning)")
@@ -103,6 +112,7 @@ class Options {
         result.printAllConfigurations = options.has(allConfigurationsOption);
         result.suppressReport = options.has(suppressReportOption);
         result.statsEnabled = options.has(statsEnabledOption);
+        result.concurrencyStrategy = options.valueOf(concurrencyStrategyOption);
         result.pruningStrategy = options.valueOf(pruningStrategyOption);
         result.analysisStrategy = options.valueOf(analysisStrategyOption);
 
@@ -139,6 +149,10 @@ class Options {
 
     public String getConfigurationsFilePath() {
         return configurationsFilePath;
+    }
+
+    public ConcurrencyStrategy getConcurrencyStrategy() {
+        return concurrencyStrategy;
     }
 
     public PruningStrategy getPruningStrategy() {

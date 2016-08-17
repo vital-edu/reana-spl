@@ -15,6 +15,7 @@ import paramwrapper.ParamWrapper;
 import paramwrapper.ParametricModelChecker;
 import tool.analyzers.IPruningStrategy;
 import tool.analyzers.IReliabilityAnalysisResults;
+import tool.analyzers.buildingblocks.ConcurrencyStrategy;
 import tool.analyzers.strategies.FamilyBasedAnalyzer;
 import tool.analyzers.strategies.FamilyProductBasedAnalyzer;
 import tool.analyzers.strategies.FeatureFamilyBasedAnalyzer;
@@ -40,6 +41,8 @@ public class Analyzer {
     private ParametricModelChecker modelChecker;
     private ExpressionSolver expressionSolver;
     private JADD jadd;
+
+    private ConcurrencyStrategy concurrencyStrategy = ConcurrencyStrategy.PARALLEL;
 
     private ITimeCollector timeCollector;
     private IFormulaCollector formulaCollector;
@@ -146,6 +149,10 @@ public class Analyzer {
         this.featureFamilyBasedAnalyzerImpl.setPruningStrategy(pruningStrategy);
     }
 
+    public void setConcurrencyStrategy(ConcurrencyStrategy concurrencyStrategy) {
+        this.concurrencyStrategy = concurrencyStrategy;
+    }
+
     /**
      * Evaluates the feature-family-based reliability function of an RDG node, based
      * on the reliabilities of the nodes on which it depends.
@@ -159,7 +166,7 @@ public class Analyzer {
      * @throws CyclicRdgException
      */
     public IReliabilityAnalysisResults evaluateFeatureFamilyBasedReliability(RDGNode node, String dotOutput) throws CyclicRdgException {
-        return featureFamilyBasedAnalyzerImpl.evaluateReliability(node, dotOutput);
+        return featureFamilyBasedAnalyzerImpl.evaluateReliability(node, this.concurrencyStrategy, dotOutput);
     }
     /**
      * Evaluates the feature-family-based reliability function of an RDG node, based
@@ -182,7 +189,7 @@ public class Analyzer {
      * @throws UnknownFeatureException
      */
     public IReliabilityAnalysisResults evaluateFeatureProductBasedReliability(RDGNode node, Stream<Collection<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
-        return featureProductBasedAnalyzerImpl.evaluateReliability(node, configurations);
+        return featureProductBasedAnalyzerImpl.evaluateReliability(node, configurations, this.concurrencyStrategy);
     }
 
     /**
@@ -195,7 +202,7 @@ public class Analyzer {
      * @throws UnknownFeatureException
      */
     public IReliabilityAnalysisResults evaluateProductBasedReliability(RDGNode node, Stream<Collection<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
-        return productBasedAnalyzerImpl.evaluateReliability(node, configurations);
+        return productBasedAnalyzerImpl.evaluateReliability(node, configurations, this.concurrencyStrategy);
     }
 
     /**
@@ -208,7 +215,7 @@ public class Analyzer {
      * @throws UnknownFeatureException
      */
     public IReliabilityAnalysisResults evaluateFamilyBasedReliability(RDGNode node, Stream<Collection<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
-        return familyBasedAnalyzerImpl.evaluateReliability(node);
+        return familyBasedAnalyzerImpl.evaluateReliability(node, this.concurrencyStrategy);
     }
 
     /**
@@ -221,7 +228,7 @@ public class Analyzer {
      * @throws UnknownFeatureException
      */
     public IReliabilityAnalysisResults evaluateFamilyProductBasedReliability(RDGNode node, Stream<Collection<String>> configurations) throws CyclicRdgException, UnknownFeatureException {
-        return familyProductBasedAnalyzerImpl.evaluateReliability(node, configurations);
+        return familyProductBasedAnalyzerImpl.evaluateReliability(node, configurations, this.concurrencyStrategy);
     }
 
     /**

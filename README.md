@@ -37,6 +37,7 @@ The tool accepts a number of command-line arguments which provide for some degre
 - `--configuration`: alternatively, it is possible to specify a single configuration inline. Overrides `--configurations-file`.
 - `--all-configurations`: causes the tool to dump all possible configurations and corresponding reliabilities.
     Overrides `--configuration` and `--configurations-file`.
+- `--concurrency-strategy` (defaults to _PARALLEL_): Run parallelizable computations concurrently (PARALLEL) or sequentially (SEQUENTIAL).
 - `--pruning-strategy` (defaults to _FM_): The strategy that should be used for pruning invalid configurations
     during partial evaluations. Can be one of: FM (whole feature model); NONE (no pruning).
 - `--stats`: Prints profiling statistics such as wall-clock time and used memory.

@@ -8,15 +8,10 @@ import java.util.stream.Stream;
 
 public class ProductIterationHelper {
 
-    public enum CONCURRENCY {
-        PARALLEL,
-        SEQUENTIAL
-    };
-
     public static <T> Map<Collection<String>, Double> evaluate(Function<Collection<String>, Double> eval,
                                                                Stream<Collection<String>> configurations,
-                                                               CONCURRENCY mode) {
-        Stream<Collection<String>> configs = mode == CONCURRENCY.PARALLEL ?
+                                                               ConcurrencyStrategy concurrencyStrategy) {
+        Stream<Collection<String>> configs = concurrencyStrategy == ConcurrencyStrategy.PARALLEL ?
                                                         configurations.parallel()
                                                         : configurations.sequential();
 

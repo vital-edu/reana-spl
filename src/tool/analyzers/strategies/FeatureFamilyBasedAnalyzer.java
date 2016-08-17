@@ -15,6 +15,7 @@ import tool.analyzers.IReliabilityAnalysisResults;
 import tool.analyzers.NoPruningStrategy;
 import tool.analyzers.buildingblocks.AssetProcessor;
 import tool.analyzers.buildingblocks.Component;
+import tool.analyzers.buildingblocks.ConcurrencyStrategy;
 import tool.analyzers.buildingblocks.DerivationFunction;
 import tool.analyzers.buildingblocks.FamilyBasedHelper;
 import tool.stats.CollectibleTimers;
@@ -78,16 +79,17 @@ public class FeatureFamilyBasedAnalyzer {
      * to Real values, where the reliability of any invalid configuration is 0.
      *
      * @param node RDG node whose reliability is to be evaluated.
+     * @param concurrencyStrategy
      * @param dotOutput path at where to dump the resulting ADD as a dot file.
      * @return
      * @throws CyclicRdgException
      */
-    public IReliabilityAnalysisResults evaluateReliability(RDGNode node, String dotOutput) throws CyclicRdgException {
+    public IReliabilityAnalysisResults evaluateReliability(RDGNode node, ConcurrencyStrategy concurrencyStrategy, String dotOutput) throws CyclicRdgException {
         List<RDGNode> dependencies = node.getDependenciesTransitiveClosure();
 
         timeCollector.startTimer(CollectibleTimers.MODEL_CHECKING_TIME);
         // Alpha_v
-        List<Component<String>> expressions = firstPhase.getReliabilityExpressions(dependencies);
+        List<Component<String>> expressions = firstPhase.getReliabilityExpressions(dependencies, concurrencyStrategy);
         timeCollector.stopTimer(CollectibleTimers.MODEL_CHECKING_TIME);
 
         timeCollector.startTimer(CollectibleTimers.EXPRESSION_SOLVING_TIME);

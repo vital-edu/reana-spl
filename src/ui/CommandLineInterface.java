@@ -204,6 +204,7 @@ public class CommandLineInterface {
                                          timeCollector,
                                          formulaCollector,
                                          modelCollector);
+        analyzer.setConcurrencyStrategy(options.getConcurrencyStrategy());
         return analyzer;
     }
 

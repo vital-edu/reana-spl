@@ -14,6 +14,7 @@ import tool.RDGNode;
 import tool.UnknownFeatureException;
 import tool.analyzers.ADDReliabilityResults;
 import tool.analyzers.IReliabilityAnalysisResults;
+import tool.analyzers.buildingblocks.ConcurrencyStrategy;
 import tool.analyzers.buildingblocks.FamilyBasedHelper;
 import tool.analyzers.buildingblocks.PresenceConditions;
 import tool.stats.CollectibleTimers;
@@ -58,10 +59,12 @@ public class FamilyBasedAnalyzer {
      * Evaluates the family-based reliability function of an RDG node.
      *
      * @param node RDG node whose reliability is to be evaluated.
+     * @param concurrencyStrategy
      * @return
      * @throws CyclicRdgException
      */
-    public IReliabilityAnalysisResults evaluateReliability(RDGNode node) throws CyclicRdgException, UnknownFeatureException {
+    public IReliabilityAnalysisResults evaluateReliability(RDGNode node, ConcurrencyStrategy concurrencyStrategy) throws CyclicRdgException, UnknownFeatureException {
+        LOGGER.warning("Family-based analysis does not support parallel execution.");
         List<RDGNode> dependencies = node.getDependenciesTransitiveClosure();
 
         timeCollector.startTimer(CollectibleTimers.MODEL_CHECKING_TIME);

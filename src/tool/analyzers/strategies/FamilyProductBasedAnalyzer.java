@@ -15,9 +15,9 @@ import tool.CyclicRdgException;
 import tool.RDGNode;
 import tool.analyzers.IReliabilityAnalysisResults;
 import tool.analyzers.MapBasedReliabilityResults;
+import tool.analyzers.buildingblocks.ConcurrencyStrategy;
 import tool.analyzers.buildingblocks.PresenceConditions;
 import tool.analyzers.buildingblocks.ProductIterationHelper;
-import tool.analyzers.buildingblocks.ProductIterationHelper.CONCURRENCY;
 import tool.stats.CollectibleTimers;
 import tool.stats.IFormulaCollector;
 import tool.stats.ITimeCollector;
@@ -56,7 +56,10 @@ public class FamilyProductBasedAnalyzer {
      * @return
      * @throws CyclicRdgException
      */
-    public IReliabilityAnalysisResults evaluateReliability(RDGNode node, Stream<Collection<String>> configurations) throws CyclicRdgException {
+    public IReliabilityAnalysisResults evaluateReliability(RDGNode node, Stream<Collection<String>> configurations, ConcurrencyStrategy concurrencyStrategy) throws CyclicRdgException {
+        if (concurrencyStrategy == ConcurrencyStrategy.PARALLEL) {
+            LOGGER.info("Solving the family-wide expression for each product in parallel.");
+        }
         List<RDGNode> dependencies = node.getDependenciesTransitiveClosure();
 
         timeCollector.startTimer(CollectibleTimers.MODEL_CHECKING_TIME);
@@ -66,7 +69,6 @@ public class FamilyProductBasedAnalyzer {
         timeCollector.stopTimer(CollectibleTimers.MODEL_CHECKING_TIME);
 
         timeCollector.startTimer(CollectibleTimers.EXPRESSION_SOLVING_TIME);
-        Expression<Double> parsedExpression = expressionSolver.parseExpression(expression);
 
         List<String> presenceConditions = dependencies.stream()
                 .map(RDGNode::getPresenceCondition)
@@ -77,11 +79,21 @@ public class FamilyProductBasedAnalyzer {
                                           e -> e.getKey(),
                                           (a, b) -> a));
 
-        Map<Collection<String>, Double> results = ProductIterationHelper.evaluate(configuration -> evaluateSingle(parsedExpression,
-                                                                                                                  configuration,
-                                                                                                                  eqClassToPC),
-                                                                                  configurations,
-                                                                                  CONCURRENCY.SEQUENTIAL);
+        Map<Collection<String>, Double> results;
+        if (concurrencyStrategy == ConcurrencyStrategy.SEQUENTIAL) {
+            Expression<Double> parsedExpression = expressionSolver.parseExpression(expression);
+            results = ProductIterationHelper.evaluate(configuration -> evaluateSingle(parsedExpression,
+                                                                                      configuration,
+                                                                                      eqClassToPC),
+                                                      configurations,
+                                                      concurrencyStrategy);
+        } else {
+            results = ProductIterationHelper.evaluate(configuration -> evaluateSingle(expression,
+                                                                                      configuration,
+                                                                                      eqClassToPC),
+                                                      configurations,
+                                                      concurrencyStrategy);
+        }
 
         timeCollector.stopTimer(CollectibleTimers.EXPRESSION_SOLVING_TIME);
         LOGGER.info("Formulae evaluation ok...");
@@ -98,6 +110,11 @@ public class FamilyProductBasedAnalyzer {
 
         return expression.solve(values);
 
+    }
+
+    private Double evaluateSingle(String expression, Collection<String> configuration, Map<String, String> eqClassToPC) {
+        Expression<Double> parsedExpression = expressionSolver.parseExpression(expression);
+        return evaluateSingle(parsedExpression, configuration, eqClassToPC);
     }
 
 }

@@ -4,11 +4,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import paramwrapper.ParametricModelChecker;
 import tool.Analyzer;
 import tool.RDGNode;
 import tool.analyzers.buildingblocks.Component;
+import tool.analyzers.buildingblocks.ConcurrencyStrategy;
 import tool.stats.IFormulaCollector;
 import fdtmc.FDTMC;
 
@@ -33,14 +35,20 @@ public class FeatureBasedFirstPhase {
      * the input list.
      *
      * This function implements the feature-based part of the analysis.
+     * @param concurrencyStrategy
      *
      * @see {@link Analyzer.getReliabilityExpression}
      * @param node
      * @return
      */
-    public List<Component<String>> getReliabilityExpressions(List<RDGNode> nodes) {
+    public List<Component<String>> getReliabilityExpressions(List<RDGNode> nodes, ConcurrencyStrategy concurrencyStrategy) {
+        if (concurrencyStrategy == ConcurrencyStrategy.PARALLEL) {
+            LOGGER.info("Performing model checking in parallel for each FDTMC.");
+        }
         // Expressions can be calculated concurrently...
-        Map<String, String> expressionsByNode = nodes.parallelStream()
+        Stream<RDGNode> expressionStream = (concurrencyStrategy == ConcurrencyStrategy.PARALLEL) ? nodes.parallelStream()
+                                                                                                 : nodes.stream();
+        Map<String, String> expressionsByNode = expressionStream
             .collect(Collectors.toMap(RDGNode::getId,
                                       this::getReliabilityExpression));
 
