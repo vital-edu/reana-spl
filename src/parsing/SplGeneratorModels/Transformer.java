@@ -7,18 +7,21 @@ import java.util.LinkedList;
 import java.util.Set;
 
 import fdtmc.FDTMC;
+import fdtmc.State;
 import parsing.SplGeneratorModels.Activity;
 import parsing.SplGeneratorModels.ActivityDiagram;
 import parsing.SplGeneratorModels.ActivityDiagramElement;
 import parsing.SplGeneratorModels.SequenceDiagram;
 import parsing.SplGeneratorModels.Transition;
 import parsing.SplGeneratorModels.SPLFilePersistence;
+//import splGenerator.transformation.SequenceDiagramTransformer;
 import tool.RDGNode;
 
 public class Transformer {
 
 	private HashMap<String, fdtmc.State> fdtmcStateById = new HashMap<String, fdtmc.State>();
 	private RDGNode root;
+	private HashMap<ActivityDiagramElement, State> stateByAdElement = new HashMap<ActivityDiagramElement, State>();
 
 	/**
 	 * This method is responsible for creating an RDG structure for a whole SPL
@@ -47,6 +50,12 @@ public class Transformer {
 			FDTMC f) {
 		fdtmc.State answer = null;
 
+		State isStateModeled = stateByAdElement.get(adElem);
+		if (isStateModeled != null) {
+			answer = isStateModeled;
+			return answer;
+		}
+
 		fdtmc.State source = null;
 		fdtmc.State isModeled;
 		String adClass = adElem.getClass().getSimpleName();
@@ -54,6 +63,7 @@ public class Transformer {
 		case "StartNode":
 			source = f.createInitialState();
 			f.createErrorState();
+			stateByAdElement.put(adElem, source);
 
 			HashSet<Activity> nextActivities = new HashSet<Activity>();
 			for (Transition t : adElem.getTransitions()) {
@@ -68,6 +78,7 @@ public class Transformer {
 			for (Activity a : nextActivities) {
 				fdtmc.State target = transformAdElement(a, f);
 				f.createTransition(source, target, "", Double.toString(1.0));
+				stateByAdElement.put(a, target);
 			}
 			source.setLabel(FDTMC.INITIAL_LABEL);
 			answer = source;
@@ -82,24 +93,30 @@ public class Transformer {
 				// In case the activity was not modeled yet, we should model its
 				// associated sequence diagrams
 				Activity a = (Activity) adElem;
-				// TODO Throw exception if there is more than one associated SD
-				SequenceDiagram onlyAssociatedSD = a.getSequenceDiagrams().getFirst();
-				SequenceDiagramTransformer sdt = new SequenceDiagramTransformer();
-				RDGNode dependencyNode = sdt.transformSD(onlyAssociatedSD);
-                this.root.addDependency(dependencyNode);
-
 				source = f.createState();
-				// An activity should have only one transition (to another activity or to a decision node).
-				ActivityDiagramElement nextElement = null;
-				// TODO Throw exception if there is more than one outgoing transition.
-				for (Transition t : adElem.getTransitions()) {
-					nextElement = t.getTarget();
+				stateByAdElement.put(adElem, source);
+				fdtmcStateById.put(adElem.getElementName(), source);
+
+				for (SequenceDiagram s : a.getSequenceDiagrams()) {
+					SequenceDiagramTransformer sdt = new SequenceDiagramTransformer();
+					this.root.addDependency(sdt.transformSD(s));
 				}
 
-				fdtmc.State target = transformAdElement(nextElement, f);
-                f.createInterface(dependencyNode.getId(), source, target, f.getErrorState());
+				HashSet<ActivityDiagramElement> nextElement = new HashSet<ActivityDiagramElement>();
+				for (Transition t : adElem.getTransitions()) {
+					ActivityDiagramElement e = t.getTarget();
+					nextElement.add(e);
+				}
 
-				fdtmcStateById.put(adElem.getElementName(), source);
+				for (ActivityDiagramElement e : nextElement) {
+					State target = transformAdElement(e, f);
+					f.createTransition(source, target, a.getElementName(), a
+							.getSequenceDiagrams().getFirst().getName());
+					f.createTransition(source, f.getErrorState(),
+							a.getElementName(), "1-"
+									+ a.getSequenceDiagrams().getFirst()
+											.getName());
+				}
 				answer = source;
 			} else
 				answer = isModeled;
@@ -110,7 +127,9 @@ public class Transformer {
 			// available
 			isModeled = fdtmcStateById.get(adElem.getElementName());
 			if (isModeled == null) {
-				source = f.createSuccessState();
+				source = f.createState();
+				source.setLabel("success");
+				stateByAdElement.put(adElem, source);
 				f.createTransition(source, source, "", Double.toString(1.0));
 				answer = source;
 			} else
@@ -123,15 +142,14 @@ public class Transformer {
 			isModeled = fdtmcStateById.get(adElem.getElementName());
 			if (isModeled == null) {
 				source = f.createState();
+				stateByAdElement.put(adElem, source);
 				for (Transition t : adElem.getTransitions()) {
-					fdtmc.State target = transformAdElement(t.getTarget(), f);
-					double reliability = new BigDecimal(t.getProbability()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue();
-					double complement  = new BigDecimal(1-t.getProbability()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue();
+					State target = transformAdElement(t.getTarget(), f);
 					f.createTransition(source, target, t.getElementName(),
-							Double.toString(reliability));
+							Double.toString(t.getProbability()));
 					f.createTransition(source, f.getErrorState(),
 							t.getElementName(),
-							Double.toString(complement));
+							Double.toString(1 - t.getProbability()));
 				}
 				fdtmcStateById.put(adElem.getElementName(), source);
 				answer = source;
@@ -145,8 +163,9 @@ public class Transformer {
 			isModeled = fdtmcStateById.get(adElem.getElementName());
 			if (isModeled == null) {
 				source = f.createState();
+				stateByAdElement.put(adElem, source);
 				for (Transition t : adElem.getTransitions()) {
-					fdtmc.State target = transformAdElement(t.getTarget(), f);
+					State target = transformAdElement(t.getTarget(), f);
 					f.createTransition(source, target, "", Double.toString(1.0));
 				}
 				fdtmcStateById.put(adElem.getElementName(), source);
