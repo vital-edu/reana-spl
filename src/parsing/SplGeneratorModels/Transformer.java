@@ -26,7 +26,7 @@ public class Transformer {
 	/**
 	 * This method is responsible for creating an RDG structure for a whole SPL
 	 * given an activity diagram as input.
-	 * 
+	 *
 	 * @param ad
 	 *            the activity diagram describing the coarse-grained behavior of
 	 *            the SPL.
@@ -99,7 +99,7 @@ public class Transformer {
 
 				for (SequenceDiagram s : a.getSequenceDiagrams()) {
 					SequenceDiagramTransformer sdt = new SequenceDiagramTransformer();
-					this.root.addDependency(sdt.transformSD(s));
+					this.root.addDependency(sdt.transformSD(s, s.getName()));
 				}
 
 				HashSet<ActivityDiagramElement> nextElement = new HashSet<ActivityDiagramElement>();

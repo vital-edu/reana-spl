@@ -24,10 +24,10 @@ public class SequenceDiagramTransformer {
 		root = null;
 	}
 
-	public RDGNode transformSD(SequenceDiagram s) {
+	public RDGNode transformSD(SequenceDiagram s, String id) {
 		FDTMC f = new FDTMC();
 		f.setVariableName(s.getName() + "_s");
-		RDGNode answer = new RDGNode(RDGNode.getNextId(), s.getGuardCondition(), f);
+		RDGNode answer = new RDGNode(id, s.getGuardCondition(), f);
 		root = answer;
 
 		State s0 = f.createInitialState();
@@ -84,7 +84,7 @@ public class SequenceDiagramTransformer {
 				SequenceDiagram onlySD = fr.getSequenceDiagrams()
 						.getFirst();
 				SequenceDiagramTransformer transformer = new SequenceDiagramTransformer();
-				RDGNode dependencyNode = transformer.transformSD(onlySD);
+				RDGNode dependencyNode = transformer.transformSD(onlySD, RDGNode.getNextId());
 				this.root.addDependency(dependencyNode);
 
 				String dependencyName = dependencyNode.getId();
