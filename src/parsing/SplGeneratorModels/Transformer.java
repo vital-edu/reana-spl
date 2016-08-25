@@ -96,27 +96,20 @@ public class Transformer {
 				source = f.createState();
 				stateByAdElement.put(adElem, source);
 				fdtmcStateById.put(adElem.getElementName(), source);
+				// TODO Throw exception if there is more than one associated SD
+				SequenceDiagram onlyAssociatedSD = a.getSequenceDiagrams().getFirst();
+				SequenceDiagramTransformer sdt = new SequenceDiagramTransformer();
+				RDGNode dependencyNode = sdt.transformSD(onlyAssociatedSD, onlyAssociatedSD.getName());
+				this.root.addDependency(dependencyNode);
 
-				for (SequenceDiagram s : a.getSequenceDiagrams()) {
-					SequenceDiagramTransformer sdt = new SequenceDiagramTransformer();
-					this.root.addDependency(sdt.transformSD(s, s.getName()));
-				}
-
-				HashSet<ActivityDiagramElement> nextElement = new HashSet<ActivityDiagramElement>();
+				// An activity should have only one transition (to another activity or to a decision node).
+				ActivityDiagramElement nextElement = null;
+				// TODO Throw exception if there is more than one outgoing transition.
 				for (Transition t : adElem.getTransitions()) {
-					ActivityDiagramElement e = t.getTarget();
-					nextElement.add(e);
+				    nextElement = t.getTarget();
 				}
-
-				for (ActivityDiagramElement e : nextElement) {
-					State target = transformAdElement(e, f);
-					f.createTransition(source, target, a.getElementName(), a
-							.getSequenceDiagrams().getFirst().getName());
-					f.createTransition(source, f.getErrorState(),
-							a.getElementName(), "1-"
-									+ a.getSequenceDiagrams().getFirst()
-											.getName());
-				}
+				fdtmc.State target = transformAdElement(nextElement, f);
+				f.createInterface(dependencyNode.getId(), source, target, f.getErrorState());
 				answer = source;
 			} else
 				answer = isModeled;
@@ -127,8 +120,7 @@ public class Transformer {
 			// available
 			isModeled = fdtmcStateById.get(adElem.getElementName());
 			if (isModeled == null) {
-				source = f.createState();
-				source.setLabel("success");
+				source = f.createSuccessState();
 				stateByAdElement.put(adElem, source);
 				f.createTransition(source, source, "", Double.toString(1.0));
 				answer = source;
