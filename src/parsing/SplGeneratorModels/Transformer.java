@@ -139,9 +139,6 @@ public class Transformer {
 					State target = transformAdElement(t.getTarget(), f);
 					f.createTransition(source, target, t.getElementName(),
 							Double.toString(t.getProbability()));
-					f.createTransition(source, f.getErrorState(),
-							t.getElementName(),
-							Double.toString(1 - t.getProbability()));
 				}
 				fdtmcStateById.put(adElem.getElementName(), source);
 				answer = source;

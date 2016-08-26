@@ -60,21 +60,16 @@ public class SequenceDiagramTransformer {
 		switch (sdClass) {
 		case "Message":
 			Message m = (Message) e;
-			if (m.getType() == Message.SYNCHRONOUS) {
-				double reliability = new BigDecimal(m.getProbability()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue();
-				double complement = new BigDecimal(1-m.getProbability()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue();
+			double reliability = new BigDecimal(m.getProbability()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue();
+			double complement = new BigDecimal(1-m.getProbability()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue();
+			if (m.getType() == Message.SYNCHRONOUS || m.getType() == Message.ASYNCHRONOUS) {
 				f.createTransition(source, target, m.getName(),
 						Double.toString(reliability));
-				f.createTransition(source, f.getErrorState(), m.getName(),
-						Double.toString(complement));
-			}
-			if (m.getType() == Message.ASYNCHRONOUS) {
-				double reliability = new BigDecimal(m.getProbability()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue();
-				double complement = new BigDecimal(1-m.getProbability()).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue();
-				f.createTransition(source, target, m.getName(),
-						Double.toString(reliability));
-				f.createTransition(source, f.getErrorState(), m.getName(),
-						Double.toString(complement));
+				// PARAM doesn't like 0-valued transitions... it SEGFAULTs without mercy!
+				if (Double.compare(reliability, 1.0) != 0) {
+				    f.createTransition(source, f.getErrorState(), m.getName(),
+				            Double.toString(complement));
+				}
 			}
 			break;
 
