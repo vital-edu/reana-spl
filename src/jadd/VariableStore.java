@@ -20,6 +20,10 @@ public class VariableStore {
         variableIndices = new HashMap<String, Short>();
     }
 
+    public int getNumberOfVariables() {
+        return variables.size();
+    }
+
     public boolean contains(String varName) {
         return variables.containsKey(varName);
     }

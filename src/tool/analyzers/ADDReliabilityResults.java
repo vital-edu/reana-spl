@@ -44,6 +44,8 @@ public class ADDReliabilityResults implements IReliabilityAnalysisResults {
         output.println("# reorderings: " + numReorderings);
         output.println("# garbage collections: " + numGarbageCollections);
         output.println("ADD's size in # of bytes: " + numBytesADD);
+
+        output.println("Order of variables: " + results.getVariableOrder());
     }
 
 }

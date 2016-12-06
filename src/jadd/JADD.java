@@ -27,7 +27,7 @@ public class JADD {
                                       BigcuddLibrary.CUDD_CACHE_SLOTS,
                                       0);
         IntValuedEnum<Cudd_ReorderingType> method = Cudd_ReorderingType.CUDD_REORDER_SYMM_SIFT;
-        BigcuddLibrary.Cudd_AutodynEnable(dd, method);
+//        BigcuddLibrary.Cudd_AutodynEnable(dd, method);
     }
 
     public ADD makeConstant(double constant) {

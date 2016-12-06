@@ -1,5 +1,6 @@
 package jadd;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -37,13 +38,6 @@ public class ADD {
         this.dd = dd;
         this.function = function;
         this.variableStore = variableStore;
-        BigcuddLibrary.Cudd_Ref(this.function);
-    }
-
-    protected ADD(ADD other) {
-        this.dd = other.dd;
-        this.function = other.function;
-        this.variableStore = other.variableStore;
         BigcuddLibrary.Cudd_Ref(this.function);
     }
 
@@ -147,6 +141,16 @@ public class ADD {
             if (variablesPresence[i] == 1) {
                 variables.add(variableStore.getName(i));
             }
+        }
+        return variables;
+    }
+
+    public List<String> getVariableOrder() {
+        List<String> variables = new ArrayList<String>();
+        for (int pos = 0; pos < variableStore.getNumberOfVariables(); pos++) {
+            int varIndex = BigcuddLibrary.Cudd_ReadInvPerm(dd, pos);
+            String varName = variableStore.getName((short)varIndex);
+            variables.add(varName);
         }
         return variables;
     }
