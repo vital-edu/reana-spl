@@ -23,20 +23,27 @@ public class TransitionByAction {
 	}
 	
 	public Transition compute(){
-		//para cada Lista de adjacencias de cada nodo
+		// Para cada Lista de adjacencias de cada nodo
 		stateAdjacencies = fdtmc.getTransitionSystem().values();
 		iteratorStateAdjacencies = stateAdjacencies.iterator();
+		
 		while (iteratorStateAdjacencies.hasNext()) {
 			transitions = iteratorStateAdjacencies.next();
 
-			//Percorrer a lista de transicoes e comparar os labels das transicoes
-			iteratorTransitions = transitions.iterator();
-			while (iteratorTransitions.hasNext()) {
-				t = iteratorTransitions.next();
-					if (t.getActionName().equals(action))
-						return t;
-			}
+			return searchAction();
 		}
+		return null;
+	}
+
+	private Transition searchAction() {
+		iteratorTransitions = transitions.iterator();
+		
+		while (iteratorTransitions.hasNext()) {
+			t = iteratorTransitions.next();
+				if (t.getActionName().equals(action))
+					return t;
+		}
+
 		return null;
 	}
 	
