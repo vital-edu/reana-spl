@@ -35,7 +35,7 @@ public class FDTMC {
 		transitionSystem = new LinkedHashMap<State, List<Transition>>();
 		interfaces = new LinkedHashMap<String, List<Interface>>();
 	}
-
+	
 	public Collection<State> getStates() {
 		return states;
 	}
@@ -178,21 +178,8 @@ public class FDTMC {
 	}
 
 	public Transition getTransitionByActionName(String action) {
-		//para cada Lista de adjacencias de cada nodo
-		Collection<List<Transition>> stateAdjacencies = transitionSystem.values();
-		Iterator<List<Transition>> iteratorStateAdjacencies = stateAdjacencies.iterator();
-		while (iteratorStateAdjacencies.hasNext()) {
-			List<Transition> transitions = iteratorStateAdjacencies.next();
-
-			//Percorrer a lista de transicoes e comparar os labels das transicoes
-			Iterator <Transition> iteratorTransitions = transitions.iterator();
-			while (iteratorTransitions.hasNext()) {
-				Transition t = iteratorTransitions.next();
-				if (t.getActionName().equals(action))
-					return t;
-			}
-		}
-		return null;
+		TransitionByAction transition = new TransitionByAction(action, this);
+		return transition.compute();
 	}
 
 
@@ -464,5 +451,9 @@ public class FDTMC {
                 });
         return transitions;
     }
+
+	public Map<State, List<Transition>> getTransitionSystem() {
+		return transitionSystem;
+	}
 
 }
