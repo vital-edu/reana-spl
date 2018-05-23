@@ -114,13 +114,13 @@ public class Transformer {
 				if (n.getClass().equals(Message.class)) {
 					transformMessage(fdtmc, (Message)n, currentSource, success, error);
 				} else if (n.getClass().equals(Fragment.class)) {
-					transformFragment(fdtmc, (Fragment)n, currentSource, success, error, currentRDGNode);
+					transformFragment(new TransformParameters(fdtmc, (Fragment)n, currentSource, success, error, currentRDGNode));
 				}
 			} else {
 				if (n.getClass().equals(Message.class)) {
 				    currentSource = transformMessage(fdtmc, (Message)n, currentSource, fdtmc.createState(), error);
 				} else if (n.getClass().equals(Fragment.class)) {
-				    currentSource = transformFragment(fdtmc, (Fragment)n, currentSource, fdtmc.createState(), error, currentRDGNode);
+				    currentSource = transformFragment(new TransformParameters(fdtmc, (Fragment)n, currentSource, fdtmc.createState(), error, currentRDGNode));
 				}
 			}
 		}
@@ -134,13 +134,13 @@ public class Transformer {
 				if (n.getClass().equals(Message.class)) {
 					transformMessage(fdtmc, (Message)n, currentSource, target, error);
 				} else if (n.getClass().equals(Fragment.class)) {
-					transformFragment(fdtmc, (Fragment)n, currentSource, target, error, currentRdgNode);
+					transformFragment(new TransformParameters(fdtmc, (Fragment)n, currentSource, target, error, currentRdgNode));
 				}
 			} else {
 				if (n.getClass().equals(Message.class)) {
 				    currentSource = transformMessage(fdtmc, (Message)n, currentSource, fdtmc.createState(), error);
 				} else if (n.getClass().equals(Fragment.class)) {
-				    currentSource = transformFragment(fdtmc, (Fragment)n, currentSource, fdtmc.createState(), error, currentRdgNode);
+				    currentSource = transformFragment(new TransformParameters(fdtmc, (Fragment)n, currentSource, fdtmc.createState(), error, currentRdgNode));
 				}
 			}
 		}
@@ -173,28 +173,30 @@ public class Transformer {
 
 	/**
 	 * Distributes the fragment transformation method calls based on the the type of the Fragment
+	 * @param transformParameterObject TODO
 	 * @throws InvalidNumberOfOperandsException
 	 * @throws InvalidNodeClassException
 	 */
-	private State transformFragment(FDTMC fdtmc, Fragment fragment, State source, State target, State error, RDGNode currentRdgNode) throws InvalidNumberOfOperandsException, InvalidNodeClassException, InvalidNodeType {
-		switch(fragment.getType()) {
+	private State transformFragment(TransformParameters transformParameterObject) throws InvalidNumberOfOperandsException, InvalidNodeClassException, InvalidNodeType {
+		switch(transformParameterObject.getFragment().getType()) {
 			case LOOP:
-				return transformLoopFragment(fdtmc, fragment, source, target, error, currentRdgNode);
+				return transformLoopFragment(transformParameterObject);
 			case ALTERNATIVE:
-				return transformAltFragment(fdtmc, fragment, source, target, error, currentRdgNode);
+				return transformAltFragment(transformParameterObject);
 			case OPTIONAL:
-				return transformOptFragment(fdtmc, fragment, source, target, error, currentRdgNode);
+				return transformOptFragment(transformParameterObject);
 			case PARALLEL:
-				return transformParallelFragment(fdtmc, fragment, source, target, error, currentRdgNode);
+				return transformParallelFragment(transformParameterObject);
 			default:
 				break;
 		}
 		return null;
 	}
 
+
 	/**
 	 * Recursively augments the fDTMC with $fragments information
-	 * @param fdtmc
+	 * @param transformParameterObject TODO
 	 * @param fragment: an fragment of type loop
 	 * @param source: the fDTMC node that triggers or not the Fragment
 	 * @param target: the fDTMC node that the fragment should return to
@@ -203,31 +205,31 @@ public class Transformer {
 	 * @throws InvalidNumberOfOperandsException
 	 * @throws InvalidNodeClassException
 	 */
-	private State transformLoopFragment(FDTMC fdtmc, Fragment fragment, State source, State target, State error, RDGNode currentRdgNode) throws InvalidNumberOfOperandsException, InvalidNodeClassException, InvalidNodeType {
-		if (fragment.getNodes().size() > 1) {
+	private State transformLoopFragment(TransformParameters transformParameterObject) throws InvalidNumberOfOperandsException, InvalidNodeClassException, InvalidNodeType {
+		if (transformParameterObject.getFragment().getNodes().size() > 1) {
 		    throw new InvalidNumberOfOperandsException("A Loop fragment can only have 1 operand!");
 		}
 
-		Operand operand = (Operand)fragment.getNodes().get(0);
-		String name = (fragment.getName() != null && !fragment.getName().isEmpty()) ? fragment.getName() : "Loop" + ++loopNum;
-		State opStart = fdtmc.createState("initial" + name);
-		State opEnd = fdtmc.createState("end" + name);
+		Operand operand = (Operand)transformParameterObject.getFragment().getNodes().get(0);
+		String name = (transformParameterObject.getFragment().getName() != null && !transformParameterObject.getFragment().getName().isEmpty()) ? transformParameterObject.getFragment().getName() : "Loop" + ++loopNum;
+		State opStart = transformParameterObject.getFdtmc().createState("initial" + name);
+		State opEnd = transformParameterObject.getFdtmc().createState("end" + name);
 
 		// TODO Assuming for now that loop/not-loop probability is 50/50.
 		String loopProbability = "0.5";
 
-		fdtmc.createTransition(source, target, "", "1 - " + loopProbability); // not entering loop
-		fdtmc.createTransition(source, opStart, "", loopProbability); // entering loop
-		fdtmc.createTransition(opEnd, opStart, "", loopProbability); // restarting loop
-		fdtmc.createTransition(opEnd, target, "", "1 - " + loopProbability); // leaving loop
+		transformParameterObject.getFdtmc().createTransition(transformParameterObject.getSource(), transformParameterObject.getTarget(), "", "1 - " + loopProbability); // not entering loop
+		transformParameterObject.getFdtmc().createTransition(transformParameterObject.getSource(), opStart, "", loopProbability); // entering loop
+		transformParameterObject.getFdtmc().createTransition(opEnd, opStart, "", loopProbability); // restarting loop
+		transformParameterObject.getFdtmc().createTransition(opEnd, transformParameterObject.getTarget(), "", "1 - " + loopProbability); // leaving loop
 
-		transformLoopOperand (fdtmc, name, operand, opStart, opEnd, error, currentRdgNode);
-		return target;
+		transformLoopOperand (transformParameterObject.getFdtmc(), name, operand, opStart, opEnd, transformParameterObject.getError(), transformParameterObject.getCurrentRdgNode());
+		return transformParameterObject.getTarget();
 	}
 
 	/**
 	 * Recursively augments the fdtmc with $fragments information
-	 * @param fdtmc
+	 * @param transformParameterObject TODO
 	 * @param fragment: a fragment of type alternative
 	 * @param source: the fDTMC node that triggers or not the Fragment
 	 * @param target: the fDTMC node that the fragment should return to
@@ -236,8 +238,8 @@ public class Transformer {
 	 * @throws InvalidNodeClassException
 	 * @throws InvalidNumberOfOperandsException
 	 */
-	private State transformAltFragment(FDTMC fdtmc, Fragment fragment, State source, State target, State error, RDGNode currentRdgNode) throws InvalidNodeClassException, InvalidNumberOfOperandsException, InvalidNodeType {
-		List<Node> operands = fragment.getNodes();
+	private State transformAltFragment(TransformParameters transformParameterObject) throws InvalidNodeClassException, InvalidNumberOfOperandsException, InvalidNodeType {
+		List<Node> operands = transformParameterObject.getFragment().getNodes();
 		String name;
 
 		String opElse = "";
@@ -248,38 +250,39 @@ public class Transformer {
 			Operand operand = (Operand)node; // to facilitate the nodes use
 
 			String guard = operand.getGuard();
-			name = "else".equals(guard) ? fragment.getName() + guard : guard;
+			name = "else".equals(guard) ? transformParameterObject.getFragment().getName() + guard : guard;
 
 			RDGNode altNode = transformOperand (name, guard, operand);
-			currentRdgNode.addDependency(altNode);
+			transformParameterObject.getCurrentRdgNode().addDependency(altNode);
 	        // There is a possibility that we have found an RDG node similar to the
 	        // one we just transformed. In this case, we reuse the older one.
 	        // Thus, the dependency name must be changed accordingly.
 	        name = altNode.getId();
 
-			State opStart = fdtmc.createState("initial" + name);
-			State opEnd = fdtmc.createState("end" + name);
-			State opError = fdtmc.createState("error" + name);
+			State opStart = transformParameterObject.getFdtmc().createState("initial" + name);
+			State opEnd = transformParameterObject.getFdtmc().createState("end" + name);
+			State opError = transformParameterObject.getFdtmc().createState("error" + name);
 
 			if (!"else".equals(operand.getGuard())) {
 			    // TODO Think about these feature-presence transitions...
 			    // They do not adapt to the phi-functions
 				opElse = opElse + "f" + guard + " - ";
-				fdtmc.createTransition(source, opStart, guard, "f" + name); // entering operand
+				transformParameterObject.getFdtmc().createTransition(transformParameterObject.getSource(), opStart, guard, "f" + name); // entering operand
 			} else {
 				opElse = opElse.substring(0, opElse.length() - 3);
-				fdtmc.createTransition(source, opStart, guard, "1 - " + opElse);
+				transformParameterObject.getFdtmc().createTransition(transformParameterObject.getSource(), opStart, guard, "1 - " + opElse);
 			}
 
-			fdtmc.createInterface(name, opStart, opEnd, opError);
-			fdtmc.createTransition(opEnd, target, "", "1.0"); // leaving operand
+			transformParameterObject.getFdtmc().createInterface(name, opStart, opEnd, opError);
+			transformParameterObject.getFdtmc().createTransition(opEnd, transformParameterObject.getTarget(), "", "1.0"); // leaving operand
 		}
-		return target;
+		return transformParameterObject.getTarget();
 	}
+
 
 	/**
 	 * Recursively augments the fdtmc with $fragments information
-	 * @param fdtmc
+	 * @param transformParameterObject TODO
 	 * @param fragment: a fragment of type optional
 	 * @param source: the fDTMC node that triggers or not the Fragment
 	 * @param target: the fDTMC node that the fragment should return to
@@ -288,51 +291,51 @@ public class Transformer {
 	 * @throws InvalidNumberOfOperandsException
 	 * @throws InvalidNodeClassException
 	 */
-	private State transformOptFragment(FDTMC fdtmc, Fragment fragment, State source, State target, State error, RDGNode currentRdgNode) throws InvalidNumberOfOperandsException, InvalidNodeClassException, InvalidNodeType {
-		if (fragment.getNodes().size() > 1) {
+	private State transformOptFragment(TransformParameters transformParameterObject) throws InvalidNumberOfOperandsException, InvalidNodeClassException, InvalidNodeType {
+		if (transformParameterObject.getFragment().getNodes().size() > 1) {
 		    throw new InvalidNumberOfOperandsException("An Opt fragment can only have 1 operand!");
 		}
 
-		Operand operand = (Operand)fragment.getNodes().get(0);
+		Operand operand = (Operand)transformParameterObject.getFragment().getNodes().get(0);
 		String name = RDGNode.getNextId();
 		String guard = operand.getGuard();
 
 //		creates FDTMC for opt content
 		RDGNode optNode = transformOperand(name, guard, operand);
-		currentRdgNode.addDependency(optNode);
+		transformParameterObject.getCurrentRdgNode().addDependency(optNode);
 		// There is a possibility that we have found an RDG node similar to the
 		// one we just transformed. In this case, we reuse the older one.
 		// Thus, the dependency name must be changed accordingly.
 		name = optNode.getId();
 
-		State featureStart = fdtmc.createState("initial" + name);
-		State featureEnd = fdtmc.createState("end" + name);
-		State featureError = fdtmc.createState("error" + name);
+		State featureStart = transformParameterObject.getFdtmc().createState("initial" + name);
+		State featureEnd = transformParameterObject.getFdtmc().createState("end" + name);
+		State featureError = transformParameterObject.getFdtmc().createState("error" + name);
 
-        fdtmc.createTransition(source, featureStart, name, "1.0"); // into Feature
+        transformParameterObject.getFdtmc().createTransition(transformParameterObject.getSource(), featureStart, name, "1.0"); // into Feature
         // When the feature is not present, its reliability will be taken as 1.
-        fdtmc.createInterface(name, featureStart, featureEnd, featureError);
-		fdtmc.createTransition(featureEnd, target, "", "1.0"); // leaving Feature
+        transformParameterObject.getFdtmc().createInterface(name, featureStart, featureEnd, featureError);
+		transformParameterObject.getFdtmc().createTransition(featureEnd, transformParameterObject.getTarget(), "", "1.0"); // leaving Feature
 
-		return target;
+		return transformParameterObject.getTarget();
 	}
 
 	/**
 	 * Recursively augments the fdtmc with $fragments information
-	 * @param fdtmc
+	 * @param transformParameterObject TODO
 	 * @param fragment: a fragment of type parallel
 	 * @param source: the fDTMC node that triggers or not the Fragment
 	 * @param target: the fDTMC node that the fragment should return to
 	 * @param error: the error state where message transmission failure should be transited to
 	 * @return the $target itself, the point in the fDTMC where the execution or not of this $fragment will transit to
 	 */
-	private State transformParallelFragment(FDTMC fdtmc, Fragment fragment, State source, State target, State error, RDGNode currentRdgNode) throws InvalidNodeClassException, InvalidNumberOfOperandsException, InvalidNodeType {
-		List<Node> operands = fragment.getNodes();
+	private State transformParallelFragment(TransformParameters transformParameterObject) throws InvalidNodeClassException, InvalidNumberOfOperandsException, InvalidNodeType {
+		List<Node> operands = transformParameterObject.getFragment().getNodes();
 		String fragName, opName;
 		int n = operands.size(), opNum;
 		float val = 1/(float)n;
 
-		fragName = !fragment.getName().isEmpty() ? fragment.getName() : "Par" + ++parNum;
+		fragName = !transformParameterObject.getFragment().getName().isEmpty() ? transformParameterObject.getFragment().getName() : "Par" + ++parNum;
 		opNum = 0;
 		for(Node node : operands) {
 			if (!node.getClass().equals(Operand.class)) {
@@ -342,22 +345,22 @@ public class Transformer {
 			opName = fragName + "-Op" + ++opNum;
 
 			RDGNode fragmentNode = transformOperand(opName, "true", operand);
-			currentRdgNode.addDependency(fragmentNode);
+			transformParameterObject.getCurrentRdgNode().addDependency(fragmentNode);
 	        // There is a possibility that we have found an RDG node similar to the
 	        // one we just transformed. In this case, we reuse the older one.
 	        // Thus, the dependency name must be changed accordingly.
 	        opName = fragmentNode.getId();
 
-			State opStart = fdtmc.createState("initial" + opName);
-			State opEnd = fdtmc.createState("end" + opName);
-			State opError = fdtmc.createState("error" + opName);
+			State opStart = transformParameterObject.getFdtmc().createState("initial" + opName);
+			State opEnd = transformParameterObject.getFdtmc().createState("end" + opName);
+			State opError = transformParameterObject.getFdtmc().createState("error" + opName);
 
-			fdtmc.createTransition(source, opStart, "", Float.toString(val)); // entering operand
-			fdtmc.createInterface(opName, opStart, opEnd, opError);
-			fdtmc.createTransition(opEnd, target, "", "1.0"); // leaving operand
+			transformParameterObject.getFdtmc().createTransition(transformParameterObject.getSource(), opStart, "", Float.toString(val)); // entering operand
+			transformParameterObject.getFdtmc().createInterface(opName, opStart, opEnd, opError);
+			transformParameterObject.getFdtmc().createTransition(opEnd, transformParameterObject.getTarget(), "", "1.0"); // leaving operand
 
 		}
-		return target;
+		return transformParameterObject.getTarget();
 	}
 
 	private RDGNode transformOperand (String name, String presenceCondition, Operand operand) throws InvalidNumberOfOperandsException, InvalidNodeClassException, InvalidNodeType {
