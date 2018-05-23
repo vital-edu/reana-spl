@@ -43,7 +43,6 @@ public class Expression<T> {
                 LOGGER.warning("No interpretation for variable <"+varName+"> was provided");
             }
         }
-        Object result = parser.getValueAsObject();
-        return type.cast(result);
+        return type.cast(parser.getValueAsObject());
     }
 }
