@@ -86,8 +86,10 @@ public class Transformer {
 		State init, error, source;
 		parNum = 0;
 		loopNum = 0;
-
-		if (fragment.getName() != null && !fragment.getName().isEmpty()) {
+		
+		final boolean fragmentNameIsNotNull = fragment.getName() != null;
+		final boolean fragmentNameIsNotEmpty = !fragment.getName().isEmpty();
+		if (fragmentNameIsNotNull && fragmentNameIsNotEmpty) {
 			fdtmc.setVariableName("s" + fragment.getName());
 			fdtmcByName.put(fragment.getName(), fdtmc);
 		} else {

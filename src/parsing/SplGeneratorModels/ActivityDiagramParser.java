@@ -66,8 +66,9 @@ public class ActivityDiagramParser {
 						//parse the sequence diagrams associated with it
 						NodeList children = el.getElementsByTagName("RepresentedBy"); 
 						 for (int k=0; k<children.getLength(); k++) {
-							 if (children.item(k).getNodeType() == Node.ELEMENT_NODE && 
-									 children.item(k).getNodeName().equals("RepresentedBy")){
+							 final boolean nodeTypeIsELEMENT_NODE = children.item(k).getNodeType() == Node.ELEMENT_NODE;
+							 final boolean nodeNameIsRepresentedBy = children.item(k).getNodeName().equals("RepresentedBy");
+							 if (nodeTypeIsELEMENT_NODE && nodeNameIsRepresentedBy){
 								 Element repBy = (Element) children.item(k); 
 								 NamedNodeMap attributes = repBy.getAttributes(); 
 								 String seqDiagName = attributes.getNamedItem("seqDiagName").getNodeValue(); 
