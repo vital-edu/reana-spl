@@ -52,8 +52,9 @@ public class SequenceDiagramParser {
 			NodeList seqDiagChildren = seqDiag.getChildNodes();
 			for (int j = 0; j < seqDiagChildren.getLength(); j++) {
 				Node n = seqDiagChildren.item(j);
-				if (n.getNodeType() == Node.ELEMENT_NODE
-						&& n.getNodeName().equals("Message")) {
+				final boolean nodeTypeIsELEMENT_NODE = n.getNodeType() == Node.ELEMENT_NODE;
+				final boolean nodeNameIsMessage = n.getNodeName().equals("Message");
+				if (nodeTypeIsELEMENT_NODE && nodeNameIsMessage) {
 					Element e = (Element) n;
 					String messageName = e.getAttribute("name");
 					String probability = e.getAttribute("probability");
@@ -86,9 +87,11 @@ public class SequenceDiagramParser {
 
 					sd.createMessage(source, target, type, messageName,
 							Double.parseDouble(probability));
-				} else if (n.getNodeType() == Node.ELEMENT_NODE
-						&& n.getNodeName().equals("Fragment")) {
-					parseFragment(sd, n);
+				} else {
+					final boolean nodeNameIsFragment = n.getNodeName().equals("Fragment");
+					if (nodeTypeIsELEMENT_NODE && nodeNameIsFragment) {
+						parseFragment(sd, n);
+					}
 				}
 			}
 

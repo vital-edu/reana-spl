@@ -17,7 +17,11 @@ public abstract class Node {
 		if (this == obj) {
 			return true;
 		}
-		if ((obj == null) || (getClass() != obj.getClass())) {
+
+		final boolean objIsNull = obj == null;
+		final boolean objIsFromDiffClass = getClass() != obj.getClass();
+
+		if (objIsNull || objIsFromDiffClass) {
 			return false;
 		}
 		Node other = (Node) obj;
