@@ -29,14 +29,14 @@ import expressionsolver.functions.UnaryMinus;
  */
 public class ExpressionSolver {
     private static final Logger LOGGER = Logger.getLogger(ExpressionSolver.class.getName());
+    ExpressionSolverParser expressionParser = new ExpressionSolverParser();
+    private ExpressionSolverParser data = new ExpressionSolverParser();
 
-    private JADD jadd;
-
-    /**
+	/**
      * Solves expressions using the provided ADD manager.
      */
     public ExpressionSolver(JADD jadd) {
-        this.jadd = jadd;
+        this.data.setJadd(jadd);
     }
 
     /**
@@ -52,7 +52,7 @@ public class ExpressionSolver {
      *         results according to the ADDs involved.
      */
     public ADD solveExpressionAsFunction(String expression, Map<String, ADD> interpretation) {
-        Expression<ADD> parsedExpression = parseExpressionForFunctions(expression);
+        Expression<ADD> parsedExpression = ExpressionSolverParser.parseExpressionForFunctions(expression);
         if (parsedExpression == null) {
             return null;
         }
@@ -112,17 +112,17 @@ public class ExpressionSolver {
      * @return
      */
     public ADD encodeFormula(String formula) {
-        JEP parser = makeADDParser(jadd);
+        JEP parser = ExpressionSolverParser.makeADDParser(data.getJadd());
         parser.parseExpression(formula);
         if (parser.hasError()) {
             LOGGER.warning("Parser error: " + parser.getErrorInfo());
             return null;
         }
 
-        parser.addVariableAsObject("true", jadd.makeConstant(1));
-        parser.addVariableAsObject("True", jadd.makeConstant(1));
-        parser.addVariableAsObject("false", jadd.makeConstant(0));
-        parser.addVariableAsObject("False", jadd.makeConstant(0));
+        parser.addVariableAsObject("true", data.getJadd().makeConstant(1));
+        parser.addVariableAsObject("True", data.getJadd().makeConstant(1));
+        parser.addVariableAsObject("false", data.getJadd().makeConstant(0));
+        parser.addVariableAsObject("False", data.getJadd().makeConstant(0));
         SymbolTable symbolTable = parser.getSymbolTable();
         @SuppressWarnings("unchecked")
         Set<String> variables = new HashSet<String>(symbolTable.keySet());
@@ -133,7 +133,7 @@ public class ExpressionSolver {
 
         for (Object var : variables) {
             String varName = (String) var;
-            ADD variable = jadd.getVariable(varName);
+            ADD variable = data.getJadd().getVariable(varName);
             parser.addVariableAsObject(varName, variable);
         }
         return (ADD) parser.getValueAsObject();
@@ -150,59 +150,13 @@ public class ExpressionSolver {
      *      is a parsing error.
      */
     public Expression<Double> parseExpression(String expression) {
-        JEP parser = makeFloatingPointParser();
+        JEP parser = expressionParser.makeFloatingPointParser();
         parser.parseExpression(expression);
         if (parser.hasError()) {
             LOGGER.warning("Parser error: " + parser.getErrorInfo());
             return null;
         }
         return new Expression<Double>(parser, Double.class);
-    }
-
-    /**
-     * Lower level alternative for {@link solveExpressionAsFunction(String)}.
-     *
-     * @see {@link parseExpression(String)}
-     *
-     * @param expression
-     * @return A handle to the parsed expression or {@code null} if there
-     *      is a parsing error.
-     */
-    public Expression<ADD> parseExpressionForFunctions(String expression) {
-        JEP parser = makeADDParser(jadd);
-        parser.parseExpression(expression);
-        if (parser.hasError()) {
-            LOGGER.warning("Parser error: " + parser.getErrorInfo());
-            return null;
-        }
-        return new Expression<ADD>(parser, ADD.class);
-    }
-
-    /**
-     * @param jadd
-     */
-    private JEP makeADDParser(JADD jadd) {
-        JEP parser = new JEP(false, true, true, new ADDNumberFactory(jadd));
-        parser.addFunction("\"+\"", new ADDAdd());
-        parser.addFunction("\"-\":2", new ADDSubtract());
-        parser.addFunction("\"-\":1", new UnaryMinus());
-        parser.addFunction("\"*\"", new ADDMultiply());
-        parser.addFunction("\"^\"", new ADDPower(jadd));
-        parser.addFunction("\"/\"", new ADDDivide());
-
-        parser.addFunction("\"&&\"", new LogicalAnd());
-        parser.addFunction("\"||\"", new LogicalOr());
-        parser.addFunction("\"!\"", new LogicalNot());
-        return parser;
-    }
-
-    /**
-     * Makes a standard floating-point-based parser.
-     */
-    private JEP makeFloatingPointParser() {
-        JEP parser = new JEP(false, true, true, new DoubleNumberFactory());
-        parser.setAllowUndeclared(true);
-        return parser;
     }
 
 }
