@@ -228,16 +228,11 @@ public class FDTMC {
 	 */
 	@Override
 	public boolean equals(Object obj) {
-	    if (obj != null && obj instanceof FDTMC) {
+	    if (validObject(obj)) {
 	        FDTMC other = (FDTMC) obj;
 	        LinkedList<List<Interface>> thisInterfaces = new LinkedList<List<Interface>>(interfaces.values());
             LinkedList<List<Interface>> otherInterfaces = new LinkedList<List<Interface>>(other.interfaces.values());
-            return states.equals(other.states)
-	                && getInitialState().equals(other.getInitialState())
-	                && getSuccessState().equals(other.getSuccessState())
-	                && getErrorState().equals(other.getErrorState())
-	                && transitionSystem.equals(other.transitionSystem)
-	                && thisInterfaces.equals(otherInterfaces);
+            return validFDTMC(other, thisInterfaces, otherInterfaces);
 	    }
 	    return false;
 	}
@@ -463,6 +458,25 @@ public class FDTMC {
                     transitions.add(iface.getErrorTransition());
                 });
         return transitions;
+    }
+
+    private boolean validFDTMC(FDTMC other,
+    		LinkedList<List<Interface>> thisInterfaces,
+    		LinkedList<List<Interface>> otherInterfaces) {
+    	return states.equals(other.states)
+    			&& getInitialState().equals(other.getInitialState())
+    			&& getSuccessState().equals(other.getSuccessState())
+    			&& getErrorState().equals(other.getErrorState())
+    			&& transitionSystem.equals(other.transitionSystem)
+    			&& thisInterfaces.equals(otherInterfaces);
+    }
+    			
+    public boolean validObject(Object obj) {
+    	if (obj != null && obj instanceof FDTMC) {
+    		return true;
+    	} else {
+    		return false;
+    	}
     }
 
 }
