@@ -167,14 +167,9 @@ public class RDGNode {
      * @throws CyclicRdgException
      */
     public Map<RDGNode, Integer> getNumberOfPaths() throws CyclicRdgException {
-        Map<RDGNode, Integer> numberOfPaths = new HashMap<RDGNode, Integer>();
-
-        Map<RDGNode, Boolean> marks = new HashMap<RDGNode, Boolean>();
-        Map<RDGNode, Map<RDGNode, Integer>> cache = new HashMap<RDGNode, Map<RDGNode,Integer>>();
-        Map<RDGNode, Integer> tmpNumberOfPaths = numPathsVisit(this, marks, cache);
-        numberOfPaths = sumPaths(numberOfPaths, tmpNumberOfPaths);
-
-        return numberOfPaths;
+    	return sumPaths(new HashMap<RDGNode, Integer>(), numPathsVisit(
+    			this,new HashMap<RDGNode, Boolean>(), new HashMap<RDGNode, Map<RDGNode,Integer>>()
+    	));
     }
 
     // TODO Parameterize topological sort of RDG.
