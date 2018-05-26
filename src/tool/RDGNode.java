@@ -228,11 +228,19 @@ public class RDGNode {
      */
     public static RDGNode getSimilarNode(RDGNode target) {
         for (RDGNode candidate: nodesInCreationOrder) {
-            if (candidate != target && candidate.equals(target)) {
+            if (candidate.isNotTargetAndEquals(target)) {
                 return candidate;
             }
         }
         return null;
+    }
+    
+    private boolean isNotTargetAndEquals(RDGNode target){
+    	if(this != target && this.equals(target)){
+    		return true;
+    	} else {
+    		return false;
+    	}
     }
 
     /**
