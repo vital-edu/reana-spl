@@ -60,19 +60,10 @@ public class ParamWrapper implements ParametricModelChecker {
 
 	private String evaluate(String modelString, String property, ParamModel model) {
 		try {
-		    LOGGER.finer(modelString);
-			File modelFile = File.createTempFile("model", "param");
-			FileWriter modelWriter = new FileWriter(modelFile);
-			modelWriter.write(modelString);
-			modelWriter.flush();
-			modelWriter.close();
+			LOGGER.finer(modelString);
 
-			File propertyFile = File.createTempFile("property", "prop");
-			FileWriter propertyWriter = new FileWriter(propertyFile);
-			propertyWriter.write(property);
-			propertyWriter.flush();
-			propertyWriter.close();
-
+			File modelFile = createAndWriteTempFile(modelString, "model", "param");
+			File propertyFile = createAndWriteTempFile(property, "property", "prop");
 			File resultsFile = File.createTempFile("result", null);
 
 			String formula;
@@ -98,6 +89,17 @@ public class ParamWrapper implements ParametricModelChecker {
 			LOGGER.log(Level.SEVERE, e.toString(), e);
 		}
 		return "";
+	}
+
+	private File createAndWriteTempFile(String property, String prefix, String suffix) throws IOException {
+		// TODO Auto-generated method stub
+		File tempFile = File.createTempFile(prefix, suffix);
+		FileWriter tempWriter = new FileWriter(tempFile);
+		tempWriter.write(property);
+		tempWriter.flush();
+		tempWriter.close();
+
+		return tempFile;
 	}
 
 	private String invokeParametricModelChecker(String modelPath,
